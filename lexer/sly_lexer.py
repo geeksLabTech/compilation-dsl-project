@@ -2,7 +2,7 @@ from sly import Lexer
 
 class TzScriptLexer(Lexer):
 
-    tokens = {ID,NUMBER,IF,ELSE,WHILE,PLUS,MINUS,TIMES,DIVIDE,EQ,ASSIGN,LE,LT,GE,GT,NE, VAR,CONTRACT,STRING,LEN,ENTRY,INPUT}
+    tokens = {ID,NUMBER,IF,ELSE,WHILE,PLUS,MINUS,TIMES,DIVIDE,EQ,ASSIGN,LE,LT,GE,GT,NE, VAR,CONTRACT,STRING}
     
     # Tokens
     @_(r'\d+')
@@ -19,9 +19,6 @@ class TzScriptLexer(Lexer):
     ID['var'] = VAR
     ID['contract'] = CONTRACT
     ID['string'] = STRING
-    ID["entry"] = ENTRY
-    ID["input"] = INPUT
-    ID['len'] = LEN
 
     ignore = ' \t'
     
