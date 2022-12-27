@@ -3,16 +3,16 @@
 ```
 contract store_value(admin: adress){
 
-    var storage: nat = 0
+    var storage: nat = 0;
 
     entry replace(new_value: nat){
-        called by admin
-        storage = new_value
+        called by admin;
+        storage = new_value;
     } 
 
     entry double_previous_value(){
-        called by admin
-        storage = storage * 2
+        called by admin;
+        storage = storage * 2;
     }
 }
 ```
@@ -20,19 +20,19 @@ contract store_value(admin: adress){
 ## Contrato que calcula n-esimo termino de fibonacci
 ```
 contract get_fib_n(){
-    var last_fib_calculated = 0
+    var last_fib_calculated = 0;
 
     entry get_fib_n(n: nat){
-        const result = fib(n)
-        last_fib_calculated = result
+        const result = fib(n);
+        last_fib_calculated = result;
     }
 
     func fib(n: nat) -> nat{
         if (n <= 1) {
-            return n
+            return n;
         }
         else {
-            return fib(n-1) + fib(n-2)
+            return fib(n-1) + fib(n-2);
         }
     }
 }
@@ -51,8 +51,8 @@ contract student_certification(certifier: adress){
     var storage: map[string, student] = {}   
     
     entry certifyStudent(name: string) {
-        calledBy certifier
-        const student = findStudent(name)
+        calledBy certifier;
+        const student = findStudent(name);
         if student == None {
             storage.students[name] = {
                 name: name,
@@ -60,17 +60,17 @@ contract student_certification(certifier: adress){
             }
         }
         else {
-            storage.students[name].certificate = true
+            storage.students[name].certificate = true;
         }
     }
 
     func findStudent (name: string) -> optional[student] {
         for student in storage.students {
             if student.name == name {
-                return student
+                return student;
             }
         }
-        return None
+        return None;
     }
     
 }
