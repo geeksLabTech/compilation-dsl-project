@@ -156,3 +156,89 @@ def nfa_to_dfa(automaton: NFA):
     finals = [ state.id for state in states if state.is_final ]
     dfa = DFA(len(states), finals, transitions)
     return dfa
+
+def automata_union(a1, a2):
+    transitions = {}
+    
+    start = 0
+    # From this number on, states of a1 will be relocated
+    d1 = 1
+    # From this number on, states of a2 will be relocated
+    d2 = a1.states + d1
+    final = a2.states + d2
+    print(a1.map.items())
+    print(final)
+    
+    for (origin, symbol), destinations in a1.map.items():
+        ## Relocate a1 transitions ...
+        transitions[(origin + d1, symbol)] = [destination + d1 for destination in destinations]
+
+    for (origin, symbol), destinations in a2.map.items():
+        ## Relocate a2 transitions ...
+        transitions[(origin + d2, symbol)] = [destination + d2 for destination in destinations]
+
+    ## Add transitions from start state ...
+    transitions[(start, '')] = [d1, d2]
+    
+    ## Add transitions to final state ...
+    for x in a1.finals:
+        transitions[(x + d1, '')] = [final]        
+    
+    for x in a2.finals:
+        transitions[(x + d2, '')] = [final]
+
+    states = a1.states + a2.states + 2
+    finals = { final }
+    
+    return NFA(states, finals, transitions, start)
+
+def automata_concatenation(a1, a2):
+    transitions = {}
+    
+    start = 0
+    d1 = 0
+    d2 = a1.states + d1
+    final = a2.states + d2 - 1
+    
+    for (origin, symbol), destinations in a1.map.items():
+        transitions[(origin, symbol)] = [destination for destination in destinations]
+        
+    for (origin, symbol), destinations in a2.map.items():
+        ## Relocate a2 transitions ...
+        transitions[(origin + d2, symbol)] = [destination + d2 for destination in destinations]
+    
+    ## Add transitions to final state ...
+    for x in a1.finals:
+        transitions[(x, '')] = [d2]
+        
+    states = a1.states + a2.states + 1
+    finals = { final }
+    print(transitions)
+    print(final)
+    return NFA(states, finals, transitions, start)
+
+def automata_closure(a1):
+    # This algorithm creates two new states
+    # A new start state with an epsilon transition to the original start
+    # A new final state with an epsilon transition from the original final state
+    transitions = {}
+    
+    start = 0
+    d1 = 1
+    final = a1.states + d1
+    
+    for (origin, symbol), destinations in a1.map.items():
+        ## Relocate automaton transitions ...
+        transitions[(origin + d1, symbol)] = [destination + d1 for destination in destinations]
+    
+    ## Add transitions from start state ...
+    transitions[(start, '')] = [d1, final]
+    
+    ## Add transitions to final state and to start state ...
+    for x in a1.finals:
+        transitions[(x + d1, '')] = [final]
+            
+    states = a1.states +  2
+    finals = { final }
+    
+    return NFA(states, finals, transitions, start)
