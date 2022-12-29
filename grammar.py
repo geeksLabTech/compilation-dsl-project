@@ -281,7 +281,7 @@ class Grammar():
         self.Productions: list[Production] = []
         self.nonTerminals: list[NonTerminal] = []
         self.terminals: list[Terminal] = []
-        self.startSymbol: Symbol | None = None
+        self.startSymbol: NonTerminal | None = None
         # production type
         self.pType = None
         self.Epsilon = Epsilon(self)
