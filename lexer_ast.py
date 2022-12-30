@@ -10,18 +10,18 @@ class EpsilonNode(AtomicNode):
         })    
         return nfa
 
-EpsilonNode(EPSILON).evaluate()
+# EpsilonNode(EPSILON).evaluate()
 
 class SymbolNode(AtomicNode):
     def evaluate(self):
         s = self.lex
         
         nfa = NFA(states=2, finals=[1], transitions={
-            (0,'a'):[1]
+            (0,s):[1]
         })
         return nfa
 
-SymbolNode('a').evaluate()
+# SymbolNode('a').evaluate()
 
 class ClosureNode(UnaryNode):
     @staticmethod
@@ -29,7 +29,7 @@ class ClosureNode(UnaryNode):
         nfa = automata_closure(value)
         return nfa
     
-ClosureNode(SymbolNode('a')).evaluate()
+# ClosureNode(SymbolNode('a')).evaluate()
 
 class UnionNode(BinaryNode):
     @staticmethod
@@ -37,7 +37,7 @@ class UnionNode(BinaryNode):
         nfa = automata_union(lvalue,rvalue)
         return nfa
 
-UnionNode(SymbolNode('a'), SymbolNode('b')).evaluate()
+# UnionNode(SymbolNode('a'), SymbolNode('b')).evaluate()
 
 class ConcatNode(BinaryNode):
     @staticmethod
@@ -46,8 +46,16 @@ class ConcatNode(BinaryNode):
 
         return nfa
 
-ConcatNode(SymbolNode('a'), SymbolNode('b')).evaluate()
+# ConcatNode(SymbolNode('a'), SymbolNode('b')).evaluate()
 
 class IntervalNode(BinaryNode):
     def operate(self, lvalue, rvalue):
+        pass
+
+class QuestionNode(UnaryNode):
+    def operate(self, value):
+        pass 
+
+class PlusNode(UnaryNode):
+    def operate(self, value):
         pass
