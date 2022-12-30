@@ -1,5 +1,6 @@
 from base_ast import AtomicNode,UnaryNode,BinaryNode
 from automata import automata_closure,automata_concatenation,automata_union,NFA
+from vocabulary_iter import VocabularyIter
 
 EPSILON = 'ε'
 
@@ -49,13 +50,34 @@ class ConcatNode(BinaryNode):
 # ConcatNode(SymbolNode('a'), SymbolNode('b')).evaluate()
 
 class IntervalNode(BinaryNode):
-    def operate(self, lvalue, rvalue):
-        pass
+    def operate(self, lvalue , rvalue):
+        value_of_lchar : str = lvalue.transition[0][1]
+        value_of_rchar: str = rvalue.transition[0][1]
+        vocabularyIter = VocabularyIter(value_of_lchar)
+        iterator = vocabularyIter.create_iter(vocabularyIter.vocabulary[value_of_lchar], vocabularyIter.vocabulary[value_of_rchar])
+        automon_result = UnionNode(lvalue,rvalue)
+        while True:
+            try:
+                value_of_char = iterator.next()
+                automon_symbol = SymbolNode(value_of_char)
+                automon_result = UnionNode(automon_symbol, automon_result)
+            except StopIteration:
+                break
+        return automon_result
+            
 
 class QuestionNode(UnaryNode):
     def operate(self, value):
-        pass 
+        nfa = NFA(states= 2, finals=[0,1], transitions={
+            (0,'ε'):[0],
+            (0,value):[1],
+            })
+        return nfa
 
 class PlusNode(UnaryNode):
     def operate(self, value):
-        pass
+        nfa = NFA(states=2,finals=[1],transitions={
+            (0,value):[1],
+            (1,value):[1],
+            })
+        return nfa
