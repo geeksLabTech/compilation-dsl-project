@@ -53,3 +53,19 @@ class TzScriptParser(Parser):
     @_("'-' expr  expr")
     def expr(self, p):
         return ('add', p.expr0, p.expr1)
+    
+    @_("ENTRY ID LPAREN params RPAREN {")
+    def entry(self,p):
+        return ("ENTRY", p.NAME, p.params)
+    
+    # Define a rule to parse the list of parameters
+    @_("NAME")
+    @_("parameters COMMA NAME")
+    def parameters(self, p):
+        if len(p) == 1:
+            # If there is only one parameter, return a singleton list
+            return [p.NAME]
+        else:
+            # If there are multiple parameters, append the new parameter to the list
+            p.parameters.append(p.NAME)
+            return p.parameters
