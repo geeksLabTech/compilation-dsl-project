@@ -47,3 +47,7 @@ class ConcatNode(BinaryNode):
         return nfa
 
 ConcatNode(SymbolNode('a'), SymbolNode('b')).evaluate()
+
+class IntervalNode(BinaryNode):
+    def operate(self, lvalue, rvalue):
+        pass
