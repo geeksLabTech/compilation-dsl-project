@@ -10,6 +10,8 @@ class Automaton(ABC):
         self.states = states
         self.start = start
         self.finals = set(finals)
+        # This is for anotating final states with token_type detected and his priority
+        self.tags = {}
         self.map = transitions
         self.vocabulary = set()
         self.transitions: Dict[int, Dict[str, List[int]]] = { state: {} for state in range(states) }
@@ -80,9 +82,9 @@ class DFA(Automaton):
             last_char = i
             self.current = self._move(char)
             if self.current is None:
-                return False
+                return False, last_char, self.current
         
-        return self.current in self.finals and last_char == len(string) - 1
+        return self.current in self.finals and last_char == len(string) - 1, last_char, self.current
 
 
 def move(automaton: NFA, states: List[int], symbol: str):
