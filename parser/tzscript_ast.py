@@ -3,8 +3,10 @@ class Node:
 
 class ProgramNode(Node):
     def __init__(self, idx, params, statements):
-        self.declarations = declarations
-
+        self.idx = idx
+        self.params = params
+        self.statements = statements
+        
 class DeclarationNode(Node):
     pass
         
