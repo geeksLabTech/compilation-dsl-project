@@ -7,7 +7,7 @@ from parser.ll_parser import LLParser
 class Lexer:
     def __init__(self, table: list[tuple[Terminal, str]], eof):
         self.eof = eof
-        self.fixed_tokens = {lex: Token(lex, REGEX_GRAMMAR[lex]) for lex in '\ { } . ( ) [ ] ^ - , ? * + ε 0 1 2 3 4 5 6 7 8 9 a b c d e f g h i j k l m n o p q r s t u v w x y z A B C D E F G H I J K L M N O P Q R S T U V W X Y Z'.split() }
+        self.fixed_tokens = {lex: Token(lex, REGEX_GRAMMAR[lex]) for lex in '\ { } . ( ) [ ] ^ - , ? * + ε _ 0 1 2 3 4 5 6 7 8 9 a b c d e f g h i j k l m n o p q r s t u v w x y z A B C D E F G H I J K L M N O P Q R S T U V W X Y Z'.split() }
         self.parser = LLParser(REGEX_GRAMMAR)
         self.regexs = self._build_regexs(table)
         self.automaton = self._build_automaton()
@@ -46,7 +46,6 @@ class Lexer:
         
         return nfa_to_dfa(nfa)
     
-        
     def _walk(self, string):
         _, last_idx_matched, last_state = self.automaton.recognize(string)
         if last_state in self.automaton.finals:
@@ -54,7 +53,7 @@ class Lexer:
             matched_lex = token_type.name
             return last_idx_matched, matched_lex, token_type
         
-        self.errors.append('')
+        self.errors.append(f'Error recognizing token at position {last_idx_matched} in string: {string}')
         return last_idx_matched, None, None
     
     def _tokenize(self, text):

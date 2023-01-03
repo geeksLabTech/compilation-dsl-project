@@ -1,6 +1,6 @@
 from base_ast import AtomicNode,UnaryNode,BinaryNode
 from automata import automata_closure,automata_concatenation,automata_union,NFA
-from vocabulary_iter import VocabularyIter
+from lexer.vocabulary_iter import VocabularyIter
 
 EPSILON = 'ε'
 

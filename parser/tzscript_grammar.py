@@ -9,17 +9,17 @@ TZSCRIPT_GRAMMAR = Grammar()
 # non-terminals
 program = TZSCRIPT_GRAMMAR.NonTerminal('<program>', startSymbol=True)
 stat_list, stat = TZSCRIPT_GRAMMAR.NonTerminals('<stat_list> <stat>')
-let_var, feature_list, def_attr, def_func = TZSCRIPT_GRAMMAR.NonTerminals('<feature-list> <def-attr> <def-func>')
+let_var, def_attr, def_func = TZSCRIPT_GRAMMAR.NonTerminals('<feature-list> <def-attr> <def-func>')
 param_list, param, expr_list = TZSCRIPT_GRAMMAR.NonTerminals('<param-list> <param> <expr-list>')
 expr, arith, term, factor, atom = TZSCRIPT_GRAMMAR.NonTerminals('<expr> <arith> <term> <factor> <atom>')
 func_call, arg_list  = TZSCRIPT_GRAMMAR.NonTerminals('<func-call> <arg-list>')
 
 
 # terminals
-classx, let, defx, printx = TZSCRIPT_GRAMMAR.Terminals('class let def print')
+let, func, = TZSCRIPT_GRAMMAR.Terminals('let func')
 semi, colon, comma, dot, opar, cpar, ocur, ccur = TZSCRIPT_GRAMMAR.Terminals('; : , . ( ) { }')
 equal, plus, minus, star, div = TZSCRIPT_GRAMMAR.Terminals('= + - * /')
-idx, num, new, typex, contract = TZSCRIPT_GRAMMAR.Terminals('id num type contract')
+idx, num, typex, contract = TZSCRIPT_GRAMMAR.Terminals('id num type contract')
 
 
 # productions
@@ -31,7 +31,7 @@ stat_list %= stat + semi + stat_list, lambda h,s: [s[1]] + s[3]
 stat %= let_var, lambda h,s: s[1]
 stat %= def_func, lambda h,s: s[1]
 
-def_func %= defx + idx + opar + param_list + cpar + typex + ocur + expr_list + ccur, lambda h,s: FuncDeclarationNode(s[2], s[4], s[6], s[8])
+def_func %= func + idx + opar + param_list + cpar + typex + ocur + expr_list + ccur, lambda h,s: FuncDeclarationNode(s[2], s[4], s[6], s[8])
 
 param_list %= param, lambda h,s: [ s[1] ]
 param_list %= param + comma + param_list, lambda h,s: [ s[1] ] + s[3]

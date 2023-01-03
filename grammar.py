@@ -35,8 +35,6 @@ class Symbol(object):
         return 1
 
 class NonTerminal(Symbol):
-
-
     def __init__(self, name, grammar: 'Grammar'):
         super().__init__(name, grammar)
         self.productions = []

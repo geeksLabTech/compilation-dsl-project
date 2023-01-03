@@ -1,5 +1,5 @@
 from grammar import Grammar
-from lexer_ast import EpsilonNode, PlusNode, QuestionNode ,SymbolNode ,ConcatNode, ClosureNode, UnionNode, IntervalNode
+from lexer.lexer_ast import EpsilonNode, PlusNode, QuestionNode ,SymbolNode ,ConcatNode, ClosureNode, UnionNode, IntervalNode
 
 
 
@@ -10,8 +10,8 @@ Term,Term_2,Factor,Factor_2,Atom,Atom_2,CharClass,CharClass_2 = REGEX_GRAMMAR.No
 CharClassItem,CharClassItem_2,Char_2,Char,CharCount = REGEX_GRAMMAR.NonTerminals('CharClassItem CharClassItem_2 Char_2 Char CharCount')
 Integer,Integer_2,Integer_3,Digit,Digit_2,AnyCharExceprtMeta = REGEX_GRAMMAR.NonTerminals('Integer Integer_2 Integer_3 Digit Digit_2 EnyCharExceptMEta')
 AnyChar,MetaChar = REGEX_GRAMMAR.NonTerminals('AnyChar MetaChar')
-union,lbrasses,rbrasses,point,opar,cpar,lbrackets,rbrackets,starts = REGEX_GRAMMAR.Terminals(' \ { } . ( ) [ ] ^')
-interval, comma,question,star, plus,epsilon = REGEX_GRAMMAR.Terminals('- , ? * + ε')
+union,special, lbrasses,rbrasses,point,opar,cpar,lbrackets,rbrackets,starts = REGEX_GRAMMAR.Terminals('| \ { } . ( ) [ ] ^')
+interval, comma,question,star, plus,epsilon, underscore = REGEX_GRAMMAR.Terminals('- , ? * + ε _')
 zero,one,two,three,four,five,six,seven,eight,nine = REGEX_GRAMMAR.Terminals('0 1 2 3 4 5 6 7 8 9')
 a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z = REGEX_GRAMMAR.Terminals('a b c d e f g h i j k l m n o p q r s t u v w x y z')
 A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U,V,W,X,Y,Z = REGEX_GRAMMAR.Terminals('A B C D E F G H I J K L M N O P Q R S T U V W X Y Z')
@@ -48,7 +48,7 @@ CharClassItem_2 %= CharClass, lambda h,s: s[1], None
 CharClassItem_2 %= REGEX_GRAMMAR.Epsilon, lambda h,s: EpsilonNode(h[0])
 
 Char %= AnyChar, lambda h,s :s[1], None
-Char %= union + AnyChar, lambda h,s : UnionNode(h[0],s[2]),None,None
+Char %= special + AnyChar, lambda h,s : UnionNode(h[0],s[2]),None,None
 
 Char_2 %= interval + Char, lambda h,s: IntervalNode(h[0],s[2]), None,None
 Char_2 %= REGEX_GRAMMAR.Epsilon, lambda h,s: EpsilonNode(h[0])
@@ -129,6 +129,7 @@ AnyChar %= W,lambda h,s :SymbolNode(s[1]), None
 AnyChar %= X,lambda h,s :SymbolNode(s[1]), None
 AnyChar %= Y,lambda h,s :SymbolNode(s[1]), None
 AnyChar %= Z,lambda h,s :SymbolNode(s[1]), None
+AnyChar %= underscore, lambda h,s :SymbolNode(s[1]), None
 
 MetaChar %= question, lambda h,s : QuestionNode(h[0]), None
 MetaChar %= star, lambda h,s : ClosureNode(h[0]), None
