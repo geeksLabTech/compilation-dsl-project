@@ -1,5 +1,4 @@
 
-
 from typing import Callable, Iterable, Iterator
 from grammar import AttributeProduction, Grammar, Sentence, Symbol, NonTerminal, Terminal, Production, EOF
 from lexer.lex_token import Token
@@ -51,6 +50,7 @@ class LLParser:
         left_parse = iter(self.parser(terminals))
         tokens_iter = iter(tokens)
         result = self.__build_ast(next(left_parse), left_parse, tokens_iter)
+        print('last_token', next(tokens_iter))
         assert isinstance(next(tokens_iter).token_type, EOF)
         return result
 
@@ -60,20 +60,22 @@ class LLParser:
         synteticed=[None]*(len(body)+1)
         inherited=[None]*(len(body)+1)
         inherited[0]=inherited_value
-
+        print('body', body)
         for i,symbol in enumerate(body,1):
             if symbol.IsTerminal:
                 assert inherited[i]is None
                 synteticed[i]=next(tokens).lex
             else:
                 next_production=next(left_parse)
+                print('next_production', next_production)
+                print('symbol', symbol)
                 assert symbol==next_production.Left
                 P=attributes[i]
                 if P is not None:
                     inherited[i]=P(inherited,synteticed)
-                    synteticed[i]=self.__build_ast(next_production,left_parse,tokens,inherited[i])
-                    P=attributes[0]
-                    return P(inherited,synteticed) if P is not None else None
+                synteticed[i]=self.__build_ast(next_production,left_parse,tokens,inherited[i])
+                P=attributes[0]
+                return P(inherited,synteticed) if P is not None else None
 
     def build_parsing_table(self, G: Grammar, firsts: dict[Symbol | Sentence, ContainerSet], follows: dict[Symbol | Sentence, ContainerSet]):
         # init parsing table

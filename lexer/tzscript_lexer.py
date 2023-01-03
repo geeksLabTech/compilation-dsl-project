@@ -12,7 +12,7 @@ class TzScriptLexer:
     def _build_table(self):
         # list of tuplpes of token_type and associated regular expression
         table: list[tuple[Terminal, str]] = []
-        table.append((typex, 'int|bool|'))
+        table.append((typex, 'int|bool|string'))
         table.append((num, '[0-9]+'))
         table.append((idx, '[a-zA-Z_][a-zA-Z0-9_]*'))
         table.append((contract, 'contract'))

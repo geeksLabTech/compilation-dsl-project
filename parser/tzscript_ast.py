@@ -13,6 +13,15 @@ class DeclarationNode(Node):
 class ExpressionNode(Node):
     pass
 
+class IfNode(Node):
+    def __init__(self, expr, statements) -> None:
+        self.expr = expr
+        self.statements = statements
+
+class ElseNode(Node):
+    def __init__(self, statements) -> None:
+        self.statements = statements
+
 class VarDeclarationNode(ExpressionNode):
     def __init__(self, idx, typex, expr):
         self.id = idx

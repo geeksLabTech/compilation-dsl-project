@@ -7,7 +7,7 @@ from parser.ll_parser import LLParser
 class Lexer:
     def __init__(self, table: list[tuple[Terminal, str]], eof):
         self.eof = eof
-        self.fixed_tokens = {lex: Token(lex, REGEX_GRAMMAR[lex]) for lex in '\ { } . ( ) [ ] ^ - , ? * + ε _ 0 1 2 3 4 5 6 7 8 9 a b c d e f g h i j k l m n o p q r s t u v w x y z A B C D E F G H I J K L M N O P Q R S T U V W X Y Z'.split() }
+        self.fixed_tokens = {lex: Token(lex, REGEX_GRAMMAR[lex]) for lex in r'| \ { } . ( ) [ ] ^ - , ? * + ε _ 0 1 2 3 4 5 6 7 8 9 a b c d e f g h i j k l m n o p q r s t u v w x y z A B C D E F G H I J K L M N O P Q R S T U V W X Y Z'.split() }
         self.parser = LLParser(REGEX_GRAMMAR)
         self.regexs = self._build_regexs(table)
         self.automaton = self._build_automaton()
@@ -19,7 +19,10 @@ class Lexer:
             # - Remember to tag the final states with the token_type and priority.
             # - <State>.tag might be useful for that purpose ;-)
             tokenized_regex = self.__tokenize_regex(regex, REGEX_GRAMMAR)
+            tokenized_regex.append(Token('$', EOF(REGEX_GRAMMAR)))
+            print('here')
             ast = self.parser.get_ast(tokenized_regex)
+            print('aki')
             nfa = ast.evaluate()
             for x in nfa.finals:
                 x.tag = (token_type, n)
