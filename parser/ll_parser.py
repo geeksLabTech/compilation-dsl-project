@@ -14,6 +14,7 @@ class LLParser:
         firsts = compute_firsts(grammar)
         follows = compute_follows(grammar, firsts)
         parsing_table = self.build_parsing_table(grammar, firsts, follows)
+        print('parsing table ', parsing_table)
         def parser(w: list[Terminal]) -> list[Production]:
             assert grammar.startSymbol is not None, 'Start symbol cannot be None'
             stack: list[NonTerminal|Terminal] = [grammar.startSymbol]
@@ -29,11 +30,13 @@ class LLParser:
                     cursor += 1
                 elif top.IsNonTerminal:
                     try:
+                        print('top, a', top, a)
                         production = parsing_table[top, a][0]
                     except KeyError:
                         raise Exception("No se puede reconocer la cadena")
                     
                     output+=[production]
+                    print('production', production)
                     for symbol in reversed(production.Right):
                         stack.append(symbol)
                         
@@ -47,10 +50,11 @@ class LLParser:
 
     def get_ast(self, tokens: list[Token]):
         terminals = [t.token_type for t in tokens]
+        print('tokens', tokens)
         left_parse = iter(self.parser(terminals))
         tokens_iter = iter(tokens)
         result = self.__build_ast(next(left_parse), left_parse, tokens_iter)
-        print('last_token', next(tokens_iter))
+        # print('last_token', next(tokens_iter))
         assert isinstance(next(tokens_iter).token_type, EOF)
         return result
 
@@ -60,22 +64,20 @@ class LLParser:
         synteticed=[None]*(len(body)+1)
         inherited=[None]*(len(body)+1)
         inherited[0]=inherited_value
-        print('body', body)
         for i,symbol in enumerate(body,1):
             if symbol.IsTerminal:
                 assert inherited[i]is None
                 synteticed[i]=next(tokens).lex
             else:
                 next_production=next(left_parse)
-                print('next_production', next_production)
-                print('symbol', symbol)
                 assert symbol==next_production.Left
                 P=attributes[i]
                 if P is not None:
                     inherited[i]=P(inherited,synteticed)
                 synteticed[i]=self.__build_ast(next_production,left_parse,tokens,inherited[i])
-                P=attributes[0]
-                return P(inherited,synteticed) if P is not None else None
+                
+        P=attributes[0]
+        return P(inherited,synteticed) if P is not None else None
 
     def build_parsing_table(self, G: Grammar, firsts: dict[Symbol | Sentence, ContainerSet], follows: dict[Symbol | Sentence, ContainerSet]):
         # init parsing table
