@@ -78,10 +78,12 @@ Digit_2 %= REGEX_GRAMMAR.Epsilon, lambda h,s: EpsilonNode(h[0])
 
 AnyChar %= Digit, lambda h,s: s[1], None
 AnyChar %= any_char, lambda h,s :SymbolNode(s[1]), None
+AnyChar %= REGEX_GRAMMAR.Epsilon, lambda h,s: EpsilonNode(h[0])
 
 MetaChar %= question, lambda h,s : QuestionNode(h[0]), None
 MetaChar %= star_op, lambda h,s : ClosureNode(h[0]), None
 MetaChar %= plus_op, lambda h,s : PlusNode(h[0]), None
+MetaChar %= REGEX_GRAMMAR.Epsilon, lambda h,s: EpsilonNode(h[0])
 
 
 
