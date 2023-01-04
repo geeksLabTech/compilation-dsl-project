@@ -105,9 +105,9 @@ def epsilon_closure(automaton: NFA, states: list[int]):
     while pending:
         state = pending.pop()
         # Your code here
-        print('state', state)
+        # print('state', state)
         transitions = automaton.transitions[state]
-        print('transitions', transitions)
+        # print('transitions', transitions)
         if '' in transitions:
             for x in transitions['']:
                 closure.add(x)
@@ -168,8 +168,8 @@ def automata_union(a1, a2):
     # From this number on, states of a2 will be relocated
     d2 = a1.states + d1
     final = a2.states + d2
-    print(a1.map.items())
-    print(final)
+    # print(a1.map.items())
+    # print(final)
     
     for (origin, symbol), destinations in a1.map.items():
         ## Relocate a1 transitions ...
@@ -215,8 +215,8 @@ def automata_concatenation(a1, a2):
         
     states = a1.states + a2.states + 1
     finals = { final }
-    print(transitions)
-    print(final)
+    # print(transitions)
+    # print(final)
     return NFA(states, finals, transitions, start)
 
 def automata_closure(a1):
