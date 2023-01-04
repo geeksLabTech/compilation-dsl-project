@@ -11,11 +11,11 @@ CharClassItem,CharClassItem_2,Char_2,Char,CharCount = REGEX_GRAMMAR.NonTerminals
 Integer,Integer_2,Integer_3,Digit,Digit_2,AnyCharExceprtMeta = REGEX_GRAMMAR.NonTerminals('Integer Integer_2 Integer_3 Digit Digit_2 EnyCharExceptMEta')
 AnyChar,MetaChar = REGEX_GRAMMAR.NonTerminals('AnyChar MetaChar')
 union,special, lbrasses,rbrasses,point,opar,cpar,lbrackets,rbrackets,starts = REGEX_GRAMMAR.Terminals('| \ { } . ( ) [ ] ^')
-interval, comma,question,star, plus,epsilon, underscore = REGEX_GRAMMAR.Terminals('- , ? * + ε _')
+interval, comma,question,star_op, plus_op,epsilon, underscore = REGEX_GRAMMAR.Terminals('- , ? * + ε _')
 zero,one,two,three,four,five,six,seven,eight,nine = REGEX_GRAMMAR.Terminals('0 1 2 3 4 5 6 7 8 9')
 a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z = REGEX_GRAMMAR.Terminals('a b c d e f g h i j k l m n o p q r s t u v w x y z')
 A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U,V,W,X,Y,Z = REGEX_GRAMMAR.Terminals('A B C D E F G H I J K L M N O P Q R S T U V W X Y Z')
-
+equal, plus, minus, star, div = REGEX_GRAMMAR.Terminals('= plus minus star /')
 
 #################Productions###############
 Exp %= Term + Term_2, lambda h,s: s[2], None, lambda h,s :s[1]
@@ -130,10 +130,15 @@ AnyChar %= X,lambda h,s :SymbolNode(s[1]), None
 AnyChar %= Y,lambda h,s :SymbolNode(s[1]), None
 AnyChar %= Z,lambda h,s :SymbolNode(s[1]), None
 AnyChar %= underscore, lambda h,s :SymbolNode(s[1]), None
+AnyChar %= plus, lambda h,s :SymbolNode(s[1]), None
+AnyChar %= minus, lambda h,s :SymbolNode(s[1]), None
+AnyChar %= star, lambda h,s :SymbolNode(s[1]), None
+AnyChar %= equal, lambda h,s :SymbolNode(s[1]), None
+AnyChar %= div, lambda h,s: SymbolNode(s[1]), None
 
 MetaChar %= question, lambda h,s : QuestionNode(h[0]), None
-MetaChar %= star, lambda h,s : ClosureNode(h[0]), None
-MetaChar %= plus, lambda h,s : PlusNode(h[0]), None
+MetaChar %= star_op, lambda h,s : ClosureNode(h[0]), None
+MetaChar %= plus_op, lambda h,s : PlusNode(h[0]), None
 
 
 
