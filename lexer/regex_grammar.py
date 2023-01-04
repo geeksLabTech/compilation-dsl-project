@@ -33,17 +33,17 @@ Atom %= Char, lambda h,s:s[1], None
 Atom %= opar + Exp + cpar, lambda h,s : s[2], None, None,None
 Atom %= lbrackets + CharClass + rbrackets, lambda h,s: s[2], None, None,None
 
-Atom_2 %= MetaChar, lambda h,s :s[1], None
+Atom_2 %= MetaChar, lambda h,s :s[1], lambda h,s: h[0]
 Atom_2 %= REGEX_GRAMMAR.Epsilon, lambda h,s: h[0]
 
-CharClass %= CharClassItem + CharClassItem_2,lambda h,s: ConcatNode(s[1],s[2]), None,None
+CharClass %= CharClassItem + CharClassItem_2,lambda h,s: s[2], None,lambda h,s: s[1]
 
 # CharClass_2 %=CharClass, lambda h,s: s[1], None
 # CharClass_2 %= REGEX_GRAMMAR.Epsilon, lambda h,s: EpsilonNode(h[0])
 
-CharClassItem %= Char + Char_2, lambda h,s: ConcatNode(s[1],s[2]), None,None
+CharClassItem %= Char + Char_2, lambda h,s: s[2], None,lambda h,s: s[1]
 
-CharClassItem_2 %= CharClass, lambda h,s: s[1], None
+CharClassItem_2 %= CharClass, lambda h,s: ConcatNode(h[0], s[1]), None
 CharClassItem_2 %= REGEX_GRAMMAR.Epsilon, lambda h,s: h[0]
 
 Char %= AnyChar, lambda h,s :s[1], None
