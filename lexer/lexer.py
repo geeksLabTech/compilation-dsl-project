@@ -25,6 +25,7 @@ class Lexer:
             print('aki')
             print('ast', ast)
             nfa = ast.evaluate()
+            print('finales nfa', nfa.finals)
             for x in nfa.finals:
                 nfa.tags[x] = (token_type, n)
             print(f'{n} nfa , {nfa.transitions}')
@@ -54,12 +55,14 @@ class Lexer:
             nfa = automata_union(nfa, self.regexs[i][1])
         
         print('pase')
+        print('final dfa, ', nfa_to_dfa(nfa).finals)
         return nfa_to_dfa(nfa)
     
     def _walk(self, string):
         # print('automaton', self.automaton.transitions)
         # print('string to matche, ', string)
-        print('rec', self.automaton.recognize(string))
+        print('test', self.automaton.recognize('let'))
+        # print('rec', self.automaton.recognize(string))
         _, last_idx_matched, last_state = self.automaton.recognize(string)
         if last_state in self.automaton.finals:
             token_type = self.automaton.tags[last_state][0]
@@ -80,7 +83,7 @@ class Lexer:
             next_idx_to_start = last_idx_matched + 1
             last_idx_matched, lex, token_type = self._walk(text[next_idx_to_start:])
             iterations+=1
-            print('last, ', last_idx_matched)
+            # print('last, ', last_idx_matched)
             if iterations == 20:
                 break
         yield '$', self.eof
