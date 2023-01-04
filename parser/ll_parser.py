@@ -50,7 +50,7 @@ class LLParser:
 
     def get_ast(self, tokens: list[Token]):
         terminals = [t.token_type for t in tokens]
-        print('tokens', tokens)
+        # print('tokens', tokens)
         left_parse = iter(self.parser(terminals))
         tokens_iter = iter(tokens)
         result = self.__build_ast(next(left_parse), left_parse, tokens_iter)

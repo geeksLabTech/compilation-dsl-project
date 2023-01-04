@@ -19,11 +19,11 @@ class Lexer:
             # - Remember to tag the final states with the token_type and priority.
             # - <State>.tag might be useful for that purpose ;-)
             tokenized_regex = self.__tokenize_regex(regex, REGEX_GRAMMAR)
-            print('regex', regex)
-            print('here')
+            # print('regex', regex)
+            # print('here')
             ast = self.parser.get_ast(tokenized_regex)
-            print('aki')
-            print('ast', ast)
+            # print('aki')
+            # print('ast', ast)
             nfa = ast.evaluate()
             for x in nfa.finals:
                 nfa.tags[x] = (token_type, n)
