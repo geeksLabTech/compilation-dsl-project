@@ -80,16 +80,9 @@ class IntervalNode(BinaryNode):
 
 class QuestionNode(UnaryNode):
     def operate(self, value):
-        nfa = NFA(states= 2, finals=[0,1], transitions={
-            (0,'ε'):[0],
-            (0,value):[1],
-            })
+        nfa = automata_concatenation(EpsilonNode(EPSILON).evaluate(), value)
         return nfa
-
 class PlusNode(UnaryNode):
     def operate(self, value):
-        nfa = NFA(states=2,finals=[1],transitions={
-            (0,value):[1],
-            (1,value):[1],
-            })
+        nfa = automata_concatenation(value, automata_closure(value))
         return nfa
