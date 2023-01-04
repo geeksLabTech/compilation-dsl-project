@@ -33,13 +33,13 @@ class ShiftReduceParser:
                 print("Error. Aborting...")
                 return None
             
-            print('state, lookahead', state, lookahead)
-            print(self.action)
+            # print('state, lookahead', state, lookahead)
+            # print(self.action)
             if self.action[state, lookahead] == self.OK:
                 action = self.OK
             else:
                 action, tag = self.action[state, lookahead]
-            print('action, tsg', action)
+            # print('action, tsg', action)
             if action==self.SHIFT:
                 operations.append(self.SHIFT)
                 stack+=[lookahead,tag]
@@ -47,16 +47,16 @@ class ShiftReduceParser:
             elif action==self.REDUCE:    
                 operations.append(self.REDUCE)
                 output.append(tag)
-                print('tag', tag)
+                # print('tag', tag)
                 head,body=tag    
                 for symbol in reversed(body):
-                    print('stack', stack)
+                    # print('stack', stack)
                     stack.pop()    
                     
                     assert stack.pop()==symbol
                     state=stack[-1]
-                    print(self.goto,'goto')
-                    print('output', output)
+                    # print(self.goto,'goto')
+                    # print('output', output)
                 goto=self.goto[state,head]
                 stack+=[head,goto]
             elif action==self.OK:

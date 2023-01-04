@@ -7,6 +7,7 @@ from parser.tzscript_grammar import idx, num, typex, contract, equal, plus, minu
 class TzScriptLexer:
     def __init__(self) -> None:
         self.table = self._build_table()
+        print('tabla akiiiiiiiii:',self.table)
         self.lexer = Lexer(self.table, TZSCRIPT_GRAMMAR.EOF)
 
     def _build_table(self):

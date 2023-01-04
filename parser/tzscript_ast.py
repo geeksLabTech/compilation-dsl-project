@@ -1,11 +1,16 @@
 class Node:
-    pass
+    def accept(self, visitor):
+        pass
+
 
 class ProgramNode(Node):
     def __init__(self, idx, params, statements):
         self.idx = idx
         self.params = params
         self.statements = statements
+    
+    def accept(self, visitor):
+        return visitor.visit_program(self)
         
 class DeclarationNode(Node):
     pass
@@ -18,46 +23,67 @@ class IfNode(Node):
         self.expr = expr
         self.statements = statements
 
+    def accept(self, visitor):
+        return visitor.visit_if_node(self)
+
 class ElseNode(Node):
     def __init__(self, statements) -> None:
         self.statements = statements
+
+    def accept(self, visitor):
+        return visitor.visit_else_node(self)
 
 class VarDeclarationNode(ExpressionNode):
     def __init__(self, idx, typex, expr):
         self.id = idx
         self.type = typex
         self.expr = expr
+    
+    def accept(self, visitor):
+        return visitor.visit_var_declaration_node(self)
 
 class AssignNode(ExpressionNode):
     def __init__(self, idx, expr):
         self.id = idx
         self.expr = expr
-
+    def accept(self, visitor):
+        return visitor.visit_assign_node(self)
 class FuncDeclarationNode(DeclarationNode):
     def __init__(self, idx, params, return_type, body):
         self.id = idx
         self.params = params
         self.type = return_type
         self.body = body
+    def accept(self, visitor):
+        return visitor.visit_func_declaration_node(self)
 
 class AttrDeclarationNode(DeclarationNode):
     def __init__(self, idx, typex):
         self.id = idx
         self.type = typex
+    def accept(self, visitor):
+        return visitor.visit_attr_declaraion_node(self)
+    
 
 class AtomicNode(ExpressionNode):
     def __init__(self, lex):
         self.lex = lex
+    def accept(self, visitor):
+        return visitor.visit_atomic_node(self)
 
 class BinaryNode(ExpressionNode):
     def __init__(self, left, right):
         self.left = left
         self.right = right
+    def accept(self, visitor):
+        return visitor.visit_binary_node(self)
 
 class CallNode(ExpressionNode):
     def __init__(self, idx, args):
         self.id = idx
         self.args = args
+    def accept(self, visitor):
+        return visitor.visit_call_node(self)
 
 class ConstantNumNode(AtomicNode):
     pass
