@@ -25,7 +25,7 @@ class Lexer:
             print('aki')
             nfa = ast.evaluate()
             for x in nfa.finals:
-                x.tag = (token_type, n)
+                nfa.tags[x] = (token_type, n)
             regexs.append((token_type, nfa))
         return regexs
 

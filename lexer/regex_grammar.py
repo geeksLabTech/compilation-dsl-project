@@ -77,6 +77,7 @@ Digit %= nine,lambda h,s :SymbolNode(s[1]), None
 Digit_2 %= Integer, lambda h,s: s[1],None
 Digit_2 %= REGEX_GRAMMAR.Epsilon, lambda h,s: EpsilonNode(h[0])
 
+AnyChar %= Digit, lambda h,s: s[1], None
 AnyChar %= a,lambda h,s :SymbolNode(s[1]), None
 AnyChar %= b,lambda h,s :SymbolNode(s[1]), None
 AnyChar %= c,lambda h,s :SymbolNode(s[1]), None
