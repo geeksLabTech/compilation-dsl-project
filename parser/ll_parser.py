@@ -14,7 +14,7 @@ class LLParser:
         firsts = compute_firsts(grammar)
         follows = compute_follows(grammar, firsts)
         parsing_table = self.build_parsing_table(grammar, firsts, follows)
-        print('parsing table ', parsing_table)
+        # print('parsing table ', parsing_table)
         def parser(w: list[Terminal]) -> list[Production]:
             assert grammar.startSymbol is not None, 'Start symbol cannot be None'
             stack: list[NonTerminal|Terminal] = [grammar.startSymbol]
@@ -30,13 +30,13 @@ class LLParser:
                     cursor += 1
                 elif top.IsNonTerminal:
                     try:
-                        print('top, a', top, a)
+                        # print('top, a', top, a)
                         production = parsing_table[top, a][0]
                     except KeyError:
                         raise Exception("No se puede reconocer la cadena")
                     
                     output+=[production]
-                    print('production', production)
+                    # print('production', production)
                     for symbol in reversed(production.Right):
                         stack.append(symbol)
                         
