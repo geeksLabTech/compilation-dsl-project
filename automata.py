@@ -213,7 +213,7 @@ def automata_concatenation(a1, a2):
     for x in a1.finals:
         transitions[(x, '')] = [d2]
         
-    states = a1.states + a2.states + 1
+    states = a1.states + a2.states
     finals = { final }
     # print(transitions)
     # print(final)
