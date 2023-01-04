@@ -41,7 +41,8 @@ class NonTerminal(Symbol):
 
 
     def __imod__(self, other):
-
+        print('self, ', self)
+        print('other', other)
         if isinstance(other, (Sentence)):
             p = Production(self, other)
             self.Grammar.Add_Production(p)

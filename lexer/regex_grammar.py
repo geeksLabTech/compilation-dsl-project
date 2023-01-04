@@ -19,22 +19,22 @@ A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U,V,W,X,Y,Z = REGEX_GRAMMAR.Terminals('A
 #################Productions###############
 Exp %= Term + Term_2, lambda h,s: s[2], None, lambda h,s :s[1]
 
-Term %= Factor + Factor_2, lambda h,s : ConcatNode(s[1],s[2]), None , None
+Term %= Factor + Factor_2, lambda h,s : s[2], None , lambda h,s: s[1]
 
 Term_2 %= union + Exp, lambda h,s : UnionNode(h[0],s[2]), None , None
-Term_2 %= REGEX_GRAMMAR.Epsilon , lambda h,s : EpsilonNode(h[0])
+Term_2 %= REGEX_GRAMMAR.Epsilon, lambda h,s : h[0]
 
-Factor %= Atom + Atom_2, lambda h,s: ConcatNode(s[1],s[2]), None,None
+Factor %= Atom + Atom_2, lambda h,s: s[2], None,lambda h,s: s[1]
 
-Factor_2 %= Term, lambda h,s: s[1], None
-Factor_2 %= REGEX_GRAMMAR.Epsilon,lambda h,s : EpsilonNode(h[0])
+Factor_2 %= Term, lambda h,s: ConcatNode(h[0],s[1]), None
+Factor_2 %= REGEX_GRAMMAR.Epsilon, lambda h,s : h[0]
 
-Atom %= Char, lambda h,s:s[1]
+Atom %= Char, lambda h,s:s[1], None
 Atom %= opar + Exp + cpar, lambda h,s : s[2], None, None,None
 Atom %= lbrackets + CharClass + rbrackets, lambda h,s: s[2], None, None,None
 
 Atom_2 %= MetaChar, lambda h,s :s[1], None
-Atom_2 %= REGEX_GRAMMAR.Epsilon, lambda h,s: EpsilonNode(h[0])
+Atom_2 %= REGEX_GRAMMAR.Epsilon, lambda h,s: h[0]
 
 CharClass %= CharClassItem + CharClassItem_2,lambda h,s: ConcatNode(s[1],s[2]), None,None
 
@@ -44,23 +44,23 @@ CharClass %= CharClassItem + CharClassItem_2,lambda h,s: ConcatNode(s[1],s[2]), 
 CharClassItem %= Char + Char_2, lambda h,s: ConcatNode(s[1],s[2]), None,None
 
 CharClassItem_2 %= CharClass, lambda h,s: s[1], None
-CharClassItem_2 %= REGEX_GRAMMAR.Epsilon, lambda h,s: EpsilonNode(h[0])
+CharClassItem_2 %= REGEX_GRAMMAR.Epsilon, lambda h,s: h[0]
 
 Char %= AnyChar, lambda h,s :s[1], None
 Char %= special + AnyChar, lambda h,s : UnionNode(h[0],s[2]),None,None
 
 Char_2 %= interval + Char, lambda h,s: IntervalNode(h[0],s[2]), None,None
-Char_2 %= REGEX_GRAMMAR.Epsilon, lambda h,s: EpsilonNode(h[0])
+Char_2 %= REGEX_GRAMMAR.Epsilon, lambda h,s: h[0]
 
 CharCount %= Integer + Integer_2,lambda h,s: ConcatNode(s[1],s[2]), None,None
 
 Integer %= Digit + Digit_2,lambda h,s: ConcatNode(s[1],s[2]), None,None
 
-Integer_2 %= comma + Integer_3, lambda h,s : ConcatNode(s[1],s[2]) #Revisar
-Integer_2 %= REGEX_GRAMMAR.Epsilon, lambda h,s: EpsilonNode(h[0])
+Integer_2 %= comma + Integer_3, lambda h,s : ConcatNode(s[1],s[2]), None, None #Revisar
+Integer_2 %= REGEX_GRAMMAR.Epsilon, lambda h,s: h[0]
 
 Integer_3 %= Integer, lambda h,s: s[1], None
-Integer_3 %= REGEX_GRAMMAR.Epsilon, lambda h,s: EpsilonNode(h[0])
+Integer_3 %= REGEX_GRAMMAR.Epsilon, lambda h,s: h[0]
 
 Digit %= zero,lambda h,s :SymbolNode(s[1]), None
 Digit %= one,lambda h,s :SymbolNode(s[1]), None
@@ -74,7 +74,7 @@ Digit %= eight,lambda h,s :SymbolNode(s[1]), None
 Digit %= nine,lambda h,s :SymbolNode(s[1]), None
 
 Digit_2 %= Integer, lambda h,s: s[1],None
-Digit_2 %= REGEX_GRAMMAR.Epsilon, lambda h,s: EpsilonNode(h[0])
+Digit_2 %= REGEX_GRAMMAR.Epsilon, lambda h,s: h[0]
 
 AnyChar %= Digit, lambda h,s: s[1], None
 AnyChar %= any_char, lambda h,s :SymbolNode(s[1]), None
@@ -82,6 +82,7 @@ AnyChar %= any_char, lambda h,s :SymbolNode(s[1]), None
 MetaChar %= question, lambda h,s : QuestionNode(h[0]), None
 MetaChar %= star_op, lambda h,s : ClosureNode(h[0]), None
 MetaChar %= plus_op, lambda h,s : PlusNode(h[0]), None
+
 
 
 

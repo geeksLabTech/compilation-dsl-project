@@ -51,6 +51,11 @@ class LLParser:
     def get_ast(self, tokens: list[Token]):
         terminals = [t.token_type for t in tokens]
         print('tokens', tokens)
+        print('left_parse')
+        x = self.parser(terminals)
+        for y in x:
+            print(y)
+        print('done')
         left_parse = iter(self.parser(terminals))
         tokens_iter = iter(tokens)
         result = self.__build_ast(next(left_parse), left_parse, tokens_iter)
@@ -76,7 +81,13 @@ class LLParser:
                     inherited[i]=P(inherited,synteticed)
                 synteticed[i]=self.__build_ast(next_production,left_parse,tokens,inherited[i])
                 
+        
         P=attributes[0]
+        if P is not None and P(inherited,synteticed) is None:
+            print('mirala')
+            print(production)
+            print('infraganti')
+        print('Node build', P(inherited,synteticed) if P is not None else None)
         return P(inherited,synteticed) if P is not None else None
 
     def build_parsing_table(self, G: Grammar, firsts: dict[Symbol | Sentence, ContainerSet], follows: dict[Symbol | Sentence, ContainerSet]):
