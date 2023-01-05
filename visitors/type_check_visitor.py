@@ -61,3 +61,6 @@ class TypeCheckVisitor(Visitor):
         if not self.is_compatible_type(node.left.type, node.right.type):
             raise TypeError(f"Incompatible types in binary operation: {node.left.type} and {node.right.type}")
     
+    def is_boolean_type(self, expr):
+        if type(expr) is bool:
+            return True
