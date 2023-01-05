@@ -51,33 +51,39 @@ class ConcatNode(BinaryNode):
 
 class IntervalNode(BinaryNode):
     def operate(self, lvalue , rvalue):
-        value_of_lchar : str = lvalue.transition[0][1]
-        value_of_rchar: str = rvalue.transition[0][1]
+        # print('operate transitions', lvalue.transitions)
+        # print('operate right transitions', rvalue.transitions)
+        
+        value_of_lchar : str = list(lvalue.transitions[0].keys())[0]
+        value_of_rchar: str = list(rvalue.transitions[0].keys())[0]
         vocabularyIter = VocabularyIter(value_of_lchar)
         iterator = vocabularyIter.create_iter(vocabularyIter.vocabulary[value_of_lchar], vocabularyIter.vocabulary[value_of_rchar])
-        automon_result = UnionNode(lvalue,rvalue)
+        nfa_list = []
         while True:
             try:
                 value_of_char = iterator.next()
-                automon_symbol = SymbolNode(value_of_char)
-                automon_result = UnionNode(automon_symbol, automon_result)
+                nfa = NFA(states=2, finals=[1], transitions={
+                (0,value_of_char):[1]
+                })
+                nfa_list.append(nfa)
             except StopIteration:
                 break
-        return automon_result
+        
+        first_nfa = nfa_list[0]
+        for nfa in nfa_list[1:]:
+            first_nfa = automata_union(first_nfa, nfa)
+        print()
+        print('first_nfa', first_nfa.finals)
+        print('clausura', automata_closure(first_nfa).finals)
+        print()
+        return automata_closure(first_nfa)
             
 
 class QuestionNode(UnaryNode):
     def operate(self, value):
-        nfa = NFA(states= 2, finals=[0,1], transitions={
-            (0,'ε'):[0],
-            (0,value):[1],
-            })
+        nfa = automata_concatenation(EpsilonNode(EPSILON).evaluate(), value)
         return nfa
-
 class PlusNode(UnaryNode):
     def operate(self, value):
-        nfa = NFA(states=2,finals=[1],transitions={
-            (0,value):[1],
-            (1,value):[1],
-            })
+        nfa = automata_concatenation(value, automata_closure(value))
         return nfa
