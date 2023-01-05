@@ -22,11 +22,9 @@ class Lexer:
             # - <State>.tag might be useful for that purpose ;-)
             # print('checkeo del token type', type(token_type))
             tokenized_regex = self.__tokenize_regex(regex, REGEX_GRAMMAR)
-            # print('regex', regex)
-            # print('here')
+            
             ast = self.parser.get_ast(tokenized_regex)
-            # print('aki')
-            # print('ast', ast)
+           
             nfa = ast.evaluate()
             print('finales nfa', nfa.finals)
             for x in nfa.finals:
@@ -98,7 +96,6 @@ class Lexer:
             text = text[next_idx_to_start:]
             last_idx_matched, lex, token_type = self._walk(text)
             iterations+=1
-            # print('last, ', last_idx_matched)
             if iterations == 20:
                 break
         yield '$', self.eof
