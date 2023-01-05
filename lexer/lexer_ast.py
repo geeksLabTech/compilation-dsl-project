@@ -73,9 +73,10 @@ class IntervalNode(BinaryNode):
         for nfa in nfa_list[1:]:
             first_nfa = automata_union(first_nfa, nfa)
         print()
-        print('first_nfa', first_nfa.transitions)
+        print('first_nfa', first_nfa.finals)
+        print('clausura', automata_closure(first_nfa).finals)
         print()
-        return first_nfa
+        return automata_closure(first_nfa)
             
 
 class QuestionNode(UnaryNode):

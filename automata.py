@@ -68,6 +68,8 @@ class DFA(Automaton):
         
     def _move(self, symbol):
         if self.current in self.transitions:
+            # print('cual current sera', self.current)
+            # print('mira el current', self.transitions[self.current][symbol])
             if symbol in self.transitions[self.current]:
                 return self.transitions[self.current][symbol][0]
         return None
@@ -80,9 +82,10 @@ class DFA(Automaton):
         last_char = -1
         for i, char in enumerate(string):
             last_char = i
+            previous = self.current
             self.current = self._move(char)
             if self.current is None:
-                return False, last_char, self.current
+                return False, last_char, previous
         
         return self.current in self.finals and last_char == len(string) - 1, last_char, self.current
 
@@ -238,6 +241,7 @@ def automata_closure(a1):
     
     ## Add transitions to final state and to start state ...
     for x in a1.finals:
+        transitions[(x + d1, '')] = [start]
         transitions[(x + d1, '')] = [final]
             
     states = a1.states +  2
