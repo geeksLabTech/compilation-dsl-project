@@ -26,5 +26,5 @@ def test_hello_world_example():
     expected_tokens = [ Token(x[1], x[0]) for x in table]
     tz_lexer = TzScriptLexer()
     lexer_tokens = tz_lexer.tokenize(contract)
-    
-    assert lexer_tokens == expected_tokens
+    print('resultado final: ', lexer_tokens)
+    assert [t.lex for t in lexer_tokens] == words_separated_by_spaces

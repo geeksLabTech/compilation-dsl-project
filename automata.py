@@ -1,7 +1,7 @@
 import pydot
 from typing import Dict, List, Self, Tuple
 from abc import ABC, abstractmethod
-
+from lexer.int_generator import generator
 from parser.utils import ContainerSet
 
 class Automaton(ABC):
@@ -243,7 +243,7 @@ def automata_closure(a1):
     for x in a1.finals:
         transitions[(x + d1, '')] = [start]
         transitions[(x + d1, '')] = [final]
-            
+
     states = a1.states +  2
     finals = { final }
     
@@ -258,6 +258,7 @@ class State:
         self.tag = None
         self.formatter = formatter
         self.shape = shape
+        self.all_finals = {}
 
     # The method name is set this way from compatibility issues.
     def set_formatter(self, value, attr='formatter', visited=None):
@@ -298,7 +299,16 @@ class State:
 
     def to_deterministic(self, formatter=lambda x: str(x)):
         closure = self.epsilon_closure
+        
         start = State(tuple(closure), any(s.final for s in closure), formatter)
+        if start.final:
+            for s in closure:
+                if s.final:
+                    if start.tag is not None:
+                        if start.tag[1]<s.tag[1]:
+                            start.tag = s.tag
+                    else:
+                        start.tag = s.tag
 
         closures = [ closure ]
         states = [ start ]
@@ -314,6 +324,14 @@ class State:
 
                 if closure not in closures:
                     new_state = State(tuple(closure), any(s.final for s in closure), formatter)
+                    if new_state.final:
+                        for s in closure:
+                            if s.final:
+                                if new_state.tag is not None:
+                                    if new_state.tag[1]<s.tag[1]:
+                                        new_state.tag = s.tag
+                                else:
+                                    new_state.tag = s.tag
                     closures.append(closure)
                     states.append(new_state)
                     pending.append(new_state)
@@ -326,11 +344,19 @@ class State:
         return start
 
     @staticmethod
-    def from_nfa(nfa, get_states=False) :
+    def from_nfa(nfa, tag, get_states=False):
         states = []
+        all_finals = []
         for n in range(nfa.states):
-            state = State(n, n in nfa.finals)
+            state = State(generator.generate_number(), n in nfa.finals)
+            if state.final:
+                state.tag = tag
+                all_finals.append(state)
             states.append(state)
+        
+        for x in states:
+            if x.final:
+                x.all_finals=all_finals
 
         for (origin, symbol), destinations in nfa.map.items():
             origin = states[origin]
@@ -451,3 +477,17 @@ def lr0_formatter(state):
         return '\n'.join(str(item)[:-4] for item in state)
     except TypeError:
         return str(state)[:-4]
+
+def state_union(s1: State, s2: State):
+    new_start = State(generator.generate_number())
+    new_final = State(generator.generate_number())
+    new_start.add_epsilon_transition(s1)
+    new_start.add_epsilon_transition(s2)
+
+    for x in s1.all_finals:
+        x.add_epsilon_transition(new_final)
+    
+    for x in s2.all_finals:
+        x.add_epsilon_transition(new_final)
+
+    return new_start

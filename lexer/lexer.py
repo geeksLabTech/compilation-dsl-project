@@ -1,5 +1,5 @@
 from unittest import result
-from automata import automata_union, nfa_to_dfa, DFA,State,
+from automata import automata_union, nfa_to_dfa, DFA,State, state_union
 from grammar import Grammar, EOF, Terminal
 from lexer.lex_token import Token, UnknownToken
 from lexer.regex_grammar import REGEX_GRAMMAR
@@ -25,13 +25,14 @@ class Lexer:
             tokenized_regex = self.__tokenize_regex(regex, REGEX_GRAMMAR)
             
             ast = self.parser.get_ast(tokenized_regex)
-           
+
             nfa = ast.evaluate()
-            print('finales nfa', nfa.finals)
-            for x in nfa.finals:
-                nfa.tags[x] = (token_type, n)
-            print(f'{n} nfa , {nfa.transitions}')
-            regexs.append((token_type, nfa))
+            state = State.from_nfa(nfa, (token_type, n))
+            # print('finales nfa', nfa.finals)
+            # for x in nfa.finals:
+            #     nfa.tags[x] = (token_type, n)
+            # print(f'{n} nfa , {nfa.transitions}')
+            regexs.append((token_type, state))
         return regexs
 
     def __tokenize_regex(self, text, G, skip_whitespaces=True):
@@ -50,13 +51,14 @@ class Lexer:
         tokens.append(Token('$', G.EOF))
         return tokens
     
-    def _build_automaton(self) -> DFA:
-        nfa = self.regexs[0][1]
+    def _build_automaton(self):
+        state = self.regexs[0][1]
         for i in range(1, len(self.regexs)):
             # print('akiiiii')
-            nfa = automata_union(nfa, self.regexs[i][1])
+            state = state_union(state, self.regexs[i][1])
         
-        state = State.from_nfa(nfa)
+        # state = State.from_nfa(nfa)
+        print('LA verdadera', state.recognize('he'))
         result = state.to_deterministic()
         # test = result.transitions[0]['h']
         return result
@@ -65,19 +67,24 @@ class Lexer:
         state = self.automaton
         final = state if state.final else None
         final_lex = lex = ''
-        
-        for symbol in string:
+        last_idx_matched = 0
+        print('transition:',self.automaton.transitions)
+        print('estado inicial:' ,state.state)
+        print('prueba', self.automaton.recognize('he'))
+        print('string_to match ', string)
+        for i, symbol in enumerate(string):
             if symbol in state.transitions:
-                state = state.transitions[symbol]
+                state = state.get(symbol)
                 lex += symbol
+                # last_idx_matched = i
+                print('state', state)
                 if state.final:
+                    print('matched', lex)
+                    last_idx_matched = i
                     final = state
                     final_lex = lex
-            else:
-                token_type = self.target_grammar[lex]
-            pass
             
-        return final, final_lex,token_type
+        return final, final_lex, last_idx_matched
         # # print('automaton', self.automaton.transitions)
         # print('string to matche, ', string)
         # # print('test', self.automaton.recognize('let'))
@@ -101,14 +108,14 @@ class Lexer:
         iterations = 0
         text = text.replace(' ', '')
         text = text.replace('\n', '')
-        last_idx_matched, lex, token_type = self._walk(text)
-        while last_idx_matched != len(text)-1:
-            if lex is not None:
+        while len(text)>0:
+            state, lex, idx = self._walk(text)
+            if state is not None:
+                token_type = state.tag[0]
+                text = text[idx+1:]
                 yield lex, token_type
-
-            next_idx_to_start = last_idx_matched+1
-            text = text[next_idx_to_start:]
-            last_idx_matched, lex, token_type = self._walk(text)
+            else:
+                text = text[1:]
             iterations+=1
             if iterations == 20:
                 break
