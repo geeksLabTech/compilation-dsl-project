@@ -1,5 +1,5 @@
 import pydot
-from typing import Dict, List, Tuple
+from typing import Dict, List, Self, Tuple
 from abc import ABC, abstractmethod
 
 from parser.utils import ContainerSet
@@ -326,7 +326,7 @@ class State:
         return start
 
     @staticmethod
-    def from_nfa(nfa, get_states=False):
+    def from_nfa(nfa, get_states=False) :
         states = []
         for n in range(nfa.states):
             state = State(n, n in nfa.finals)

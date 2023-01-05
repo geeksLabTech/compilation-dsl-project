@@ -1,9 +1,10 @@
 from unittest import result
-from automata import automata_union, nfa_to_dfa, DFA
+from automata import automata_union, nfa_to_dfa, DFA,State,
 from grammar import Grammar, EOF, Terminal
 from lexer.lex_token import Token, UnknownToken
 from lexer.regex_grammar import REGEX_GRAMMAR
 from parser.ll_parser import LLParser
+
 
 class Lexer:
     def __init__(self, table: list[tuple[Terminal, str]], target_grammar: Grammar, eof):
@@ -55,33 +56,46 @@ class Lexer:
             # print('akiiiii')
             nfa = automata_union(nfa, self.regexs[i][1])
         
-        result = nfa_to_dfa(nfa)
-        print('pase')
-        # print('nfa before dfa, ', nfa.transitions)
-        print('final dfa, ', result.transitions)
-        test = result.transitions[0]['h']
-        print('dfa tansitions', test)
-        print(result.transitions[test[0]])
-        return nfa_to_dfa(nfa)
+        state = State.from_nfa(nfa)
+        result = state.to_deterministic()
+        # test = result.transitions[0]['h']
+        return result
     
     def _walk(self, string):
-        # print('automaton', self.automaton.transitions)
-        print('string to matche, ', string)
-        # print('test', self.automaton.recognize('let'))
-        print('rec', self.automaton.recognize(string))
-        _, last_idx_matched, last_state = self.automaton.recognize(string)
-        if last_state in self.automaton.finals:
-            matched_lex = string[0:last_idx_matched]
-            token_type = self.target_grammar[matched_lex]
-            print()
-            print('matched', matched_lex)
-            print('last', last_idx_matched)
-            print('token', token_type)
-            print()
-            return last_idx_matched-1, matched_lex, token_type
+        state = self.automaton
+        final = state if state.final else None
+        final_lex = lex = ''
         
-        self.errors.append(f'Error recognizing token at position {last_idx_matched} in string: {string}')
-        return last_idx_matched, None, None
+        for symbol in string:
+            if symbol in state.transitions:
+                state = state.transitions[symbol]
+                lex += symbol
+                if state.final:
+                    final = state
+                    final_lex = lex
+            else:
+                token_type = self.target_grammar[lex]
+            pass
+            
+        return final, final_lex,token_type
+        # # print('automaton', self.automaton.transitions)
+        # print('string to matche, ', string)
+        # # print('test', self.automaton.recognize('let'))
+        # print('rec', self.automaton.recognize(string))
+        # _, last_idx_matched, last_state = self.automaton.recognize(string)
+        # if last_state in self.automaton.finals:
+        #     matched_lex = string[0:last_idx_matched]
+        #     token_type = self.target_grammar[matched_lex]
+        #     print()
+        #     print('matched', matched_lex)
+        #     print('last', last_idx_matched)
+        #     print('token', token_type)
+        #     print()
+        #     return last_idx_matched-1, matched_lex, token_type
+        
+        # self.errors.append(f'Error recognizing token at position {last_idx_matched} in string: {string}')
+        # return last_idx_matched, None, None
+        
     
     def _tokenize(self, text: str):
         iterations = 0
