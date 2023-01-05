@@ -19,11 +19,9 @@ class Lexer:
             # - Remember to tag the final states with the token_type and priority.
             # - <State>.tag might be useful for that purpose ;-)
             tokenized_regex = self.__tokenize_regex(regex, REGEX_GRAMMAR)
-            # print('regex', regex)
-            # print('here')
+            
             ast = self.parser.get_ast(tokenized_regex)
-            # print('aki')
-            # print('ast', ast)
+           
             nfa = ast.evaluate()
             print('finales nfa', nfa.finals)
             for x in nfa.finals:
@@ -59,10 +57,7 @@ class Lexer:
         return nfa_to_dfa(nfa)
     
     def _walk(self, string):
-        # print('automaton', self.automaton.transitions)
-        # print('string to matche, ', string)
         print('test', self.automaton.recognize('let'))
-        # print('rec', self.automaton.recognize(string))
         _, last_idx_matched, last_state = self.automaton.recognize(string)
         if last_state in self.automaton.finals:
             token_type = self.automaton.tags[last_state][0]
@@ -83,7 +78,6 @@ class Lexer:
             next_idx_to_start = last_idx_matched + 1
             last_idx_matched, lex, token_type = self._walk(text[next_idx_to_start:])
             iterations+=1
-            # print('last, ', last_idx_matched)
             if iterations == 20:
                 break
         yield '$', self.eof
