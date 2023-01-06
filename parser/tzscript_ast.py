@@ -93,6 +93,14 @@ class CallNode(ExpressionNode):
     def accept(self, visitor):
         return visitor.visit_call_node(self)
 
+class VarCallNode(DeclarationNode):
+    def __init__(self, idx, expr) -> None:
+        self.id = idx
+        self.expr = expr
+    
+    def accept(self, visitor):
+        return visitor.visit_var_call_node(self)
+
 class ConstantNumNode(AtomicNode):
     pass
 
