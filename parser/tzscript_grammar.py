@@ -8,13 +8,13 @@ TZSCRIPT_GRAMMAR = Grammar()
 # non-terminals
 program = TZSCRIPT_GRAMMAR.NonTerminal('<program>', startSymbol=True)
 stat_list, stat = TZSCRIPT_GRAMMAR.NonTerminals('<stat_list> <stat>')
-let_var, def_func, if_stat, else_stat = TZSCRIPT_GRAMMAR.NonTerminals('<<let-var>> <def-func> <if-stat> <else-stat>')
+let_var, def_func, if_stat, else_stat, def_entry = TZSCRIPT_GRAMMAR.NonTerminals('<let-var>> <def-func> <if-stat> <else-stat> <def-entry>')
 param_list, param, expr_list = TZSCRIPT_GRAMMAR.NonTerminals('<param-list> <param> <expr-list>')
 expr, arith, term, factor, atom = TZSCRIPT_GRAMMAR.NonTerminals('<expr> <arith> <term> <factor> <atom>')
 func_call, arg_list  = TZSCRIPT_GRAMMAR.NonTerminals('<func-call> <arg-list>')
 
 # terminals
-let, func, = TZSCRIPT_GRAMMAR.Terminals('let func')
+let, func, entry = TZSCRIPT_GRAMMAR.Terminals('let func entry')
 semi, colon, comma, dot, opar, cpar, ocur, ccur = TZSCRIPT_GRAMMAR.Terminals('; : , . ( ) { }')
 equal, plus, minus, star, div = TZSCRIPT_GRAMMAR.Terminals('= + - * /')
 idx, num, typex, contract, ifx, elsex = TZSCRIPT_GRAMMAR.Terminals('id num type contract if else')
@@ -27,6 +27,7 @@ stat_list %= stat + semi + stat_list, lambda h,s: [s[1]] + s[3],None,None,None
 
 stat %= let_var, lambda h,s: s[1],None
 stat %= def_func, lambda h,s: s[1],None
+stat %= def_entry, lambda h,s: s[1], None
 stat %= if_stat, lambda h,s: s[1],None
 stat %= else_stat, lambda h,s: s[1],None
 
@@ -34,6 +35,8 @@ if_stat %= ifx + opar + expr + cpar + ocur + stat_list + ccur, lambda h,s: IfNod
 else_stat %= elsex + ocur + stat_list + ccur, lambda h,s: ElseNode(s[3]),None,None,None,None
 
 def_func %= func + idx + opar + param_list + cpar + typex + ocur + expr_list + ccur, lambda h,s: FuncDeclarationNode(s[2], s[4], s[6], s[8]),None,None,None,None,None,None,None,None,None
+
+def_entry %= entry + idx + opar + param_list + cpar + ocur + stat_list + ccur, lambda h,s: EntryDeclarationNode(s[2], s[4], s[7]),None,None,None,None,None,None,None,None
 
 param_list %= param, lambda h,s: [ s[1] ],None
 param_list %= param + comma + param_list, lambda h,s: [ s[1] ] + s[3],None,None,None

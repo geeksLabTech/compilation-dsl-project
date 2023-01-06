@@ -57,6 +57,14 @@ class FuncDeclarationNode(DeclarationNode):
     def accept(self, visitor):
         return visitor.visit_func_declaration_node(self)
 
+class EntryDeclarationNode(DeclarationNode):
+    def __init__(self, idx, params, body):
+        self.id = idx
+        self.params = params
+        self.body = body
+    def accept(self, visitor):
+        return visitor.visit_entry_declaration_node(self)
+
 class AttrDeclarationNode(DeclarationNode):
     def __init__(self, idx, typex):
         self.id = idx
