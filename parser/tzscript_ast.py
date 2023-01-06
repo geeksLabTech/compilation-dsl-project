@@ -101,6 +101,20 @@ class VarCallNode(DeclarationNode):
     def accept(self, visitor):
         return visitor.visit_var_call_node(self)
 
+class ReturnNode(ExpressionNode):
+    def __init__(self, expr) -> None:
+        self.expr = expr
+
+    def accept(self, visitor):
+        return visitor.visit_return_node(self)
+class TrueNode(ExpressionNode):
+    def accept(self, visitor):
+        return visitor.visit_true_node(self)
+
+class FalseNode(ExpressionNode):
+    def accept(self, visitor):
+        return visitor.visit_false_node(self)
+
 class ConstantNumNode(AtomicNode):
     pass
 
