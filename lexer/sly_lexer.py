@@ -1,8 +1,28 @@
 from sly import Lexer
 # from grammar import *
+from grammar import Grammar
 
 class TzScriptLexer(Lexer):
     
+
+    # grammar
+    TZSCRIPT_GRAMMAR = Grammar()
+
+    # non-terminals
+    program = TZSCRIPT_GRAMMAR.NonTerminal('<program>', startSymbol=True)
+    stat_list, stat = TZSCRIPT_GRAMMAR.NonTerminals('<stat_list> <stat>')
+    let_var, def_func, if_stat, else_stat, def_entry = TZSCRIPT_GRAMMAR.NonTerminals('<let-var>> <def-func> <if-stat> <else-stat> <def-entry>')
+    param_list, param, expr_list = TZSCRIPT_GRAMMAR.NonTerminals('<param-list> <param> <expr-list>')
+    expr, arith, term, factor, atom = TZSCRIPT_GRAMMAR.NonTerminals('<expr> <arith> <term> <factor> <atom>')
+    func_call, arg_list, var_call  = TZSCRIPT_GRAMMAR.NonTerminals('<func-call> <arg-list> <var-call>')
+
+    # terminals
+    let, func, entry = TZSCRIPT_GRAMMAR.Terminals('let func entry')
+    semi, colon, comma, dot, opar, cpar, ocur, ccur = TZSCRIPT_GRAMMAR.Terminals('; : , . ( ) { }')
+    equal, plus, minus, star, div = TZSCRIPT_GRAMMAR.Terminals('= + - * /')
+    idx, num, typex, contract, ifx, elsex = TZSCRIPT_GRAMMAR.Terminals('id num type contract if else')
+
+        
     reserved_words = [ 'contract','entry','func','let','if','else','const','type','for','in','string','nat','int','map','optional','bool','None','true','false','return','calledBy']
     # Set of token names. This is always required
     
@@ -83,23 +103,23 @@ class TzScriptLexer(Lexer):
     GRAMMAR = r'Grammar'
     
     # reserved Words
-    ID["contract"] = CONTRACT
-    ID['entry'] = ENTRY
-    ID['func'] = FUNC
-    ID['let'] = LET
-    ID['if'] = IF
-    ID['else'] = ELSE
+    ID["contract"] = contract
+    ID['entry'] = entry
+    ID['func'] = func
+    ID['let'] = let
+    ID['if'] = ifx
+    ID['else'] = elsex
     ID['const'] = CONST
-    ID['type'] = TYPE
+    ID['type'] = typex
     ID['for'] = FOR
     ID['in'] = IN
-    ID['string'] = STRING
-    ID['nat'] = NAT
-    ID['int'] = INT
-    ID['map'] = MAP
-    ID['optional'] = OPTIONAL
-    ID['bool'] = BOOL
-    ID['None'] = NONE
+    ID['string'] = typex
+    ID['nat'] = typex
+    ID['int'] = typex
+    ID['map'] = typex
+    ID['optional'] = typex
+    ID['bool'] = typex
+    ID['None'] = typex
     ID['true'] = TRUE
     ID['false'] = FALSE
     ID['return'] = RETURN
