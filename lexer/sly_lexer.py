@@ -125,13 +125,6 @@ class TzScriptLexer(Lexer):
     ID['return'] = RETURN
     ID['calledBy'] = CALLEDBY
 
-
-    @_(r'[a-zA-Z_][a-zA-Z0-9_]*')
-    def t_ID(self, t):
-        r'[a-zA-Z_][a-zA-Z0-9_]*'
-        if t.value in reserved_words:
-            t.type = t.value.upper()
-        return t
     # Define a rule so we can track line numbers
     @_(r'\n+')
     def ignore_newline(self, t):
