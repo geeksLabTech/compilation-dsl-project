@@ -20,10 +20,10 @@ contract store_value(admin: adress){
 ## Contrato que calcula n-esimo termino de fibonacci
 ```
 contract get_fib_n(){
-    var last_fib_calculated = 0;
+    let last_fib_calculated = 0;
 
     entry get_fib_n(n: nat){
-        const result = fib(n);
+        let result = fib(n);
         last_fib_calculated = result;
     }
 
