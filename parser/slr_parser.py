@@ -1,5 +1,5 @@
 from parser.utils import compute_firsts, compute_follows, compute_local_first
-from grammar import Grammar, Sentence, Symbol, Item
+from grammar import Grammar, Sentence, Symbol, Item, EOF
 from automata import State
 
 class ShiftReduceParser:
@@ -162,7 +162,7 @@ class SLR1Parser(ShiftReduceParser):
         table[key] = value
             
 
-def build_slr_ast(right_parse, operations, tokens, eof):
+def build_slr_ast(right_parse, operations, tokens):
     if not right_parse or not operations or not tokens:
         return
 
@@ -190,5 +190,8 @@ def build_slr_ast(right_parse, operations, tokens, eof):
             raise Exception('Invalid action!!!')
 
     assert len(stack) == 1
-    assert isinstance(next(tokens).token_type, eof)
+    last_token = next(tokens)
+    print(last_token)
+    # print(next(last_token))
+    assert isinstance(last_token.token_type, EOF)
     return stack[0]
