@@ -23,9 +23,9 @@ idx, num, typex, contract, ifx, elsex,truex , falsex, returnx = TZSCRIPT_GRAMMAR
 program %= contract + idx + opar + param_list + cpar + ocur + stat_list + ccur, lambda h,s: ProgramNode(s[2], s[4], s[7]), None, None, None, None, None, None,None,None
 
 
-stat_list %= stat, lambda h,s: [s[1]],None
-stat_list %=  stat + stat_list  ,lambda h,s: [s[1]] + s[2],None,None
 
+stat_list %= stat_list + stat  ,lambda h,s: s[1] + [s[2]] ,None,None
+stat_list %= stat, lambda h,s: [s[1]],None
 
 stat %= def_func, lambda h,s: s[1],None
 stat %= def_entry, lambda h,s: s[1], None
