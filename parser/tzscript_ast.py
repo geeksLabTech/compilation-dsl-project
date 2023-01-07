@@ -1,3 +1,4 @@
+
 class Node:
     def accept(self, visitor):
         pass
@@ -102,7 +103,11 @@ class VarCallNode(DeclarationNode):
         return visitor.visit_var_call_node(self)
 
 class ConstantNumNode(AtomicNode):
-    pass
+    def __init__(self, lex):
+        self.lex = lex
+        self.type = 'num'
+    def accept(self, visitor):
+        return visitor.visit_constant_num_node(self)
 
 class VariableNode(AtomicNode):
     pass

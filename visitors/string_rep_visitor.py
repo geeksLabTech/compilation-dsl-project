@@ -56,6 +56,10 @@ class StringReprVisitor(Visitor):
     def visit_atomic_node(self, node):
         self.result += f" {node.lex}\n"
         
+        
+    def visit_constant_num_node(self, node):
+        self.result += f" {node.lex}\n"
+        
     def visit_var_call_node(self, node):
         self.result += f"{node.id} = "
         node.expr.accept(self)
