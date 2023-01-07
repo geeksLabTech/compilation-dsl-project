@@ -51,7 +51,7 @@ class StringReprVisitor(Visitor):
         for statement in node.body:
             statement.accept(self)
 
-    def visit_attr_declaraion_node(self, node):
+    def visit_attr_declaration_node(self, node):
         self.result += f" {node.type} {node.id}"
 
     def visit_atomic_node(self, node):

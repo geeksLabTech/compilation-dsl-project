@@ -10,6 +10,7 @@ class ScopeCheckVisitor(Visitor):
         # visit the statements in the program
         for statement in node.statements:
             statement.accept(self)
+        return True
 
     def visit_if_node(self, node):
         # visit the expression in the if statement
@@ -61,7 +62,7 @@ class ScopeCheckVisitor(Visitor):
         # remove the scope for the function
         self.scopes.pop()
 
-    def visit_attr_declaraion_node(self, node):
+    def visit_attr_declaration_node(self, node):
         # add the attribute to the current scope
         self.scopes[-1][node.id] = node
 

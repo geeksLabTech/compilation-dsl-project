@@ -9,6 +9,7 @@ class TypeCheckVisitor(Visitor):
         # check types for program node
         for statement in node.statements:
             statement.accept(self)
+        return True
     
     def visit_if_node(self, node: IfNode):
         # check types for if node
@@ -59,7 +60,7 @@ class TypeCheckVisitor(Visitor):
         for st in node.body:
             st.accept(self)
     
-    def visit_attr_declaraion_node(self, node: AttrDeclarationNode):
+    def visit_attr_declaration_node(self, node: AttrDeclarationNode):
         # check types for attribute declaration node
         self.symbol_table[node.id] = node.type
     

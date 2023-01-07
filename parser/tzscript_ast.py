@@ -71,7 +71,7 @@ class AttrDeclarationNode(DeclarationNode):
         self.id = idx
         self.type = typex
     def accept(self, visitor):
-        return visitor.visit_attr_declaraion_node(self)
+        return visitor.visit_attr_declaration_node(self)
     
 
 class AtomicNode(ExpressionNode):
