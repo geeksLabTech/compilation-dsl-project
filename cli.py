@@ -21,7 +21,6 @@ app = Typer()
 def build(file: str = Argument("", help="tzscript file to be parsed"),
           out_file: str = Argument(None, help='michelson file to be generated')):
     """ generates the .tz michelson script from the tzscript file specified """
-    print("welcome")
     total = 7
     with typer.progressbar(length=total) as progress:
         with open(file, "r") as f:
