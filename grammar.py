@@ -1,5 +1,5 @@
 import json
-from typing import Self
+# from typing import Self
 
 
 class Symbol(object):
@@ -15,7 +15,8 @@ class Symbol(object):
         return repr(self.Name)
 
     def __add__(self, other):
-        if isinstance(other, Terminal|NonTerminal):
+        if isinstance(other, Terminal) or isinstance(other, NonTerminal):
+            # if isinstance(other, Terminal|NonTerminal):
             return Sentence(self, other)
 
         raise TypeError(other)
@@ -57,7 +58,8 @@ class NonTerminal(Symbol):
             assert len(other) == len(other[0]) + 2, "Debe definirse una, y solo una, regla por cada símbolo de la producción"
             # assert len(other) == 2, "Tiene que ser una Tupla de 2 elementos (sentence, attribute)"
 
-            if isinstance(other[0], Terminal|NonTerminal) or isinstance(other[0], Sentence):
+            if isinstance(other[0], Terminal) or isinstance(other[0], NonTerminal) or isinstance(other[0], Sentence):
+                # if isinstance(other[0], Terminal|NonTerminal) or isinstance(other[0], Sentence):
                 p = AttributeProduction(self, other[0], other[1:])
             else:
                 raise Exception("")
@@ -65,7 +67,8 @@ class NonTerminal(Symbol):
             self.Grammar.Add_Production(p)
             return self
 
-        if isinstance(other, Terminal|NonTerminal):
+        if isinstance(other):
+            # if isinstance(other, Terminal|NonTerminal):
             p = Production(self, Sentence(other))
             self.Grammar.Add_Production(p)
             return self
@@ -116,7 +119,8 @@ class EOF(Terminal):
 
 class Sentence(object):
 
-    def __init__(self, *args: Terminal|NonTerminal):
+    def __init__(self, *args):
+        # def __init__(self, *args: Terminal|NonTerminal):
         self._symbols = tuple(x for x in args if not x.IsEpsilon)
         self.hash = hash(self._symbols)
 
@@ -124,7 +128,8 @@ class Sentence(object):
         return len(self._symbols)
 
     def __add__(self, other):
-        if isinstance(other, Terminal|NonTerminal):
+        if isinstance(other, Terminal) or isinstance(other, NonTerminal):
+            # if isinstance(other, Terminal|NonTerminal):
             return Sentence(*(self._symbols + (other,)))
 
         if isinstance(other, Sentence):
@@ -136,7 +141,8 @@ class Sentence(object):
         if isinstance(other, Sentence):
             return SentenceList(self, other)
 
-        if isinstance(other, Terminal|NonTerminal):
+        if isinstance(other):
+            # if isinstance(other, Terminal|NonTerminal):
             return SentenceList(self, Sentence(other))
 
         raise TypeError(other)
@@ -153,7 +159,8 @@ class Sentence(object):
     def __getitem__(self, index):
         return self._symbols[index]
 
-    def __eq__(self, other: Self):
+    def __eq__(self, other):
+        # def __eq__(self, other: Self):
         return self._symbols == other._symbols
 
     def __hash__(self):
@@ -182,7 +189,8 @@ class SentenceList(object):
             self.Add(other)
             return self
 
-        if isinstance(other, Terminal|NonTerminal):
+        if isinstance(other):
+            # if isinstance(other, Terminal|NonTerminal):
             return self | Sentence(other)
 
 
@@ -247,7 +255,8 @@ class Production(object):
 
 class AttributeProduction(Production):
 
-    def __init__(self, nonTerminal: NonTerminal, sentence: Sentence|Terminal|NonTerminal, attributes):
+    # def __init__(self, nonTerminal: NonTerminal, sentence: Sentence|Terminal|NonTerminal, attributes):
+    def __init__(self, nonTerminal: NonTerminal, sentence, attributes):
         if not isinstance(sentence, Sentence) and isinstance(sentence, Symbol):
             sentence = Sentence(sentence)
         super(AttributeProduction, self).__init__(nonTerminal, sentence)
@@ -280,7 +289,8 @@ class Grammar():
         self.Productions: list[Production] = []
         self.nonTerminals: list[NonTerminal] = []
         self.terminals: list[Terminal] = []
-        self.startSymbol: NonTerminal | None = None
+        # self.startSymbol: NonTerminal | None = None
+        self.startSymbol = None
         # production type
         self.pType = None
         self.Epsilon = Epsilon(self)
@@ -463,7 +473,8 @@ class Item:
         return str(self)
 
 
-    def __eq__(self, other: Self):
+    def __eq__(self, other):
+        # def __eq__(self, other: Self):
         return (
             (self.pos == other.pos) and
             (self.production == other.production) and

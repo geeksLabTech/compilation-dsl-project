@@ -9,6 +9,7 @@ class TypeCheckVisitor(Visitor):
         # check types for program node
         for statement in node.statements:
             statement.accept(self)
+        return True
     
     def visit_if_node(self, node: IfNode):
         # check types for if node
@@ -46,8 +47,20 @@ class TypeCheckVisitor(Visitor):
         # check types for function body
         for statement in node.body:
             statement.accept(self)
+        
+    def visit_var_call_node(self, node: VarCallNode):
+        pass
     
-    def visit_attr_declaraion_node(self, node: AttrDeclarationNode):
+    def visit_constant_num_node(self, node: ConstantNumNode):
+        pass
+    
+    def visit_entry_declaration_node(self, node: EntryDeclarationNode):
+        for p in node.params:
+            p.accept(self)
+        for st in node.body:
+            st.accept(self)
+    
+    def visit_attr_declaration_node(self, node: AttrDeclarationNode):
         # check types for attribute declaration node
         self.symbol_table[node.id] = node.type
     
@@ -64,3 +77,14 @@ class TypeCheckVisitor(Visitor):
     def is_boolean_type(self, expr):
         if type(expr) is bool:
             return True
+    
+    def is_compatible_type(self, expr_type, node_type):
+        
+        if expr_type == node_type:
+            return True
+        if node_type == 'num' and (expr_type == 'nat' or expr_type == 'int'):
+            return True
+        if expr_type == 'num' and (node_type == 'nat' or node_type == 'int'):
+            return True
+        # TODO get compatibility list
+        return False

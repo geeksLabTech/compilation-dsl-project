@@ -17,7 +17,8 @@ class LLParser:
         # print('parsing table ', parsing_table)
         def parser(w: list[Terminal]) -> list[Production]:
             assert grammar.startSymbol is not None, 'Start symbol cannot be None'
-            stack: list[NonTerminal|Terminal] = [grammar.startSymbol]
+            stack = [grammar.startSymbol]
+            # stack: list[NonTerminal|Terminal] = [grammar.startSymbol]
             cursor = 0
             output: list[Production] = []
             # parsing w...
@@ -90,7 +91,8 @@ class LLParser:
         # print('Node build', P(inherited,synteticed) if P is not None else None)
         return P(inherited,synteticed) if P is not None else None
 
-    def build_parsing_table(self, G: Grammar, firsts: dict[Symbol | Sentence, ContainerSet], follows: dict[Symbol | Sentence, ContainerSet]):
+    def build_parsing_table(self, G: Grammar, firsts, follows):
+        # def build_parsing_table(self, G: Grammar, firsts: dict[Symbol | Sentence, ContainerSet], follows: dict[Symbol | Sentence, ContainerSet]):
         # init parsing table
         M: dict[tuple[NonTerminal, Terminal], list[Production]] = {}
         

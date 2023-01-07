@@ -1,3 +1,4 @@
+
 class Node:
     def accept(self, visitor):
         pass
@@ -70,7 +71,7 @@ class AttrDeclarationNode(DeclarationNode):
         self.id = idx
         self.type = typex
     def accept(self, visitor):
-        return visitor.visit_attr_declaraion_node(self)
+        return visitor.visit_attr_declaration_node(self)
     
 
 class AtomicNode(ExpressionNode):
@@ -163,7 +164,11 @@ class FalseNode(ExpressionNode):
         return visitor.visit_false_node(self)
 
 class ConstantNumNode(AtomicNode):
-    pass
+    def __init__(self, lex):
+        self.lex = lex
+        self.type = 'num'
+    def accept(self, visitor):
+        return visitor.visit_constant_num_node(self)
 
 class VariableNode(AtomicNode):
     pass

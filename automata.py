@@ -1,5 +1,5 @@
 import pydot
-from typing import Dict, List, Self, Tuple
+from typing import Dict, List, Tuple
 from abc import ABC, abstractmethod
 from lexer.int_generator import generator
 from parser.utils import ContainerSet
