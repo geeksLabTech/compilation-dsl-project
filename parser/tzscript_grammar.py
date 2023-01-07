@@ -37,7 +37,7 @@ stat %= let_var, lambda h,s: s[1],None
 if_stat %= ifx + opar + expr + cpar + ocur + stat_list + ccur, lambda h,s: IfNode(s[3], s[6]),None,None,None,None,None,None,None
 else_stat %= elsex + ocur + stat_list + ccur, lambda h,s: ElseNode(s[3]),None,None,None,None
 
-def_func %= func + idx + opar + param_list + cpar +colon + typex + ocur + expr_list + ccur, lambda h,s: FuncDeclarationNode(s[2], s[4], s[6], s[8]),None,None,None,None,None,None,None,None,None,None
+def_func %= func + idx + opar + param_list + cpar + colon + typex + ocur + stat_list + ccur, lambda h,s: FuncDeclarationNode(s[2], s[4], s[6], s[8]),None,None,None,None,None,None,None,None,None,None
 
 def_entry %= entry + idx + opar + param_list + cpar + ocur + stat_list + ccur, lambda h,s: EntryDeclarationNode(s[2], s[4], s[7]),None,None,None,None,None,None,None,None
 
