@@ -81,7 +81,8 @@ def build(file: str = Argument("", help="tzscript file to be parsed"),
         print("\nGenerating Michelson Code", end="")
         # TODO uncomment this when code generation is working OK
         # michelson_generator = MichelsonGeneratorVisitor()
-        # michelson_result = michelson_generator.visit_program(ast)
+        # michelson_generator.visit_program(ast)
+        # michelson_result = michelson_geneator.result
         michelson_result = "NOT IMPLEMENTED YET"
         if out_file is None:
             out_file = file[:file.find(".tzs")]+".tz"
