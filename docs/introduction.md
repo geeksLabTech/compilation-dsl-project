@@ -6,28 +6,20 @@ El núcleo de esta documentación es la Referencia del lenguaje organizada en cu
 
 ## Hello World
 ```
-contract hello_world () {
+contract store_value(value: int){
 
-    var msg : string = "Hello";
+    let storage: int = 0;
 
-    entry input(name: string) {
-        if (len(msg) > 5) {
-            msg = msg + " " + name;
-        }
-        else {
-            msg = msg + "," + " " + name;
-        }
-    }
+    entry replace(new_value: int){
+       
+        storage = new_value;
+    } 
 }
 
 ```
 
 ## CLI
-El CLI de 'Insertar nombre' permite compilar un script del dsl a un script Michelson, tambien permite testear y desplegar los scripts compilados apoyandose en ['pytezos'](https://pytezos.org/). Para compilar un script del dsl, ejecute el siguiente comando:
+El CLI de TzScript permite compilar un script del dsl a un script Michelson. Para compilar un script del dsl, ejecute el siguiente comando:
 ```cli compile <path>```
 
-
-Para desplegar un script de Michaelson, ejecute el siguiente comando:
-
-```cli deploy <path>```
 

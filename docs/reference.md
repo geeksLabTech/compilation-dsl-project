@@ -1,8 +1,8 @@
 
 ## Identificadores
-El identificador de un elemento del contrato (parámetro, variable, punto de entrada, ...) es una cadena que comienza con un carácter alfabético (en minúscula o mayúscula) seguido de una cadena de caracteres alfanuméricos (en minúscula o mayúscula) o guiones bajos. El tamaño máximo de un identificador es 254. Es decir, un identificador verifica la siguiente expresión regular:
+El identificador de un elemento del contrato (parámetro, variable, punto de entrada, ...) es una cadena que comienza con un carácter alfabético (en minúscula o mayúscula) seguido de una cadena de caracteres alfanuméricos (en minúscula o mayúscula) o guiones bajos. Es decir, un identificador verifica la siguiente expresión regular:
 
-```([A-Za-z][A-Za-z0-9_]*){1,254}```
+```([A-Za-z][A-Za-z0-9_]*)```
 
 ## Keywords
 Una palabra clave es un identificador reservado que no puede utilizarse como identificador
@@ -11,17 +11,12 @@ Las palabras reservadas del lenguage son:
 - `contract`
 - `entry`
 - `func`
-- `var`
 - `if`
 - `else`
-- `const`
 - `type`
-- `for`
-- `in`
 - `string`
 - `nat`
 - `int`
-- `map`
 - `optional`
 - `bool`
 - `None`
@@ -29,9 +24,10 @@ Las palabras reservadas del lenguage son:
 - `false`
 - `return`
 - `calledBy`
+- `address`
 
 ## Contract
-Un contrato del dsl comienza con la palabra clave contract seguida de un identificador y un bloque de codigo entre llaves 
+Un contrato de TzScript comienza con la palabra clave contract seguida de un identificador y un bloque de codigo entre llaves 
     
 ```
 contract <identifier> () { <code> }
@@ -54,23 +50,11 @@ var <identifier>: <type> = <value>
 
 El valor de una variable del storage solamente puede ser modificado por instrucciones de asignacion en los puntos de entrada del contrato
 
-### Creacion de tipos
-Un type permite agrupar un conjunto de elementos en una estructura. Se declara con la palabra clave type seguida de un identificador y un bloque de código entre llaves. El bloque de código contiene una lista de elementos separados por coma. Cada elemento tiene un identificador y un tipo. Por ejemplo, un type para representar un estudiante puede ser:
-
-```
-type student = {
-    name: string,
-    certificate: bool
-}
-```
-
 ### Puntos de entrada 
 Un punto de entrada es un bloque de código que no puede ser llamado desde otros puntos de entrada o funciones. Se declara con la palabra clave entry seguida de un identificador, una lista de parámetros entre paréntesis y un bloque de código entre llaves. Los puntos de entrada pueden acceder y modificar el storage
 
-
 ### Funciones
 Una función es un bloque de código que puede ser llamado desde otras funciones o puntos de entrada. Se declara con la palabra clave func seguida de un identificador, una lista de parámetros entre paréntesis y un bloque de código entre llaves. Las funciones solo pueden acceder a los valores que reciben y no pueden modificar el storage.
-
 
 ## Tipos
 
@@ -95,9 +79,6 @@ Valor entero positivo
 
 ### string
 Cadena de caracteres. Se representa entre comillas dobles
-
-### map
-Mapa de elementos. Se representa entre llaves y separados por coma. Cada elemento tiene una clave y un valor. La clave es un valor de tipo nat, int o string. El valor puede ser de cualquier tipo. 
 
 ### None
 Valor especial que representa la ausencia de valor.
