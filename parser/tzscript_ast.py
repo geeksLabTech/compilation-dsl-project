@@ -100,6 +100,53 @@ class VarCallNode(DeclarationNode):
     
     def accept(self, visitor):
         return visitor.visit_var_call_node(self)
+class EqualNode(ExpressionNode):
+    def __init__(self, left, right) -> None:
+        self.left = left
+        self.right = right
+
+    def accept(self, visitor):
+        return visitor.visit_equal_node(self)
+
+class IniquelatyNode(ExpressionNode):
+    def __init__(self, left, right) -> None:
+        self.left = left
+        self.right = right
+
+    def accept(self, visitor):
+        return visitor.visit_not_equal_node(self)
+
+class LessThanNode(ExpressionNode):
+    def __init__(self, left, right) -> None:
+        self.left = left
+        self.right = right
+
+    def accept(self, visitor):
+        return visitor.visit_less_node(self)
+
+class LessThanEqualNode(ExpressionNode):
+    def __init__(self, left, right) -> None:
+        self.left = left
+        self.right = right
+
+    def accept(self, visitor):
+        return visitor.visit_less_equal_node(self)
+
+class GreaterThanNode(ExpressionNode):
+    def __init__(self, left, right) -> None:
+        self.left = left
+        self.right = right
+
+    def accept(self, visitor):
+        return visitor.visit_greater_node(self)
+
+class GreaterThanEqualNode(ExpressionNode):
+    def __init__(self, left, right) -> None:
+        self.left = left
+        self.right = right
+
+    def accept(self, visitor):
+        return visitor.visit_greater_equal_node(self)
 
 class ReturnNode(ExpressionNode):
     def __init__(self, expr) -> None:

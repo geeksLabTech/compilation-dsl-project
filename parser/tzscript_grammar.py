@@ -10,14 +10,14 @@ program = TZSCRIPT_GRAMMAR.NonTerminal('<program>', startSymbol=True)
 stat_list, stat = TZSCRIPT_GRAMMAR.NonTerminals('<stat_list> <stat>')
 let_var, def_func, if_stat, else_stat, def_entry = TZSCRIPT_GRAMMAR.NonTerminals('<let-var>> <def-func> <if-stat> <else-stat> <def-entry>')
 param_list, param, expr_list = TZSCRIPT_GRAMMAR.NonTerminals('<param-list> <param> <expr-list>')
-expr, arith, term, factor, atom, returnx = TZSCRIPT_GRAMMAR.NonTerminals('<expr> <arith> <term> <factor> <atom> return')
+expr, arith, term, factor, atom = TZSCRIPT_GRAMMAR.NonTerminals('<expr> <arith> <term> <factor> <atom>')
 func_call, arg_list, var_call  = TZSCRIPT_GRAMMAR.NonTerminals('<func-call> <arg-list> <var-call>')
 
 # terminals
 let, func, entry = TZSCRIPT_GRAMMAR.Terminals('let func entry')
 semi, colon, comma, dot, opar, cpar, ocur, ccur = TZSCRIPT_GRAMMAR.Terminals('; : , . ( ) { }')
-equal, plus, minus, star, div = TZSCRIPT_GRAMMAR.Terminals('= + - * /')
-idx, num, typex, contract, ifx, elsex,truex , falsex = TZSCRIPT_GRAMMAR.Terminals('id num type contract if else true false')
+equal,equalequal, plus, minus, star, div,lessthanequal,greaterthanequal, iniquelaty, lessthan,greaterthan = TZSCRIPT_GRAMMAR.Terminals('= ==  + - * / <= >= != < >')
+idx, num, typex, contract, ifx, elsex,truex , falsex, returnx = TZSCRIPT_GRAMMAR.Terminals('id num type contract if else true false return')
 
 # productions
 program %= contract + idx + opar + param_list + cpar + ocur + stat_list + ccur, lambda h,s: ProgramNode(s[2], s[4], s[7]), None, None, None, None, None, None,None,None
@@ -37,7 +37,7 @@ stat %= let_var, lambda h,s: s[1],None
 if_stat %= ifx + opar + expr + cpar + ocur + stat_list + ccur, lambda h,s: IfNode(s[3], s[6]),None,None,None,None,None,None,None
 else_stat %= elsex + ocur + stat_list + ccur, lambda h,s: ElseNode(s[3]),None,None,None,None
 
-def_func %= func + idx + opar + param_list + cpar + typex + ocur + expr_list + ccur, lambda h,s: FuncDeclarationNode(s[2], s[4], s[6], s[8]),None,None,None,None,None,None,None,None,None
+def_func %= func + idx + opar + param_list + cpar +colon + typex + ocur + expr_list + ccur, lambda h,s: FuncDeclarationNode(s[2], s[4], s[6], s[8]),None,None,None,None,None,None,None,None,None,None
 
 def_entry %= entry + idx + opar + param_list + cpar + ocur + stat_list + ccur, lambda h,s: EntryDeclarationNode(s[2], s[4], s[7]),None,None,None,None,None,None,None,None
 
@@ -52,6 +52,12 @@ expr_list %= expr + comma + expr_list, lambda h,s: [s[1]] + s[3],None,None,None
 
 expr %= expr + plus + term, lambda h,s: PlusNode(s[1], s[3]),None,None,None
 expr %= expr + minus + term, lambda h,s: MinusNode(s[1], s[3]),None,None,None
+expr %= expr + equalequal + term, lambda h,s: EqualNode(s[1], s[3]),None,None,None
+expr %= expr + lessthanequal + term, lambda h,s: LessThanEqualNode(s[1], s[3]),None,None,None
+expr %= expr + greaterthanequal + term, lambda h,s: GreaterThanEqualNode(s[1], s[3]),None,None,None
+expr %= expr + iniquelaty + term, lambda h,s: IniquelatyNode(s[1], s[3]),None,None,None
+expr %= expr + lessthan + term, lambda h,s: LessThanNode(s[1], s[3]),None,None,None
+expr %= expr + greaterthan + term, lambda h,s: GreaterThanNode(s[1], s[3]),None,None,None
 expr %= term, lambda h,s: s[1],None
 expr %= returnx + expr, lambda h,s: s[2],None,None
 # <arith>        ???
