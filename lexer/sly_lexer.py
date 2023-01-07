@@ -21,7 +21,6 @@ class TzScriptLexer(Lexer):
         ID,
         OR,
         AND,
-        OPERATOR,
         TERMINAL,
         NONTERMINAL,
         EPSILON,
@@ -50,8 +49,17 @@ class TzScriptLexer(Lexer):
         TRUE,
         FALSE,
         RETURN,
-        CALLEDBY
-        
+        CALLEDBY,
+        EQUAL,
+        EQUALEQUAL,
+        LESSTHANEQUAL,
+        GREATERTHANEQUAL,
+        LESSTHAN,
+        GREATERTHAN,
+        MINUS,
+        PLUS,
+        STAR,
+        DIV
     }
     
     tokens.add(t for t in R_W)
@@ -71,7 +79,16 @@ class TzScriptLexer(Lexer):
     LBRACKET = r'\['
     RBRACKET = r'\]'
     ID = r'[a-zA-Z_][a-zA-Z0-9_]*'
-    OPERATOR = r'[=<>+-/%*]+'
+    EQUAL = r'\='
+    EQUALEQUAL = r'\=\='
+    LESSTHANEQUAL = r'\<\='
+    GREATERTHANEQUAL = r'\>\='
+    LESSTHAN = r'\<'
+    GREATERTHAN = r'\>'
+    MINUS = r'\-'
+    PLUS = r'\+'
+    STAR = r'\*'
+    DIV = r'\/'
     OR = r'\|'
     AND = r'\&'
     TERMINAL = r'Terminal'
