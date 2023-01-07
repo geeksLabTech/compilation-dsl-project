@@ -8,7 +8,7 @@ from visitors.scope_check_visitor import ScopeCheckVisitor
 from visitors.semantic_check_visitor import SemanticCheckVisitor
 from visitors.michelson_generator_visitor import MichelsonGeneratorVisitor
 from visitors.string_rep_visitor import StringReprVisitor
-# import typer
+import typer
 
 app = Typer()
 
@@ -23,7 +23,7 @@ def build(file: str = Argument("", help="tzscript file to be parsed"),
             script = f.readlines()
 
         # Tokenize Script
-        print("Tokenizing Script", end="")
+        print("\nTokenizing Script", end="")
         words_separated_by_spaces = ['contract', 'store_value', '(', 'value', ':', 'int', ')', '{', 'let', 'storage', ':', 'int',
                                      '=', '0', ';', 'entry', 'replace', '(', 'new_value', ':', 'int', ')', '{', 'storage', '=', 'new_value', ';', '}', '}']
         table = [(TZSCRIPT_GRAMMAR[tok], tok)
@@ -32,7 +32,7 @@ def build(file: str = Argument("", help="tzscript file to be parsed"),
         progress.update(1)
 
         # Parse tokenized Script
-        print("Parsing Script", end="")
+        print("\nParsing Script", end="")
         expected_tokens = [Token(x[1], x[0]) for x in table]
         parser = SLR1Parser(TZSCRIPT_GRAMMAR, verbose=True)
         tokens = [Token('contract', contract), Token('store_value', idx), Token('(', opar), Token('value', idx), Token(':', colon), Token('int', typex), Token(')', cpar), Token('{', ocur), Token('let', let), Token('storage', idx), Token(':', colon), Token('int', typex), Token('=', equal), Token('0', num), Token(';', semi), Token(
@@ -44,12 +44,12 @@ def build(file: str = Argument("", help="tzscript file to be parsed"),
         print("... OK")
         progress.update(1)
 
-        print("Building AST", end="")
+        print("\nBuilding AST", end="")
         ast = build_slr_ast(productions, operations, tokens)
         print("... OK")
         progress.update(1)
 
-        print("Performing Type Check", end="")
+        print("\nPerforming Type Check", end="")
         type_visitor = TypeCheckVisitor()
         type_result = type_visitor.visit_program(ast)
         if not type_result:
@@ -59,7 +59,7 @@ def build(file: str = Argument("", help="tzscript file to be parsed"),
         print("... OK")
         progress.update(1)
 
-        print("Performing Scope Check", end="")
+        print("\nPerforming Scope Check", end="")
         scope_visitor = ScopeCheckVisitor()
         scope_result = scope_visitor.visit_program(ast)
         if not scope_result:
@@ -69,16 +69,16 @@ def build(file: str = Argument("", help="tzscript file to be parsed"),
         print("... OK")
         progress.update(1)
 
-        print("Performing Semantic Check", end="")
+        print("\nPerforming Semantic Check", end="")
         semantic_visitor = SemanticCheckVisitor()
         semantic_result = semantic_visitor.visit_program(ast)
         if not semantic_result:
-            print("Something Went Wrong")
+            print("\nSomething Went Wrong")
             return
         print("... OK")
         progress.update(1)
 
-        print("Generating Michelson Code", end="")
+        print("\nGenerating Michelson Code", end="")
         # TODO uncomment this when code generation is working OK
         # michelson_generator = MichelsonGeneratorVisitor()
         # michelson_result = michelson_generator.visit_program(ast)
@@ -87,7 +87,7 @@ def build(file: str = Argument("", help="tzscript file to be parsed"),
             out_file = file[:file.find(".tzs")]+".tz"
         with open(out_file, "w") as f:
             f.write(michelson_result)
-        print("generated {out_file}")
+        print(f"\nGenerated {out_file}")
         progress.update(1)
 
 
@@ -101,7 +101,7 @@ def represent(file: str = Argument("", help="tzscript file to be parsed"),
             script = f.readlines()
 
         # Tokenize Script
-        print("Tokenizing Script", end="")
+        print("\nTokenizing Script", end="")
         words_separated_by_spaces = ['contract', 'store_value', '(', 'value', ':', 'int', ')', '{', 'let', 'storage', ':', 'int',
                                      '=', '0', ';', 'entry', 'replace', '(', 'new_value', ':', 'int', ')', '{', 'storage', '=', 'new_value', ';', '}', '}']
         table = [(TZSCRIPT_GRAMMAR[tok], tok)
@@ -110,7 +110,7 @@ def represent(file: str = Argument("", help="tzscript file to be parsed"),
         progress.update(1)
 
         # Parse tokenized Script
-        print("Parsing Script", end="")
+        print("\nParsing Script", end="")
         expected_tokens = [Token(x[1], x[0]) for x in table]
         parser = SLR1Parser(TZSCRIPT_GRAMMAR, verbose=True)
         tokens = [Token('contract', contract), Token('store_value', idx), Token('(', opar), Token('value', idx), Token(':', colon), Token('int', typex), Token(')', cpar), Token('{', ocur), Token('let', let), Token('storage', idx), Token(':', colon), Token('int', typex), Token('=', equal), Token('0', num), Token(';', semi), Token(
@@ -122,12 +122,12 @@ def represent(file: str = Argument("", help="tzscript file to be parsed"),
         print("... OK")
         progress.update(1)
 
-        print("Building AST", end="")
+        print("\nBuilding AST", end="")
         ast = build_slr_ast(productions, operations, tokens)
         print("... OK")
         progress.update(1)
 
-        print("Performing Type Check", end="")
+        print("\nPerforming Type Check", end="")
         type_visitor = TypeCheckVisitor()
         type_result = type_visitor.visit_program(ast)
         if not type_result:
@@ -137,7 +137,7 @@ def represent(file: str = Argument("", help="tzscript file to be parsed"),
         print("... OK")
         progress.update(1)
 
-        print("Performing Scope Check", end="")
+        print("\nPerforming Scope Check", end="")
         scope_visitor = ScopeCheckVisitor()
         scope_result = scope_visitor.visit_program(ast)
         if not scope_result:
@@ -147,7 +147,7 @@ def represent(file: str = Argument("", help="tzscript file to be parsed"),
         print("... OK")
         progress.update(1)
 
-        print("Performing Semantic Check", end="")
+        print("\nPerforming Semantic Check", end="")
         semantic_visitor = SemanticCheckVisitor()
         semantic_result = semantic_visitor.visit_program(ast)
         if not semantic_result:
@@ -156,14 +156,14 @@ def represent(file: str = Argument("", help="tzscript file to be parsed"),
         print("... OK")
         progress.update(1)
 
-        print("Generating Michelson Code", end="")
+        print("\nGenerating Michelson Code", end="")
         string_repr = StringReprVisitor()
         michelson_result = string_repr.visit_program(ast)
         if out_file is None:
             out_file = file[:file.find(".tzs")]+".tzs.rep"
         with open(out_file, "w") as f:
             f.write(michelson_result)
-        print("generated {michelson_file}")
+        print(f"Generated {michelson_file}")
         progress.update(1)
 
 
