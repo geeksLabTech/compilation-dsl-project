@@ -30,6 +30,9 @@ class ShiftReduceParser:
             if(state,lookahead) not in self.action:
                 print('mira donde rompe')
                 print()
+                print('STACk: ')
+                print(stack)
+                print()
                 print((state,lookahead))
                 print(self.action)
                 print("Error. Aborting...")
