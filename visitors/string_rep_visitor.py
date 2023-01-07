@@ -1,10 +1,11 @@
 from visitors.visitor import Visitor
+from parser.tzscript_ast import *
 
 class StringReprVisitor(Visitor):
     def __init__(self):
         self.result = ""  # string representation of the AST
 
-    def visit_program(self, node):
+    def visit_program(self, node: ProgramNode):
         self.result += f"program {node.idx}({', '.join(param.id for param in node.params)}):\n"
         for statement in node.statements:
             statement.accept(self)

@@ -65,5 +65,28 @@ class ScopeCheckVisitor(Visitor):
         # add the attribute to the current scope
         self.scopes[-1][node.id] = node
 
+    def visit_var_call_node(self, node):
+        # Look up the symbol in the list of scopes to see if it has been defined
+        found = False
+        for scope in self.scopes:
+            if node.id in scope:
+                found = True
+                break
+        if not found:
+            raise ScopeError("Undefined symbol '{}'".format(node.id))
+
+    def visit_entry_declaration_node(self, node):
+        # Add a new scope to the list, containing the symbols defined in the function parameters and body
+        scope_symbols = {}
+        for param in node.params:
+            scope_symbols[param.id] = param.type
+        self.scopes.append(scope_symbols)
+
+        # Traverse the body of the function and perform a scope check on each node
+        for statement in node.body:
+            statement.accept(self)
+
+    def visit_constant_num_node(self, node):
+        pass
 class ScopeError(Exception):
     pass
