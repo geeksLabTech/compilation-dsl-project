@@ -16,7 +16,7 @@ func_call, arg_list, var_call, return_stat  = TZSCRIPT_GRAMMAR.NonTerminals('<fu
 # terminals
 let, func, entry = TZSCRIPT_GRAMMAR.Terminals('let func entry')
 semi, colon, comma, dot, opar, cpar, ocur, ccur = TZSCRIPT_GRAMMAR.Terminals('; : , . ( ) { }')
-equal,equalequal, plus, minus, star, div,lessthanequal,greaterthanequal, iniquelaty, lessthan,greaterthan = TZSCRIPT_GRAMMAR.Terminals('= ==  + - * / <= >= != < >')
+equal,equalequal, plus, minus, star, div,lessthanequal,greaterthanequal, iniquelaty, lessthan,greaterthan = TZSCRIPT_GRAMMAR.Terminals('= == + - * / <= >= != < >')
 idx, num, typex, contract, ifx, elsex,truex , falsex, returnx = TZSCRIPT_GRAMMAR.Terminals('id num type contract if else true false return')
 
 # productions
