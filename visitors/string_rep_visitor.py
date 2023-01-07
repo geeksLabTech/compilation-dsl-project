@@ -25,6 +25,17 @@ class StringReprVisitor(Visitor):
         self.result += f"    {node.type} {node.id} = "
         node.expr.accept(self)
         self.result += "\n"
+    
+    def visit_entry_declaration_node(self, node):
+        # self.result += f"Entry Declaration Node: \n"
+        self.result += f"{node.id}("
+        for n in node.params:
+            n.accept(self) 
+        self.result += '):\n'
+        for st in node.body:
+            self.result += '\t'
+            st.accept(self)
+        self.result += '\n'
 
     def visit_assign_node(self, node):
         self.result += f"    {node.id} = "
@@ -40,4 +51,12 @@ class StringReprVisitor(Visitor):
             statement.accept(self)
 
     def visit_attr_declaraion_node(self, node):
-        self.result += f"    {node.type} {node.id}\n"
+        self.result += f" {node.type} {node.id}"
+
+    def visit_atomic_node(self, node):
+        self.result += f" {node.lex}\n"
+        
+    def visit_var_call_node(self, node):
+        self.result += f"{node.id} = "
+        node.expr.accept(self)
+        

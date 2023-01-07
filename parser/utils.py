@@ -1,4 +1,4 @@
-from typing import Self
+# from typing import Self
 
 from grammar import Grammar, Sentence, Symbol
 
@@ -24,15 +24,15 @@ class ContainerSet:
         self.contains_epsilon = value
         return last != self.contains_epsilon
 
-    def update(self, other: Self):
+    def update(self, other):
         n = len(self.set)
         self.set.update(other.set)
         return n != len(self.set)
 
-    def epsilon_update(self, other: Self):
+    def epsilon_update(self, other):
         return self.set_epsilon(self.contains_epsilon | other.contains_epsilon)
 
-    def hard_update(self, other: Self):
+    def hard_update(self, other):
         return self.update(other) | self.epsilon_update(other)
 
     def find_match(self, match):
@@ -56,7 +56,7 @@ class ContainerSet:
     def __nonzero__(self):
         return len(self) > 0
 
-    def __eq__(self, other: Self):
+    def __eq__(self, other):
         if isinstance(other, set):
             return self.set == other
         return isinstance(other, ContainerSet) and self.set == other.set and self.contains_epsilon == other.contains_epsilon
@@ -96,7 +96,8 @@ def compute_local_first(firsts, alpha: Sentence):
     # Computes First(Vt) U First(Vn) U First(alpha)
     # P: X -> alpha
 def compute_firsts(G: Grammar):
-    firsts: dict[Symbol | Sentence, ContainerSet] = {}
+    firsts = {}
+    # firsts: dict[Symbol | Sentence, ContainerSet] = {}
     change = True
         
     # init First(Vt)
@@ -134,8 +135,10 @@ def compute_firsts(G: Grammar):
     # First(Vt) + First(Vt) + First(RightSides)
     return firsts
 
-def compute_follows(G: Grammar, firsts: dict[Symbol | Sentence, ContainerSet]):
-    follows: dict[Symbol|Sentence, ContainerSet] = { }
+def compute_follows(G: Grammar, firsts):
+    # def compute_follows(G: Grammar, firsts: dict[Symbol | Sentence, ContainerSet]):
+    follows = { }
+    # follows: dict[Symbol|Sentence, ContainerSet] = { }
     change = True
         
     # init Follow(Vn)
