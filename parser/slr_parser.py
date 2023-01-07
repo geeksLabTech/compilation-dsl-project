@@ -28,6 +28,8 @@ class ShiftReduceParser:
             if self.verbose: print(stack, '<---||--->', w[cursor:])
             
             if(state,lookahead) not in self.action:
+                print('mira donde rompe')
+                print()
                 print((state,lookahead))
                 print(self.action)
                 print("Error. Aborting...")
