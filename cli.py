@@ -156,14 +156,14 @@ def represent(file: str = Argument("", help="tzscript file to be parsed"),
         print("... OK")
         progress.update(1)
 
-        print("\nGenerating Michelson Code", end="")
+        print("\nGenerating String representation Code", end="")
         string_repr = StringReprVisitor()
-        michelson_result = string_repr.visit_program(ast)
+        string_repr.visit_program(ast)
         if out_file is None:
             out_file = file[:file.find(".tzs")]+".tzs.rep"
         with open(out_file, "w") as f:
-            f.write(michelson_result)
-        print(f"Generated {michelson_file}")
+            f.write(string_repr.result)
+        print(f"Generated {out_file}")
         progress.update(1)
 
 

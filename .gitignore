@@ -5,7 +5,7 @@ __pycache__/
 
 #.tzs files
 *.tzs
-*.tzs.repr
+*.tzs.rep
 
 # michelson Files
 *.tz
