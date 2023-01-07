@@ -23,8 +23,8 @@ idx, num, typex, contract, ifx, elsex,truex , falsex, returnx = TZSCRIPT_GRAMMAR
 program %= contract + idx + opar + param_list + cpar + ocur + stat_list + ccur, lambda h,s: ProgramNode(s[2], s[4], s[7]), None, None, None, None, None, None,None,None
 
 
-stat_list %=  stat + stat_list  ,lambda h,s: [s[1]] + s[2],None,None
 stat_list %= stat, lambda h,s: [s[1]],None
+stat_list %=  stat + stat_list  ,lambda h,s: [s[1]] + s[2],None,None
 
 
 stat %= def_func, lambda h,s: s[1],None
@@ -37,7 +37,7 @@ stat %= let_var, lambda h,s: s[1],None
 
 if_stat %= ifx + opar + expr + cpar + ocur + stat_list + ccur, lambda h,s: IfNode(s[3], s[6]),None,None,None,None,None,None,None
 else_stat %= elsex + ocur + stat_list + ccur, lambda h,s: ElseNode(s[3]),None,None,None,None
-return_stat %= returnx + expr, lambda h,s: s[2],None,None
+return_stat %= returnx + expr + semi, lambda h,s: s[2],None,None, None
 
 def_func %= func + idx + opar + param_list + cpar + colon + typex + ocur + stat_list + ccur, lambda h,s: FuncDeclarationNode(s[2], s[4], s[6], s[8]),None,None,None,None,None,None,None,None,None,None
 
