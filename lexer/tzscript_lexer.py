@@ -4,10 +4,11 @@ from lexer.lexer import Lexer
 # Import all terminals from tzscript_grammar.py
 from parser.tzscript_grammar import idx, num, typex, contract, equal, plus, minus, star, div, opar, cpar, ocur, ccur, semi, colon, comma, dot, func, let, contract
 
+
 class TzScriptLexer:
     def __init__(self) -> None:
         self.table = self._build_table()
-        print('tabla akiiiiiiiii:',self.table)
+        # print('tabla akiiiiiiiii:',self.table)
         self.lexer = Lexer(self.table, TZSCRIPT_GRAMMAR, TZSCRIPT_GRAMMAR.EOF)
 
     def _build_table(self):
@@ -36,4 +37,3 @@ class TzScriptLexer:
 
     def tokenize(self, text: str):
         return self.lexer(text)
-

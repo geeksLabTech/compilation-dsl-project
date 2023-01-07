@@ -87,5 +87,5 @@ arg_list %= idx, lambda h,s: [s[1]],None
 arg_list %= idx + comma + arg_list, lambda h,s: [s[1]] + s[3],None,None,None
 
 
-if __name__ == '__main__': print(TZSCRIPT_GRAMMAR)
-
+if __name__ == '__main__':
+    pass

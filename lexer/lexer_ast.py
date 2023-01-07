@@ -72,10 +72,10 @@ class IntervalNode(BinaryNode):
         first_nfa = nfa_list[0]
         for nfa in nfa_list[1:]:
             first_nfa = automata_union(first_nfa, nfa)
-        print()
-        print('first_nfa', first_nfa.finals)
-        print('clausura', automata_closure(first_nfa).finals)
-        print()
+        # print()
+        # print('first_nfa', first_nfa.finals)
+        # print('clausura', automata_closure(first_nfa).finals)
+        # print()
         return automata_closure(first_nfa)
             
 

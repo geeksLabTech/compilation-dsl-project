@@ -58,7 +58,7 @@ class Lexer:
             state = state_union(state, self.regexs[i][1])
         
         # state = State.from_nfa(nfa)
-        print('LA verdadera', state.recognize('he'))
+        # print('LA verdadera', state.recognize('he'))
         result = state.to_deterministic()
         # test = result.transitions[0]['h']
         return result
@@ -68,18 +68,18 @@ class Lexer:
         final = state if state.final else None
         final_lex = lex = ''
         last_idx_matched = 0
-        print('transition:',self.automaton.transitions)
-        print('estado inicial:' ,state.state)
-        print('prueba', self.automaton.recognize('he'))
-        print('string_to match ', string)
+        # print('transition:',self.automaton.transitions)
+        # print('estado inicial:' ,state.state)
+        # print('prueba', self.automaton.recognize('he'))
+        # print('string_to match ', string)
         for i, symbol in enumerate(string):
             if symbol in state.transitions:
                 state = state.get(symbol)
                 lex += symbol
                 # last_idx_matched = i
-                print('state', state)
+                # print('state', state)
                 if state.final:
-                    print('matched', lex)
+                    # print('matched', lex)
                     last_idx_matched = i
                     final = state
                     final_lex = lex

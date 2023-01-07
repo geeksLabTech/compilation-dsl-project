@@ -1,7 +1,7 @@
 from typer import Typer, Argument
-from lexer.tzscript_lexer import TzScriptLexer
+from lexer.sly_lexer import TzScriptLexer
 from lexer.lex_token import Token
-from parser.tzscript_grammar import TZSCRIPT_GRAMMAR, idx, num, typex, contract, ifx, elsex, equal, plus, minus, star, div, semi, colon, comma, dot, opar, cpar, ocur, ccur, let, func, entry
+from parser.tzscript_grammar import TZSCRIPT_GRAMMAR, idx, num, typex, contract, ifx, elsex, equal, plus, minus, star, div, semi, colon, comma, dot, opar, cpar, ocur, ccur, let, func, entry, equalequal, lessthan, greaterthan, lessthanequal, greaterthanequal
 from parser.slr_parser import SLR1Parser, build_slr_ast
 from visitors.type_check_visitor import TypeCheckVisitor
 from visitors.scope_check_visitor import ScopeCheckVisitor
@@ -10,6 +10,10 @@ from visitors.michelson_generator_visitor import MichelsonGeneratorVisitor
 from visitors.string_rep_visitor import StringReprVisitor
 import typer
 
+map_to_terminals_names = {'CONTRACT': contract.Name, 'ID': idx.Name, 'COLON': colon.Name, 'SEMICOLON': semi.Name, 'COMMA': comma.Name, 'INTEGER': num.Name, 'LPAREN': opar.Name, 'RPAREN': cpar.Name, 'LBRACE': ocur.Name, 'RBRACE': ccur.Name, 'LBRACKET': opar.Name, 'RBRACKET': cpar.Name, 'OR': plus.Name, 'AND': star.Name, 'OPERATOR': equal.Name, 'TERMINAL': typex.Name, 'NONTERMINAL': idx.Name,
+                          'ENTRY': entry.Name, 'FUNC': func.Name, 'LET': let.Name, 'IF': ifx.Name, 'ELSE': elsex.Name, 'TYPE': typex.Name, 'STRING': typex.Name, 'NAT': typex.Name, 'INT': typex.Name, 'OPTIONAL': typex.Name, 'BOOL': typex.Name, 'EQUALEQUAL': equalequal.Name, 'LESSTHAN': lessthan.Name, 'GREATERTHAN': greaterthan.Name, 'LESSTHANEQUAL': lessthanequal.Name, 'GREATERTHANEQUAL': greaterthanequal.Name, 'EQUAL': equal.Name}
+
+
 app = Typer()
 
 
@@ -17,29 +21,37 @@ app = Typer()
 def build(file: str = Argument("", help="tzscript file to be parsed"),
           out_file: str = Argument(None, help='michelson file to be generated')):
     """ generates the .tz michelson script from the tzscript file specified """
+    print("welcome")
     total = 7
     with typer.progressbar(length=total) as progress:
         with open(file, "r") as f:
-            script = f.readlines()
-
+            script = f.read()
+        # print(script)
         # Tokenize Script
         print("\nTokenizing Script", end="")
-        words_separated_by_spaces = ['contract', 'store_value', '(', 'value', ':', 'int', ')', '{', 'let', 'storage', ':', 'int',
-                                     '=', '0', ';', 'entry', 'replace', '(', 'new_value', ':', 'int', ')', '{', 'storage', '=', 'new_value', ';', '}', '}']
-        table = [(TZSCRIPT_GRAMMAR[tok], tok)
-                 for tok in words_separated_by_spaces]
+        lexer = TzScriptLexer()
+        tokens = list(lexer.tokenize(script))
+
+        terminals = []
+
+        for token in tokens:
+            terminals.append(map_to_terminals_names[token.type])
         print("... OK")
         progress.update(1)
 
         # Parse tokenized Script
         print("\nParsing Script", end="")
-        expected_tokens = [Token(x[1], x[0]) for x in table]
-        parser = SLR1Parser(TZSCRIPT_GRAMMAR, verbose=True)
-        tokens = [Token('contract', contract), Token('store_value', idx), Token('(', opar), Token('value', idx), Token(':', colon), Token('int', typex), Token(')', cpar), Token('{', ocur), Token('let', let), Token('storage', idx), Token(':', colon), Token('int', typex), Token('=', equal), Token('0', num), Token(';', semi), Token(
-            'entry', entry), Token('replace', idx), Token('(', opar), Token('new_value', idx), Token(':', colon), Token('int', typex), Token(')', cpar), Token('{', ocur), Token('storage', idx), Token('=', equal), Token('new_value', idx), Token(';', semi), Token('}', ccur), Token('}', ccur), Token('EOF', TZSCRIPT_GRAMMAR.EOF)]
+        parser = SLR1Parser(TZSCRIPT_GRAMMAR, verbose=False)
+        # print(tokens)
+        # tokens = [Token('contract', contract), Token('store_value', idx), Token('(', opar), Token('value', idx), Token(':', colon), Token('int', typex), Token(')', cpar), Token('{', ocur), Token('let', let), Token('storage', idx), Token(':', colon), Token('int', typex), Token('=', equal), Token('0', num), Token(';', semi), Token(
+        #     'entry', entry), Token('replace', idx), Token('(', opar), Token('new_value', idx), Token(':', colon), Token('int', typex), Token(')', cpar), Token('{', ocur), Token('storage', idx), Token('=', equal), Token('new_value', idx), Token(';', semi), Token('}', ccur), Token('}', ccur), Token('EOF', TZSCRIPT_GRAMMAR.EOF)]
 
-        terminals = [token.token_type for token in tokens]
+        # terminals = [token.token_type for token in tokens]
         derivation = parser(terminals, True)
+        if derivation is None:
+            print(
+                "Please re-run the command something unexpected (and unrelated to the parsing) happened")
+            return
         productions, operations = derivation
         print("... OK")
         progress.update(1)
@@ -99,26 +111,33 @@ def represent(file: str = Argument("", help="tzscript file to be parsed"),
     total = 7
     with typer.progressbar(length=total) as progress:
         with open(file, "r") as f:
-            script = f.readlines()
-
+            script = f.read()
+        # print(script)
         # Tokenize Script
         print("\nTokenizing Script", end="")
-        words_separated_by_spaces = ['contract', 'store_value', '(', 'value', ':', 'int', ')', '{', 'let', 'storage', ':', 'int',
-                                     '=', '0', ';', 'entry', 'replace', '(', 'new_value', ':', 'int', ')', '{', 'storage', '=', 'new_value', ';', '}', '}']
-        table = [(TZSCRIPT_GRAMMAR[tok], tok)
-                 for tok in words_separated_by_spaces]
+        lexer = TzScriptLexer()
+        tokens = list(lexer.tokenize(script))
+
+        terminals = []
+
+        for token in tokens:
+            terminals.append(map_to_terminals_names[token.type])
         print("... OK")
         progress.update(1)
 
         # Parse tokenized Script
         print("\nParsing Script", end="")
-        expected_tokens = [Token(x[1], x[0]) for x in table]
-        parser = SLR1Parser(TZSCRIPT_GRAMMAR, verbose=True)
-        tokens = [Token('contract', contract), Token('store_value', idx), Token('(', opar), Token('value', idx), Token(':', colon), Token('int', typex), Token(')', cpar), Token('{', ocur), Token('let', let), Token('storage', idx), Token(':', colon), Token('int', typex), Token('=', equal), Token('0', num), Token(';', semi), Token(
-            'entry', entry), Token('replace', idx), Token('(', opar), Token('new_value', idx), Token(':', colon), Token('int', typex), Token(')', cpar), Token('{', ocur), Token('storage', idx), Token('=', equal), Token('new_value', idx), Token(';', semi), Token('}', ccur), Token('}', ccur), Token('EOF', TZSCRIPT_GRAMMAR.EOF)]
+        parser = SLR1Parser(TZSCRIPT_GRAMMAR, verbose=False)
+        print(tokens)
+        # tokens = [Token('contract', contract), Token('store_value', idx), Token('(', opar), Token('value', idx), Token(':', colon), Token('int', typex), Token(')', cpar), Token('{', ocur), Token('let', let), Token('storage', idx), Token(':', colon), Token('int', typex), Token('=', equal), Token('0', num), Token(';', semi), Token(
+        #     'entry', entry), Token('replace', idx), Token('(', opar), Token('new_value', idx), Token(':', colon), Token('int', typex), Token(')', cpar), Token('{', ocur), Token('storage', idx), Token('=', equal), Token('new_value', idx), Token(';', semi), Token('}', ccur), Token('}', ccur), Token('EOF', TZSCRIPT_GRAMMAR.EOF)]
 
-        terminals = [token.token_type for token in tokens]
+        # terminals = [token.token_type for token in tokens]
         derivation = parser(terminals, True)
+        if derivation is None:
+            print(
+                "Please re-run the command something unexpected (and unrelated to the parsing) happened")
+            return
         productions, operations = derivation
         print("... OK")
         progress.update(1)
