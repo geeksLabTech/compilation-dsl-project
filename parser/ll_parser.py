@@ -86,7 +86,7 @@ class LLParser:
                     next_production, left_parse, tokens, inherited[i])
 
         P = attributes[0]
-        if P is not None and P(inherited, synteticed) is None:
+        # if P is not None and P(inherited, synteticed) is None:
             # print('mirala')
             # print(production)
             # print('infraganti')

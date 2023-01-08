@@ -149,12 +149,13 @@ class GreaterThanEqualNode(ExpressionNode):
     def accept(self, visitor):
         return visitor.visit_greater_equal_node(self)
 
-class ReturnNode(ExpressionNode):
-    def __init__(self, expr) -> None:
-        self.expr = expr
+# class ReturnNode(ExpressionNode):
+#     def __init__(self, expr) -> None:
+#         self.expr = expr
 
-    def accept(self, visitor):
-        return visitor.visit_return_node(self)
+#     def accept(self, visitor):
+#         return visitor.visit_return_node(self)
+
 class TrueNode(ExpressionNode):
     def accept(self, visitor):
         return visitor.visit_true_node(self)
