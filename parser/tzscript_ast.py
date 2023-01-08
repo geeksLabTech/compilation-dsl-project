@@ -38,6 +38,12 @@ class ElseNode(Node):
     def accept(self, visitor):
         return visitor.visit_else_node(self)
 
+class ReturnStatementNode(Node):
+    def __init__(self, expr) -> None:
+        self.expr = expr
+
+    def accept(self, visitor):
+        return visitor.visit_return_statement(self)
 
 class VarDeclarationNode(ExpressionNode):
     def __init__(self, idx, typex, expr):
