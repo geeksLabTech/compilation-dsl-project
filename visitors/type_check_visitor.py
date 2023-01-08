@@ -15,7 +15,7 @@ class TypeCheckVisitor(Visitor):
     def visit_if_node(self, node: IfNode):
         # check types for if node
         # check that the expression is of a boolean type
-        if not self.is_boolean_type(node.expr.type):
+        if not self.is_boolean_type(node.expr):
             raise TypeError("If statement expression must be of type boolean")
         for statement in node.statements:
             statement.accept(self)
@@ -63,8 +63,7 @@ class TypeCheckVisitor(Visitor):
 
     def visit_call_node(self, node: CallNode):
         for a in node.args:
-            print(a.__dict__)
-        pass
+            a.accept(self)
 
     def visit_var_call_node(self, node: VarCallNode):
         pass
@@ -89,13 +88,33 @@ class TypeCheckVisitor(Visitor):
     def visit_binary_node(self, node: BinaryNode):
         # check types for binary node
         # check that operand types are compatible with the operation
-        if not self.is_compatible_type(node.left.type, node.right.type):
-            raise TypeError(
-                f"Incompatible types in binary operation: {node.left.type} and {node.right.type}")
+        left = self.get_type(node.left)
+        right = self.get_type(node.rigt)
 
-    def is_boolean_type(self, expr):
-        if type(expr) is bool:
+        if not self.is_compatible_type(left, right):
+            raise TypeError(
+                f"Incompatible types in binary operation: {left} and {right}")
+
+    def is_boolean_type(self, node: Node):
+
+        boolean_nodes = [LessThanEqualNode, LessThanNode,
+                         GreaterThanEqualNode, GreaterThanNode, EqualNode]
+
+        if type(node) in boolean_nodes:
+
+            node.left.accept(self)
+            node.right.accept(self)
+
             return True
+
+    def visit_return_statement(self, node: ReturnStatementNode):
+        node.expr.accept(self)
+
+    def visit_arith_node(self, node: Node, oper:str):
+        if not self.get_type(node.left) == self.get_type(node.right):
+            if not self.is_compatible_type(self.get_type(node.left), self.get_type(node.right)):
+                raise TypeError(
+                    f"Cannot permform {oper} operation between {self.get_type(node.left)} and {self.get_type(node.right)}")
 
     def is_compatible_type(self, expr_type, node_type):
 
@@ -107,3 +126,11 @@ class TypeCheckVisitor(Visitor):
             return True
         # TODO get compatibility list
         return False
+
+    def get_type(self, node):
+        if node is CallNode:
+            return self.symbol_table[node.id]['return']
+        if 'type' in node.__dict__:
+            return node.type
+        else:
+            return None

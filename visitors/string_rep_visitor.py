@@ -110,7 +110,8 @@ class FormatVisitor(object):
     def visit(self, node, tabs=0):
         ans = '\t' * tabs + f'\\__IfNode: if <expr> then [<stat>; ... <stat>;]'
         expr = self.visit(node.expr, tabs + 1)
-        statements = '\n'.join(self.visit(child, tabs + 1) for child in node.statements)
+        statements = '\n'.join(self.visit(child, tabs + 1)
+                               for child in node.statements)
         return f'{ans}\n{expr}\n{statements}'
 
     @visitor.when(ElseNode)
@@ -133,9 +134,10 @@ class FormatVisitor(object):
         for param in node.params:
             string_paramt = param.id+' '+':' + ' ' + param.type
             sparams = sparams.join(string_paramt)
-        ans = '\t' * tabs + f'\\__FuncDeclarationNode: def {node.id}({sparams}) : {node.type}'
+        ans = '\t' * tabs + \
+            f'\\__FuncDeclarationNode: def {node.id}({sparams}) : {node.type}'
         body = self.visit(node.body, tabs + 2)
-        return f'{ans}\n{sparam}\n{body}'
+        return f'{ans}\n{sparams}\n{body}'
 
     @visitor.when(EntryDeclarationNode)
     def visit(self, node, tabs=0):

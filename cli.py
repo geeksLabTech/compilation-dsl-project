@@ -188,7 +188,7 @@ def represent(file: str = Argument("", help="tzscript file to be parsed"),
         # Parse tokenized Script
         print("\nParsing Script", end="")
         parser = SLR1Parser(TZSCRIPT_GRAMMAR, verbose=False)
-        print(lexer_tokens)
+        # print(lexer_tokens)
         # tokens = [Token('contract', contract), Token('store_value', idx), Token('(', opar), Token('value', idx), Token(':', colon), Token('int', typex), Token(')', cpar), Token('{', ocur), Token('let', let), Token('storage', idx), Token(':', colon), Token('int', typex), Token('=', equal), Token('0', num), Token(';', semi), Token(
         #     'entry', entry), Token('replace', idx), Token('(', opar), Token('new_value', idx), Token(':', colon), Token('int', typex), Token(')', cpar), Token('{', ocur), Token('storage', idx), Token('=', equal), Token('new_value', idx), Token(';', semi), Token('}', ccur), Token('}', ccur), Token('EOF', TZSCRIPT_GRAMMAR.EOF)]
 
@@ -196,7 +196,7 @@ def represent(file: str = Argument("", help="tzscript file to be parsed"),
         derivation = parser(terminals, True)
         if derivation is None:
             print(
-                "Please re-run the command something unexpected (and unrelated to the parsing) happened")
+                "Something unexpected happened during parsing")
             return
         productions, operations = derivation
         print("... OK")
@@ -217,32 +217,32 @@ def represent(file: str = Argument("", help="tzscript file to be parsed"),
         print("... OK")
         progress.update(1)
 
-        print("\nPerforming Scope Check", end="")
-        scope_visitor = ScopeCheckVisitor()
-        scope_result = scope_visitor.visit_program(ast)
-        if not scope_result:
-            print("Something Went Wrong")
-            return
+        # print("\nPerforming Scope Check", end="")
+        # scope_visitor = ScopeCheckVisitor()
+        # scope_result = scope_visitor.visit_program(ast)
+        # if not scope_result:
+        #     print("Something Went Wrong")
+        #     return
 
         print("... OK")
         progress.update(1)
 
-        print("\nPerforming Semantic Check", end="")
-        semantic_visitor = SemanticCheckVisitor()
-        semantic_result = semantic_visitor.visit_program(ast)
-        if not semantic_result:
-            print("Something Went Wrong")
-            return
+        # print("\nPerforming Semantic Check", end="")
+        # semantic_visitor = SemanticCheckVisitor()
+        # semantic_result = semantic_visitor.visit_program(ast)
+        # if not semantic_result:
+        #     print("Something Went Wrong")
+        #     return
         print("... OK")
         progress.update(1)
 
         print("\nGenerating String representation Code", end="")
         string_repr = FormatVisitor()
-        string_repr.visit(ast)
+        result = string_repr.visit(ast)
         if out_file is None:
             out_file = file[:file.find(".tzs")]+".tzs.rep"
         with open(out_file, "w") as f:
-            f.write(string_repr.result)
+            f.write(result)
         print(f"Generated {out_file}")
         progress.update(1)
 

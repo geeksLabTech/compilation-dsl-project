@@ -38,12 +38,14 @@ class ElseNode(Node):
     def accept(self, visitor):
         return visitor.visit_else_node(self)
 
+
 class ReturnStatementNode(Node):
     def __init__(self, expr) -> None:
         self.expr = expr
 
     def accept(self, visitor):
         return visitor.visit_return_statement(self)
+
 
 class VarDeclarationNode(ExpressionNode):
     def __init__(self, idx, typex, expr):
@@ -70,7 +72,6 @@ class FuncDeclarationNode(DeclarationNode):
         self.params = params
         self.type = return_type
         self.body = body
-
 
     def accept(self, visitor):
         return visitor.visit_func_declaration_node(self)
@@ -138,6 +139,7 @@ class EqualNode(ExpressionNode):
     def accept(self, visitor):
         return visitor.visit_equal_node(self)
 
+
 class IniquelatyNode(ExpressionNode):
     def __init__(self, left, right) -> None:
         self.left = left
@@ -145,6 +147,7 @@ class IniquelatyNode(ExpressionNode):
 
     def accept(self, visitor):
         return visitor.visit_not_equal_node(self)
+
 
 class LessThanNode(ExpressionNode):
     def __init__(self, left, right) -> None:
@@ -154,6 +157,7 @@ class LessThanNode(ExpressionNode):
     def accept(self, visitor):
         return visitor.visit_less_node(self)
 
+
 class LessThanEqualNode(ExpressionNode):
     def __init__(self, left, right) -> None:
         self.left = left
@@ -162,6 +166,7 @@ class LessThanEqualNode(ExpressionNode):
     def accept(self, visitor):
         return visitor.visit_less_equal_node(self)
 
+
 class GreaterThanNode(ExpressionNode):
     def __init__(self, left, right) -> None:
         self.left = left
@@ -169,6 +174,7 @@ class GreaterThanNode(ExpressionNode):
 
     def accept(self, visitor):
         return visitor.visit_greater_node(self)
+
 
 class GreaterThanEqualNode(ExpressionNode):
     def __init__(self, left, right) -> None:
@@ -210,16 +216,37 @@ class VariableNode(AtomicNode):
 
 
 class PlusNode(BinaryNode):
-    pass
+    def __init__(self, left, right):
+        self.left = left
+        self.right = right
+
+    def accept(self, visitor):
+        return visitor.visit_arith_node(self, '+')
 
 
 class MinusNode(BinaryNode):
-    pass
+    def __init__(self, left, right):
+        self.left = left
+        self.right = right
+
+    def accept(self, visitor):
+        return visitor.visit_arith_node(self, '-')
 
 
 class StarNode(BinaryNode):
-    pass
+    def __init__(self, left, right):
+        self.left = left
+        self.right = right
+
+    def accept(self, visitor):
+        return visitor.visit_arith_node(self, '*')
 
 
 class DivNode(BinaryNode):
-    pass
+    def __init__(self, left, right):
+        self.left = left
+        self.right = right
+
+    def accept(self, visitor):
+        return visitor.visit_arith_node(self, '//')
+
