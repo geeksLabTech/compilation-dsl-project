@@ -1,17 +1,17 @@
 from typer import Typer, Argument
 from lexer.sly_lexer import TzScriptLexer
 from lexer.lex_token import Token
-from parser.tzscript_grammar import TZSCRIPT_GRAMMAR, idx, num, typex, contract, ifx, elsex, equal, plus, minus, star, div, semi, colon, comma, dot, opar, cpar, ocur, ccur, let, func, entry, equalequal, lessthan, greaterthan, lessthanequal, greaterthanequal
+from parser.tzscript_grammar import TZSCRIPT_GRAMMAR, idx, num, typex, contract, ifx, elsex, equal, plus, returnx, minus, star, div, semi, colon, comma, dot, opar, cpar, ocur, ccur, let, func, entry, equalequal, lessthan, greaterthan, lessthanequal, greaterthanequal
 from parser.slr_parser import SLR1Parser, build_slr_ast
 from visitors.type_check_visitor import TypeCheckVisitor
 from visitors.scope_check_visitor import ScopeCheckVisitor
 from visitors.semantic_check_visitor import SemanticCheckVisitor
 from visitors.michelson_generator_visitor import MichelsonGeneratorVisitor
-from visitors.string_rep_visitor import StringReprVisitor
+from visitors.string_rep_visitor import FormatVisitor
 import typer
 
-map_to_terminals_names = {'CONTRACT': contract.Name, 'ID': idx.Name, 'COLON': colon.Name, 'SEMICOLON': semi.Name, 'COMMA': comma.Name, 'INTEGER': num.Name, 'LPAREN': opar.Name, 'RPAREN': cpar.Name, 'LBRACE': ocur.Name, 'RBRACE': ccur.Name, 'LBRACKET': opar.Name, 'RBRACKET': cpar.Name, 'OR': plus.Name, 'AND': star.Name, 'OPERATOR': equal.Name, 'TERMINAL': typex.Name, 'NONTERMINAL': idx.Name,
-                          'ENTRY': entry.Name, 'FUNC': func.Name, 'LET': let.Name, 'IF': ifx.Name, 'ELSE': elsex.Name, 'TYPE': typex.Name, 'STRING': typex.Name, 'NAT': typex.Name, 'INT': typex.Name, 'OPTIONAL': typex.Name, 'BOOL': typex.Name, 'EQUALEQUAL': equalequal.Name, 'LESSTHAN': lessthan.Name, 'GREATERTHAN': greaterthan.Name, 'LESSTHANEQUAL': lessthanequal.Name, 'GREATERTHANEQUAL': greaterthanequal.Name, 'EQUAL': equal.Name}
+map_to_terminals_names = {'CONTRACT': contract.Name, 'ID': idx.Name, 'COLON': colon.Name, 'SEMICOLON': semi.Name, 'COMMA': comma.Name, 'INTEGER': num.Name, 'LPAREN': opar.Name, 'RPAREN': cpar.Name, 'LBRACE': ocur.Name, 'RBRACE': ccur.Name, 'LBRACKET': opar.Name, 'RBRACKET': cpar.Name, 'OR': plus.Name, 'AND': star.Name, 'OPERATOR': equal.Name, 'TERMINAL': typex.Name, 'NONTERMINAL': idx.Name, 'RETURN': returnx.Name, 'PLUS': plus.Name,
+                          'ENTRY': entry.Name, 'FUNC': func.Name, 'LET': let.Name, 'IF': ifx.Name, 'ELSE': elsex.Name, 'TYPE': typex.Name, 'STRING': typex.Name, 'NAT': typex.Name, 'INT': typex.Name, 'OPTIONAL': typex.Name, 'BOOL': typex.Name, 'EQUALEQUAL': equalequal.Name, 'LESSTHAN': lessthan.Name, 'GREATERTHAN': greaterthan.Name, 'LESSTHANEQUAL': lessthanequal.Name, 'GREATERTHANEQUAL': greaterthanequal.Name, 'EQUAL': equal.Name, 'MINUS': minus.Name}
 
 
 app = Typer()
@@ -176,7 +176,7 @@ def represent(file: str = Argument("", help="tzscript file to be parsed"),
         progress.update(1)
 
         print("\nGenerating String representation Code", end="")
-        string_repr = StringReprVisitor()
+        string_repr = FormatVisitor()
         string_repr.visit_program(ast)
         if out_file is None:
             out_file = file[:file.find(".tzs")]+".tzs.rep"
