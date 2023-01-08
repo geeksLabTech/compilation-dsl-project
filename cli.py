@@ -10,34 +10,69 @@ from visitors.michelson_generator_visitor import MichelsonGeneratorVisitor
 from visitors.string_rep_visitor import FormatVisitor
 import typer
 
-map_to_terminals_names = {'CONTRACT': contract.Name, 'ID': idx.Name, 'COLON': colon.Name, 'SEMICOLON': semi.Name, 'COMMA': comma.Name, 'INTEGER': num.Name, 'LPAREN': opar.Name, 'RPAREN': cpar.Name, 'LBRACE': ocur.Name, 'RBRACE': ccur.Name, 'LBRACKET': opar.Name, 'RBRACKET': cpar.Name, 'OR': plus.Name, 'AND': star.Name, 'OPERATOR': equal.Name, 'TERMINAL': typex.Name, 'NONTERMINAL': idx.Name, 'RETURN': returnx.Name, 'PLUS': plus.Name, 'STAR': star.Name
-                          'ENTRY': entry.Name, 'FUNC': func.Name, 'LET': let.Name, 'IF': ifx.Name, 'ELSE': elsex.Name, 'TYPE': typex.Name, 'STRING': typex.Name, 'NAT': typex.Name, 'INT': typex.Name, 'OPTIONAL': typex.Name, 'BOOL': typex.Name, 'EQUALEQUAL': equalequal.Name, 'LESSTHAN': lessthan.Name, 'GREATERTHAN': greaterthan.Name, 'LESSTHANEQUAL': lessthanequal.Name, 'GREATERTHANEQUAL': greaterthanequal.Name, 'EQUAL': equal.Name, 'MINUS': minus.Name}
+map_to_terminals_names = {'CONTRACT': contract.Name, 'ID': idx.Name, 'COLON': colon.Name, 'SEMICOLON': semi.Name, 'COMMA': comma.Name, 'INTEGER': num.Name, 'LPAREN': opar.Name, 'RPAREN': cpar.Name, 'LBRACE': ocur.Name, 'RBRACE': ccur.Name, 'LBRACKET': opar.Name, 'RBRACKET': cpar.Name, 'PLUS': plus.Name, 'STAR': star.Name, 'ENTRY': entry.Name, 'FUNC': func.Name, 'LET': let.Name, 'IF': ifx.Name, 'ELSE': elsex.Name, 'TYPE': typex.Name, 'STRING': typex.Name, 'NAT': typex.Name, 'INT': typex.Name, 'OPTIONAL': typex.Name, 'BOOL': typex.Name, 'EQUALEQUAL': equalequal.Name, 'LESSTHAN': lessthan.Name, 'GREATERTHAN': greaterthan.Name, 'LESSTHANEQUAL': lessthanequal.Name, 'GREATERTHANEQUAL': greaterthanequal.Name, 'EQUAL': equal.Name, 'MINUS': minus.Name, 'DIV': div.Name, 'RETURN': returnx.Name}  
 
 
 app = Typer()
 
+
+def process_lexer_tokens(lexer_tokens) -> list[Token]:
+    terminals_names = []
+
+    for token in lexer_tokens:
+        terminals_names.append(map_to_terminals_names[token.type])
+    
+    tokens: list[Token] = [] 
+    for i in range(len(lexer_tokens)):
+        tokens.append(Token(lexer_tokens[i].value, TZSCRIPT_GRAMMAR[terminals_names[i]]))
+    tokens.append(Token('EOF', TZSCRIPT_GRAMMAR.EOF))
+
+    return tokens
 
 @app.command()
 def build(file: str = Argument("", help="tzscript file to be parsed"),
           out_file: str = Argument(None, help='michelson file to be generated')):
     """ generates the .tz michelson script from the tzscript file specified """
     total = 7
+
+    fibonacci = '''
+    contract get_fib_n(n:int){
+        let last_fib_calculated: int = 0;
+
+        entry get_fib(n: int){
+            let result: int = fib(n);
+            last_fib_calculated = result;
+        }
+
+        func fib(n: int) : int{
+            if (n <= 1) {
+                return n;
+            }
+            else {
+                let a: int = n - 1;
+                let b: int = n - 2;
+                return fib(a) + fib(b);
+            }
+        }
+    }
+    '''
+
     with typer.progressbar(length=total) as progress:
         with open(file, "r") as f:
             script = f.read()
+        script = fibonacci
         # print(script)
         # Tokenize Script
         print("\nTokenizing Script", end="")
         lexer = TzScriptLexer()
-        tokens = list(lexer.tokenize(script))
-
-        terminals = []
-
-        for token in tokens:
-            terminals.append(map_to_terminals_names[token.type])
+        lexer_tokens = list(lexer.tokenize(script))
+        tokens = process_lexer_tokens(lexer_tokens)
+        
         print("... OK")
         progress.update(1)
 
+        terminals = [token.token_type for token in tokens]
+        print('\nterminals', terminals)
         # Parse tokenized Script
         print("\nParsing Script", end="")
         parser = SLR1Parser(TZSCRIPT_GRAMMAR, verbose=False)
@@ -108,26 +143,50 @@ def represent(file: str = Argument("", help="tzscript file to be parsed"),
               out_file: str = Argument(None, help='michelson file to be generated')):
     """ generates the .tzs.repr the string representation of the code in the input """
     total = 7
+    fibonacci = '''
+    contract get_fib_n(n:int){
+        let last_fib_calculated: int = 0;
+
+        entry get_fib(n: int){
+            let result: int = fib(n);
+            last_fib_calculated = result;
+        }
+
+        func fib(n: int) : int{
+            if (n <= 1) {
+                return n;
+            }
+            else {
+                let a: int = n - 1;
+                let b: int = n - 2;
+                return fib(a) + fib(b);
+            }
+        }
+    }
+    '''
+
+
     with typer.progressbar(length=total) as progress:
         with open(file, "r") as f:
             script = f.read()
+        
+        script = fibonacci
         # print(script)
         # Tokenize Script
         print("\nTokenizing Script", end="")
         lexer = TzScriptLexer()
-        tokens = list(lexer.tokenize(script))
-
-        terminals = []
-
-        for token in tokens:
-            terminals.append(map_to_terminals_names[token.type])
+        lexer_tokens = list(lexer.tokenize(script))
+        tokens = process_lexer_tokens(lexer_tokens)
+        
         print("... OK")
         progress.update(1)
+
+        terminals = [t.token_type for t in tokens] 
 
         # Parse tokenized Script
         print("\nParsing Script", end="")
         parser = SLR1Parser(TZSCRIPT_GRAMMAR, verbose=False)
-        print(tokens)
+        print(lexer_tokens)
         # tokens = [Token('contract', contract), Token('store_value', idx), Token('(', opar), Token('value', idx), Token(':', colon), Token('int', typex), Token(')', cpar), Token('{', ocur), Token('let', let), Token('storage', idx), Token(':', colon), Token('int', typex), Token('=', equal), Token('0', num), Token(';', semi), Token(
         #     'entry', entry), Token('replace', idx), Token('(', opar), Token('new_value', idx), Token(':', colon), Token('int', typex), Token(')', cpar), Token('{', ocur), Token('storage', idx), Token('=', equal), Token('new_value', idx), Token(';', semi), Token('}', ccur), Token('}', ccur), Token('EOF', TZSCRIPT_GRAMMAR.EOF)]
 
