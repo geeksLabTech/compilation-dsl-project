@@ -132,7 +132,6 @@ class EqualNode(ExpressionNode):
     def accept(self, visitor):
         return visitor.visit_equal_node(self)
 
-
 class IniquelatyNode(ExpressionNode):
     def __init__(self, left, right) -> None:
         self.left = left
@@ -140,7 +139,6 @@ class IniquelatyNode(ExpressionNode):
 
     def accept(self, visitor):
         return visitor.visit_not_equal_node(self)
-
 
 class LessThanNode(ExpressionNode):
     def __init__(self, left, right) -> None:
@@ -150,7 +148,6 @@ class LessThanNode(ExpressionNode):
     def accept(self, visitor):
         return visitor.visit_less_node(self)
 
-
 class LessThanEqualNode(ExpressionNode):
     def __init__(self, left, right) -> None:
         self.left = left
@@ -159,7 +156,6 @@ class LessThanEqualNode(ExpressionNode):
     def accept(self, visitor):
         return visitor.visit_less_equal_node(self)
 
-
 class GreaterThanNode(ExpressionNode):
     def __init__(self, left, right) -> None:
         self.left = left
@@ -167,7 +163,6 @@ class GreaterThanNode(ExpressionNode):
 
     def accept(self, visitor):
         return visitor.visit_greater_node(self)
-
 
 class GreaterThanEqualNode(ExpressionNode):
     def __init__(self, left, right) -> None:
