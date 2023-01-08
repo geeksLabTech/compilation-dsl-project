@@ -103,6 +103,9 @@ class FormatVisitor(object):
     def visit(self, node, tabs=0):
         ans = '\t' * tabs + f'\\__IfNode: if <expr> then [<stat>; ... <stat>;]'
         expr = self.visit(node.expr, tabs + 1)
+        for child in node.statements:
+            print(child,'child')
+            print(type(child),'type child')
         statements = '\n'.join(self.visit(child, tabs + 1) for child in node.statements)
         return f'{ans}\n{expr}\n{statements}'
     
@@ -120,8 +123,9 @@ class FormatVisitor(object):
             string_paramt = param.id+' '+':' +' ' + param.type
             sparams = sparams.join(string_paramt)
         ans = '\t' * tabs + f'\\__FuncDeclarationNode: def {node.id}({sparams}) : {node.type}'
-        body = self.visit(node.body, tabs + 2)
-        return f'{ans}\n{sparam}\n{body}'
+        params = '\n'.join(self.visit(param, tabs + 1 ) for param in node.params)
+        body = '\n'.join(self.visit(child, tabs + 2)for child in node.body)
+        return f'{ans}\n{params}\n{body}'
 
     @visitor.when(EntryDeclarationNode)
     def visit(self, node, tabs=0):
@@ -161,6 +165,9 @@ class FormatVisitor(object):
     @visitor.when(CallNode)
     def visit(self, node, tabs=0):
         ans = '\t' * tabs + f'\\__CallNode: {node.id}(<expr>, ..., <expr>)'
+        for arg in  node.args:
+            print(type(arg), 'arg')
+            print(arg, 'arg')
         args = '\n'.join(self.visit(arg, tabs + 1) for arg in node.args)
         return f'{ans}\n{args}'
 
@@ -170,3 +177,10 @@ class FormatVisitor(object):
         ans = '\t' * tabs + f'\\__VarCallNode: {node.id} = <expr>'
         expr = self.visit(node.expr, tabs + 1)
         return f'{ans}\n{expr}'
+    
+    @visitor.when(VariableNode)
+    def visit(self, node, tabs=0):
+        return '\t' * tabs + f'\\__VariableNode: {node.lex}'
+
+    
+
