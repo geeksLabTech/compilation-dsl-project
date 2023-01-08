@@ -1,5 +1,5 @@
 from parser.tzscript_ast import *
-
+from visitors.scope_check_visitor import ScopeCheckVisitor
 
 class SemanticCheckVisitor:
     def __init__(self):
