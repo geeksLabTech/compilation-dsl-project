@@ -10,7 +10,8 @@ from visitors.michelson_generator_visitor import MichelsonGeneratorVisitor
 from visitors.string_rep_visitor import FormatVisitor
 import typer
 
-map_to_terminals_names = {'CONTRACT': contract.Name, 'ID': idx.Name, 'COLON': colon.Name, 'SEMICOLON': semi.Name, 'COMMA': comma.Name, 'INTEGER': num.Name, 'LPAREN': opar.Name, 'RPAREN': cpar.Name, 'LBRACE': ocur.Name, 'RBRACE': ccur.Name, 'LBRACKET': opar.Name, 'RBRACKET': cpar.Name, 'PLUS': plus.Name, 'STAR': star.Name, 'ENTRY': entry.Name, 'FUNC': func.Name, 'LET': let.Name, 'IF': ifx.Name, 'ELSE': elsex.Name, 'TYPE': typex.Name, 'STRING': typex.Name, 'NAT': typex.Name, 'INT': typex.Name, 'OPTIONAL': typex.Name, 'BOOL': typex.Name, 'EQUALEQUAL': equalequal.Name, 'LESSTHAN': lessthan.Name, 'GREATERTHAN': greaterthan.Name, 'LESSTHANEQUAL': lessthanequal.Name, 'GREATERTHANEQUAL': greaterthanequal.Name, 'EQUAL': equal.Name, 'MINUS': minus.Name, 'DIV': div.Name, 'RETURN': returnx.Name}  
+map_to_terminals_names = {'CONTRACT': contract.Name, 'ID': idx.Name, 'COLON': colon.Name, 'SEMICOLON': semi.Name, 'COMMA': comma.Name, 'INTEGER': num.Name, 'LPAREN': opar.Name, 'RPAREN': cpar.Name, 'LBRACE': ocur.Name, 'RBRACE': ccur.Name, 'LBRACKET': opar.Name, 'RBRACKET': cpar.Name, 'PLUS': plus.Name, 'STAR': star.Name, 'ENTRY': entry.Name, 'FUNC': func.Name, 'LET': let.Name, 'IF': ifx.Name,
+                          'ELSE': elsex.Name, 'TYPE': typex.Name, 'STRING': typex.Name, 'NAT': typex.Name, 'INT': typex.Name, 'OPTIONAL': typex.Name, 'BOOL': typex.Name, 'EQUALEQUAL': equalequal.Name, 'LESSTHAN': lessthan.Name, 'GREATERTHAN': greaterthan.Name, 'LESSTHANEQUAL': lessthanequal.Name, 'GREATERTHANEQUAL': greaterthanequal.Name, 'EQUAL': equal.Name, 'MINUS': minus.Name, 'DIV': div.Name, 'RETURN': returnx.Name}
 
 
 app = Typer()
@@ -21,13 +22,15 @@ def process_lexer_tokens(lexer_tokens) -> list[Token]:
 
     for token in lexer_tokens:
         terminals_names.append(map_to_terminals_names[token.type])
-    
-    tokens: list[Token] = [] 
+
+    tokens: list[Token] = []
     for i in range(len(lexer_tokens)):
-        tokens.append(Token(lexer_tokens[i].value, TZSCRIPT_GRAMMAR[terminals_names[i]]))
+        tokens.append(
+            Token(lexer_tokens[i].value, TZSCRIPT_GRAMMAR[terminals_names[i]]))
     tokens.append(Token('EOF', TZSCRIPT_GRAMMAR.EOF))
 
     return tokens
+
 
 @app.command()
 def build(file: str = Argument("", help="tzscript file to be parsed"),
@@ -67,7 +70,7 @@ def build(file: str = Argument("", help="tzscript file to be parsed"),
         lexer = TzScriptLexer()
         lexer_tokens = list(lexer.tokenize(script))
         tokens = process_lexer_tokens(lexer_tokens)
-        
+
         print("... OK")
         progress.update(1)
 
@@ -165,11 +168,10 @@ def represent(file: str = Argument("", help="tzscript file to be parsed"),
     }
     '''
 
-
     with typer.progressbar(length=total) as progress:
         with open(file, "r") as f:
             script = f.read()
-        
+
         script = fibonacci
         # print(script)
         # Tokenize Script
@@ -177,11 +179,11 @@ def represent(file: str = Argument("", help="tzscript file to be parsed"),
         lexer = TzScriptLexer()
         lexer_tokens = list(lexer.tokenize(script))
         tokens = process_lexer_tokens(lexer_tokens)
-        
+
         print("... OK")
         progress.update(1)
 
-        terminals = [t.token_type for t in tokens] 
+        terminals = [t.token_type for t in tokens]
 
         # Parse tokenized Script
         print("\nParsing Script", end="")
@@ -236,7 +238,7 @@ def represent(file: str = Argument("", help="tzscript file to be parsed"),
 
         print("\nGenerating String representation Code", end="")
         string_repr = FormatVisitor()
-        string_repr.visit_program(ast)
+        string_repr.visit(ast)
         if out_file is None:
             out_file = file[:file.find(".tzs")]+".tzs.rep"
         with open(out_file, "w") as f:
