@@ -20,12 +20,12 @@ contract store_value(admin: adress){
 contract get_fib_n(){
     let last_fib_calculated = 0;
 
-    entry get_fib_n(n: nat){
+    entry get_fib(n: nat){
         let result = fib(n);
         last_fib_calculated = result;
     }
 
-    func fib(n: nat) -> nat{
+    func fib(n: nat) : nat{
         if (n <= 1) {
             return n;
         }
