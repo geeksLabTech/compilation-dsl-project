@@ -101,7 +101,7 @@ class VarCallNode(DeclarationNode):
     
     def accept(self, visitor):
         return visitor.visit_var_call_node(self)
-class EqualNode(ExpressionNode):
+class EqualNode(BinaryNode):
     def __init__(self, left, right) -> None:
         self.left = left
         self.right = right
@@ -109,7 +109,7 @@ class EqualNode(ExpressionNode):
     def accept(self, visitor):
         return visitor.visit_equal_node(self)
 
-class IniquelatyNode(ExpressionNode):
+class IniquelatyNode(BinaryNode):
     def __init__(self, left, right) -> None:
         self.left = left
         self.right = right
@@ -117,7 +117,7 @@ class IniquelatyNode(ExpressionNode):
     def accept(self, visitor):
         return visitor.visit_not_equal_node(self)
 
-class LessThanNode(ExpressionNode):
+class LessThanNode(BinaryNode):
     def __init__(self, left, right) -> None:
         self.left = left
         self.right = right
@@ -125,7 +125,7 @@ class LessThanNode(ExpressionNode):
     def accept(self, visitor):
         return visitor.visit_less_node(self)
 
-class LessThanEqualNode(ExpressionNode):
+class LessThanEqualNode(BinaryNode):
     def __init__(self, left, right) -> None:
         self.left = left
         self.right = right
@@ -133,7 +133,7 @@ class LessThanEqualNode(ExpressionNode):
     def accept(self, visitor):
         return visitor.visit_less_equal_node(self)
 
-class GreaterThanNode(ExpressionNode):
+class GreaterThanNode(BinaryNode):
     def __init__(self, left, right) -> None:
         self.left = left
         self.right = right
@@ -141,7 +141,7 @@ class GreaterThanNode(ExpressionNode):
     def accept(self, visitor):
         return visitor.visit_greater_node(self)
 
-class GreaterThanEqualNode(ExpressionNode):
+class GreaterThanEqualNode(BinaryNode):
     def __init__(self, left, right) -> None:
         self.left = left
         self.right = right
