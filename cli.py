@@ -93,8 +93,7 @@ def build(file: str = Argument("", help="tzscript file to be parsed"),
           out_file: str = Argument(None, help='michelson file to be generated')):
     """ generates the .tz michelson script from the tzscript file specified """
 
-    fibonacci = '''
-    contract get_fib_n(n:int){
+    fibonacci = '''contract get_fib_n(n:int){
         let last_fib_calculated: int = 0;
         
         entry get_fib(n: int){
@@ -113,12 +112,13 @@ def build(file: str = Argument("", help="tzscript file to be parsed"),
             }
         }
         
-    }
-    '''
-    with open(file, "r") as f:
-        script = f.read()
+    }'''
 
-    script = fibonacci
+    with open(file, "r", encoding='utf-8') as f:
+        script = f.read()
+    print(type(script))
+    print(script)
+    # script = fibonacci
 
     ast, progress = process(script)
 
@@ -167,7 +167,7 @@ def represent(file: str = Argument("", help="tzscript file to be parsed"),
     with open(file, "r") as f:
         script = f.read()
 
-        script = fibonacci
+        # script = fibonacci
         # print(script)
         # Tokenize Script
     ast, progress = process(script)
