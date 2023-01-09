@@ -184,12 +184,6 @@ class GreaterThanEqualNode(ExpressionNode):
     def accept(self, visitor):
         return visitor.visit_greater_equal_node(self)
 
-# class ReturnNode(ExpressionNode):
-#     def __init__(self, expr) -> None:
-#         self.expr = expr
-
-#     def accept(self, visitor):
-#         return visitor.visit_return_node(self)
 
 
 class TrueNode(ExpressionNode):
@@ -201,6 +195,10 @@ class FalseNode(ExpressionNode):
     def accept(self, visitor):
         return visitor.visit_false_node(self)
 
+class ConstantStringNode(AtomicNode):
+    def __init__(self, lex):
+        super().__init__(lex)
+        self.type = 'string'
 
 class ConstantNumNode(AtomicNode):
     def __init__(self, lex):
