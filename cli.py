@@ -121,7 +121,7 @@ def build(file: str = Argument("", help="tzscript file to be parsed"),
         print("\nPerforming Semantic Check", end="")
         semantic_visitor = SemanticCheckerVisitor()
         semantic_result = semantic_visitor.visit(ast)
-        if not semantic_result:
+        if semantic_result:
             print("\nSomething Went Wrong")
             return
         print("... OK")
@@ -217,21 +217,25 @@ def represent(file: str = Argument("", help="tzscript file to be parsed"),
         print("... OK")
         progress.update(1)
 
-        print("\nPerforming Scope Check", end="")
-        scope_visitor = ScopeCheckVisitor()
-        scope_result = scope_visitor.visit(ast)
-        if not scope_result:
-            print("Something Went Wrong")
-            return
+        # print("\nPerforming Scope Check", end="")
+        # scope_visitor = ScopeCheckVisitor()
+        # scope_result = scope_visitor.visit_program(ast)
+        # if not scope_result:
+        #     print("Something Went Wrong")
+        #     return
 
-        print("... OK")
+        # print("... OK")
         progress.update(1)
 
         print("\nPerforming Semantic Check", end="")
         semantic_visitor = SemanticCheckerVisitor()
         semantic_result = semantic_visitor.visit(ast)
-        if not semantic_result:
-            print("Something Went Wrong")
+        if len(semantic_result) > 0:
+
+            print("\nSomething Went Wrong")
+
+            for err in semantic_result:
+                print(err)
             return
         print("... OK")
         progress.update(1)
@@ -243,7 +247,7 @@ def represent(file: str = Argument("", help="tzscript file to be parsed"),
             out_file = file[:file.find(".tzs")]+".tzs.rep"
         with open(out_file, "w") as f:
             f.write(result)
-        print(f"Generated {out_file}")
+        print(f"\nGenerated {out_file}")
         progress.update(1)
 
 

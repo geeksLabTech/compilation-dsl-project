@@ -133,8 +133,6 @@ class TypeCheckVisitor(Visitor):
 
     def is_compatible_type(self, left, right):
 
-        print(left, right)
-
         if left.type == right.type:
             return True
         if left.type == 'num' and (right.type == 'nat' or right.type == 'int'):
