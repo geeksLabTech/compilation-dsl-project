@@ -39,7 +39,7 @@ if_stat %= ifx + opar + expr + cpar + ocur + stat_list + ccur, lambda h,s: IfNod
 else_stat %= elsex + ocur + stat_list + ccur, lambda h,s: ElseNode(s[3]),None,None,None,None
 return_stat %= returnx + expr + semi, lambda h,s: ReturnStatementNode(s[2]),None,None, None
 
-def_func %= func + idx + opar + param_list + cpar + colon + typex + ocur + stat_list + ccur, lambda h,s: FuncDeclarationNode(s[2], s[4], s[6], s[9]),None,None,None,None,None,None,None,None,None,None
+def_func %= func + idx + opar + param_list + cpar + colon + typex + ocur + stat_list + ccur, lambda h,s: FuncDeclarationNode(s[2], s[4], s[7], s[9]),None,None,None,None,None,None,None,None,None,None
 
 def_entry %= entry + idx + opar + param_list + cpar + ocur + stat_list + ccur, lambda h,s: EntryDeclarationNode(s[2], s[4], s[7]),None,None,None,None,None,None,None,None
 
