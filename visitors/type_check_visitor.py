@@ -53,13 +53,13 @@ class TypeCheckVisitor(Visitor):
 
         if node.type == 'nat':
             if type(node.expr) is MinusNode and type(node.expr.left) is ConstantNumNode and type(node.expr.right) is ConstantNumNode:
-                if int(node.expr.left.lex) < int(node.expr.right.lex):
+                if self.it == 1 and int(node.expr.left.lex) < int(node.expr.right.lex):
                     self.errors.append(
-                        f"Value {int(node.expr.left.lex) - int(node.expr.right.lex)} cannot be assigned to 'nat' type varible")
+                        f"Value {int(node.expr.left.lex) - int(node.expr.right.lex)} cannot be assigned to 'nat' type variable")
 
         elif 'type' in node.expr.__dict__:
             # print("there")
-            if not self.is_compatible_type(node, node.expr):
+            if self.it == 1 and not self.is_compatible_type(node, node.expr):
                 self.errors.append(
                     f"Incompatible types in variable declaration: expected {node.type}, got {node.expr.type}")
 
