@@ -30,11 +30,12 @@ class TypeCheckVisitor(Visitor):
         # check that the type of the expression is compatible with the declared type
 
         if node.expr is CallNode:
-            if not self.is_compatible_type(self.symbol_table[node.expr.id], node.type):
+            if not self.is_compatible_type(node.type, self.symbol_table[node.expr.id]):
                 raise TypeError(
                     f"Incompatible types in variable declaration: expected {node.type}, got {node.expr.type}")
         elif 'type' in node.expr.__dict__:
-            if not self.is_compatible_type(node.expr, node):
+            if not self.is_compatible_type(node, node.expr):
+                print(node.id)
                 raise TypeError(
                     f"Incompatible types in variable declaration: expected {node.type}, got {node.expr.type}")
 
@@ -120,13 +121,14 @@ class TypeCheckVisitor(Visitor):
                     f"Cannot permform {oper} operation between {self.get_type(node.left)} and {self.get_type(node.right)}")
 
     def is_compatible_type(self, left, right):
-        print(left, right)
         if left.type == right.type:
             return True
         if left.type == 'num' and (right.type == 'nat' or right.type == 'int'):
             return True
-        if right.type == 'num' and (left.type == 'nat' or left.type == 'int'):
+        if right.type == 'num':
             if left.type == 'nat' and int(right.lex) > 0:
+                return True
+            if left.type == 'int':
                 return True
             else:
                 False
@@ -139,7 +141,6 @@ class TypeCheckVisitor(Visitor):
         if type(node) is VariableNode:
             if node.lex in self.symbol_table:
                 return self.symbol_table[node.lex]
-
         if 'type' in node.__dict__:
             return node.type
         else:
