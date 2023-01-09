@@ -5,7 +5,7 @@ from parser.tzscript_grammar import TZSCRIPT_GRAMMAR, idx, num, typex, contract,
 from parser.slr_parser import SLR1Parser, build_slr_ast
 from visitors.type_check_visitor import TypeCheckVisitor
 from visitors.scope_check_visitor import ScopeCheckVisitor
-from visitors.semantic_check_visitor import SemanticCheckVisitor
+from visitors.semantic_check_visitor import SemanticCheckerVisitor
 from visitors.michelson_generator_visitor import MichelsonGeneratorVisitor
 from visitors.string_rep_visitor import FormatVisitor
 import typer
@@ -22,13 +22,15 @@ def process_lexer_tokens(lexer_tokens) -> list[Token]:
 
     for token in lexer_tokens:
         terminals_names.append(map_to_terminals_names[token.type])
-    
-    tokens: list[Token] = [] 
+
+    tokens: list[Token] = []
     for i in range(len(lexer_tokens)):
-        tokens.append(Token(lexer_tokens[i].value, TZSCRIPT_GRAMMAR[terminals_names[i]]))
+        tokens.append(
+            Token(lexer_tokens[i].value, TZSCRIPT_GRAMMAR[terminals_names[i]]))
     tokens.append(Token('EOF', TZSCRIPT_GRAMMAR.EOF))
 
     return tokens
+
 
 @app.command()
 def build(file: str = Argument("", help="tzscript file to be parsed"),
@@ -40,11 +42,6 @@ def build(file: str = Argument("", help="tzscript file to be parsed"),
     contract get_fib_n(n:int){
         let last_fib_calculated: int = 0;
 
-        entry get_fib(n: int){
-            let result: int = fib(n);
-            last_fib_calculated = result;
-        }
-
         func fib(n: int) : int{
             if (n <= 1) {
                 return n;
@@ -54,6 +51,11 @@ def build(file: str = Argument("", help="tzscript file to be parsed"),
                 let b: int = n - 2;
                 return fib(a) + fib(b);
             }
+        }
+        
+        entry get_fib(n: int){
+            let result: int = fib(n);
+            last_fib_calculated = result;
         }
     }
     '''
@@ -117,8 +119,8 @@ def build(file: str = Argument("", help="tzscript file to be parsed"),
         progress.update(1)
 
         print("\nPerforming Semantic Check", end="")
-        semantic_visitor = SemanticCheckVisitor()
-        semantic_result = semantic_visitor.visit_program(ast)
+        semantic_visitor = SemanticCheckerVisitor()
+        semantic_result = semantic_visitor.visit(ast)
         if not semantic_result:
             print("\nSomething Went Wrong")
             return
@@ -148,12 +150,12 @@ def represent(file: str = Argument("", help="tzscript file to be parsed"),
     contract get_fib_n(n:int){
         let last_fib_calculated: int = 0;
 
-        func fib(n: int) : int{
+        func fib(n: int):int{
             if (n <= 1) {
                 return n;
             }
             else {
-                let a: nat = 0 - 1;
+                let a: nat = n - 1;
                 let b: int = n - 2;
                 return fib(a) + fib(b);
             }
@@ -215,22 +217,22 @@ def represent(file: str = Argument("", help="tzscript file to be parsed"),
         print("... OK")
         progress.update(1)
 
-        # print("\nPerforming Scope Check", end="")
-        # scope_visitor = ScopeCheckVisitor()
-        # scope_result = scope_visitor.visit_program(ast)
-        # if not scope_result:
-        #     print("Something Went Wrong")
-        #     return
+        print("\nPerforming Scope Check", end="")
+        scope_visitor = ScopeCheckVisitor()
+        scope_result = scope_visitor.visit(ast)
+        if not scope_result:
+            print("Something Went Wrong")
+            return
 
         print("... OK")
         progress.update(1)
 
-        # print("\nPerforming Semantic Check", end="")
-        # semantic_visitor = SemanticCheckVisitor()
-        # semantic_result = semantic_visitor.visit_program(ast)
-        # if not semantic_result:
-        #     print("Something Went Wrong")
-        #     return
+        print("\nPerforming Semantic Check", end="")
+        semantic_visitor = SemanticCheckerVisitor()
+        semantic_result = semantic_visitor.visit(ast)
+        if not semantic_result:
+            print("Something Went Wrong")
+            return
         print("... OK")
         progress.update(1)
 

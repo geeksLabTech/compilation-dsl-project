@@ -38,7 +38,7 @@ class TypeCheckVisitor(Visitor):
             if not node.type == f_type:
                 raise TypeError(
                     f"Incompatible types in variable declaration: expected {node.type}, got {f_type}")
-        if node.type is 'nat':
+        if node.type == 'nat':
             if type(node.expr) is MinusNode and type(node.expr.left) is ConstantNumNode and type(node.expr.right) is ConstantNumNode:
                 if int(node.expr.left.lex) < int(node.expr.right.lex):
                     raise TypeError(
