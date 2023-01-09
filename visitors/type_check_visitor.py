@@ -66,7 +66,10 @@ class TypeCheckVisitor(Visitor):
             a.accept(self)
 
     def visit_var_call_node(self, node: VarCallNode):
-        pass
+        print(self.symbol_table[node.id], self.get_type(node.expr))
+        if not self.symbol_table[node.id] == self.get_type(node.expr):
+            raise TypeError(
+                f"Unable to assign {self.get_type(node.expr)} to {self.symbol_table[node.id]}")
 
     def visit_constant_num_node(self, node: ConstantNumNode):
         pass
@@ -131,8 +134,12 @@ class TypeCheckVisitor(Visitor):
         return False
 
     def get_type(self, node):
-        if node is CallNode:
+        if type(node) is CallNode:
             return self.symbol_table[node.id]['return']
+        if type(node) is VariableNode:
+            if node.lex in self.symbol_table:
+                return self.symbol_table[node.lex]
+
         if 'type' in node.__dict__:
             return node.type
         else:
