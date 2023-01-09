@@ -113,3 +113,30 @@ def test_type_nat():
     assert len(type_result) == 1
     assert type_result[0] == "Value -1 cannot be assigned to 'nat' type variable"
 
+
+def test_return_func():
+    script = """contract get_fib_n(n:int){
+        let last_fib_calculated: int = 0;
+        
+        entry get_fib(n: int){
+            let result: int = fib(n);
+            last_fib_calculated = result;
+        }
+
+        func fib(n: int) : int{
+            if (n <= 1) {
+                return n;
+            }
+            else {
+                let a: nat = n - 1;
+                let b: int = n - 2;
+                return "fib(a) + fib(b)";
+            }
+        }
+        
+    }"""
+
+    type_result = process(script)
+
+    assert len(type_result) == 1
+    assert type_result[0] == "Invalid return type for function call fib expected int, got string"

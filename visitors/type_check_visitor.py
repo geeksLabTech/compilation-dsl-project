@@ -5,6 +5,7 @@ from visitors.visitor import Visitor
 class TypeCheckVisitor(Visitor):
     def __init__(self):
         self.errors = []
+        self.func = []
         self.it = 1
         self.symbol_table = {}  # symbol table to store variable and function types
 
@@ -79,14 +80,22 @@ class TypeCheckVisitor(Visitor):
         # check types for function declaration node
         # add function to symbol table
         self.symbol_table[node.id] = {'return': node.type}
+        self.func.append(node.id)
         # check types for function body
         for param in node.params:
             self.symbol_table[node.id][param.id] = param.type
 
+        ret_type = None
         for statement in node.body:
             statement.accept(self)
 
+        self.func.pop(-1)
+        # if not ret_type == self.symbol_table[node.id]['return']:
+        #     self.errors.append(
+        #         f"Invalid return type for function call {node.id} expected {self.symbol_table[node.id]['return']}, got {ret_type}")
+
     def visit_call_node(self, node: CallNode):
+        ret_type = None
         for a in node.args:
             a.accept(self)
 
@@ -136,7 +145,10 @@ class TypeCheckVisitor(Visitor):
             return True
 
     def visit_return_statement(self, node: ReturnStatementNode):
-        node.expr.accept(self)
+        if 'type' in node.expr.__dict__:
+            if node.expr.type != self.symbol_table[self.func[-1]] and self.it == 1:
+                self.errors.append(
+                    f"Invalid return type for function call {self.func[-1]} expected {self.symbol_table[self.func[-1]]['return']}, got {node.expr.type}")
 
     def visit_arith_node(self, node: Node, oper: str):
         if not self.get_type(node.left) == self.get_type(node.right):
