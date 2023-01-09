@@ -54,7 +54,7 @@ def process(script: str):
         type_result = type_visitor.visit_program(ast)
         if len(type_result) > 0:
 
-            print("Something Went Wrong")
+            print("\nSomething Went Wrong")
 
             for err in type_result:
                 print(err)
@@ -96,6 +96,11 @@ def build(file: str = Argument("", help="tzscript file to be parsed"),
     fibonacci = '''
     contract get_fib_n(n:int){
         let last_fib_calculated: int = 0;
+        
+        entry get_fib(n: int){
+            let result: int = fib(n);
+            last_fib_calculated = result;
+        }
 
         func fib(n: int) : int{
             if (n <= 1) {
@@ -108,10 +113,6 @@ def build(file: str = Argument("", help="tzscript file to be parsed"),
             }
         }
         
-        entry get_fib(n: int){
-            let result: int = fib(n);
-            last_fib_calculated = result;
-        }
     }
     '''
     with open(file, "r") as f:
@@ -143,6 +144,11 @@ def represent(file: str = Argument("", help="tzscript file to be parsed"),
     contract get_fib_n(n:int){
         let last_fib_calculated: int = 0;
 
+        entry get_fib(n: int){
+            let result: int = fib(n);
+            last_fib_calculated = result;
+        }
+
         func fib(n: int):int{
             if (n <= 1) {
                 return n;
@@ -154,10 +160,6 @@ def represent(file: str = Argument("", help="tzscript file to be parsed"),
             }
         }
         
-        entry get_fib(n: int){
-            let result: int = fib(n);
-            last_fib_calculated = result;
-        }
     }
     '''
 

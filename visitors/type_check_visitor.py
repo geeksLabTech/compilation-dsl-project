@@ -5,19 +5,25 @@ from visitors.visitor import Visitor
 class TypeCheckVisitor(Visitor):
     def __init__(self):
         self.errors = []
+        self.it = 1
         self.symbol_table = {}  # symbol table to store variable and function types
 
     def visit_program(self, node: ProgramNode):
         # check types for program node
         for statement in node.statements:
             statement.accept(self)
+        self.it += 1
+        for statement in node.statements:
+            statement.accept(self)
+
         return self.errors
 
     def visit_if_node(self, node: IfNode):
         # check types for if node
         # check that the expression is of a boolean type
         if not self.is_boolean_type(node.expr):
-            self.errors.append("If statement expression must be of type boolean")
+            self.errors.append(
+                "If statement expression must be of type boolean")
         for statement in node.statements:
             statement.accept(self)
 
@@ -32,13 +38,19 @@ class TypeCheckVisitor(Visitor):
         # print(node.id, node.expr)
         if type(node.expr) is CallNode:
             # print("here")
+            if not node.expr.id in self.symbol_table:
+                self.symbol_table[node.expr.id] = {'return': '?'}
             f_type = self.symbol_table[node.expr.id]
             if not type(f_type) is str:
                 f_type = self.symbol_table[node.expr.id]['return']
 
             if not node.type == f_type:
-                print(
-                    f"Incompatible types in variable declaration: expected {node.type}, got {f_type}")
+                if self.it == 2 and f_type == '?':
+                    self.errors.append(f'Undefined Function {node.expr.id}')
+                if f_type != '?':
+                    self.errors.append(
+                        f"Incompatible types in variable declaration: expected {node.type}, got {f_type}")
+
         if node.type == 'nat':
             if type(node.expr) is MinusNode and type(node.expr.left) is ConstantNumNode and type(node.expr.right) is ConstantNumNode:
                 if int(node.expr.left.lex) < int(node.expr.right.lex):
