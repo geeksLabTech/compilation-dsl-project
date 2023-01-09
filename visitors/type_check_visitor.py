@@ -28,14 +28,25 @@ class TypeCheckVisitor(Visitor):
     def visit_var_declaration_node(self, node: VarDeclarationNode):
         # check types for variable declaration node
         # check that the type of the expression is compatible with the declared type
+        # print(node.id, node.expr)
+        if type(node.expr) is CallNode:
+            # print("here")
+            f_type = self.symbol_table[node.expr.id]
+            if not type(f_type) is str:
+                f_type = self.symbol_table[node.expr.id]['return']
 
-        if node.expr is CallNode:
-            if not self.is_compatible_type(node.type, self.symbol_table[node.expr.id]):
+            if not node.type == f_type:
                 raise TypeError(
-                    f"Incompatible types in variable declaration: expected {node.type}, got {node.expr.type}")
+                    f"Incompatible types in variable declaration: expected {node.type}, got {f_type}")
+        if node.type is 'nat':
+            if type(node.expr) is MinusNode and type(node.expr.left) is ConstantNumNode and type(node.expr.right) is ConstantNumNode:
+                if int(node.expr.left.lex) < int(node.expr.right.lex):
+                    raise TypeError(
+                        f"Value {int(node.expr.left.lex) - int(node.expr.right.lex)} cannot be assigned to 'nat' type varible")
+
         elif 'type' in node.expr.__dict__:
+            # print("there")
             if not self.is_compatible_type(node, node.expr):
-                print(node.id)
                 raise TypeError(
                     f"Incompatible types in variable declaration: expected {node.type}, got {node.expr.type}")
 
@@ -67,7 +78,7 @@ class TypeCheckVisitor(Visitor):
             a.accept(self)
 
     def visit_var_call_node(self, node: VarCallNode):
-        print(self.symbol_table[node.id], self.get_type(node.expr))
+        # print(self.symbol_table[node.id], self.get_type(node.expr))
         if not self.symbol_table[node.id] == self.get_type(node.expr):
             raise TypeError(
                 f"Unable to assign {self.get_type(node.expr)} to {self.symbol_table[node.id]}")
@@ -121,6 +132,9 @@ class TypeCheckVisitor(Visitor):
                     f"Cannot permform {oper} operation between {self.get_type(node.left)} and {self.get_type(node.right)}")
 
     def is_compatible_type(self, left, right):
+
+        print(left, right)
+
         if left.type == right.type:
             return True
         if left.type == 'num' and (right.type == 'nat' or right.type == 'int'):

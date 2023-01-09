@@ -150,11 +150,6 @@ def represent(file: str = Argument("", help="tzscript file to be parsed"),
     contract get_fib_n(n:int){
         let last_fib_calculated: int = 0;
 
-        entry get_fib(n: int){
-            let result: int = fib(n);
-            last_fib_calculated = result;
-        }
-
         func fib(n: int) : int{
             if (n <= 1) {
                 return n;
@@ -164,6 +159,11 @@ def represent(file: str = Argument("", help="tzscript file to be parsed"),
                 let b: int = n - 2;
                 return fib(a) + fib(b);
             }
+        }
+        
+        entry get_fib(n: int){
+            let result: int = fib(n);
+            last_fib_calculated = result;
         }
     }
     '''
