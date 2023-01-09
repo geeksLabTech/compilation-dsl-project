@@ -10,6 +10,26 @@ from visitors.michelson_generator_visitor import MichelsonGeneratorVisitor
 from visitors.string_rep_visitor import FormatVisitor
 import typer
 
+fibonacci = '''contract get_fib_n(n:int){
+        let last_fib_calculated: int = 0;
+        
+        entry get_fib(n: int){
+            let result: int = fib(n);
+            last_fib_calculated = result;
+        }
+
+        func fib(n: int) : int{
+            if (n <= 1) {
+                return n;
+            }
+            else {
+                let a: int = n - 1;
+                let b: int = n - 2;
+                return fib(a) + fib(b);
+            }
+        }
+        
+    }'''
 
 app = Typer()
 
@@ -93,32 +113,9 @@ def build(file: str = Argument("", help="tzscript file to be parsed"),
           out_file: str = Argument(None, help='michelson file to be generated')):
     """ generates the .tz michelson script from the tzscript file specified """
 
-    fibonacci = '''contract get_fib_n(n:int){
-        let last_fib_calculated: int = 0;
-        
-        entry get_fib(n: int){
-            let result: int = fib(n);
-            last_fib_calculated = result;
-        }
-
-        func fib(n: int) : int{
-            if (n <= 1) {
-                return n;
-            }
-            else {
-                let a: int = n - 1;
-                let b: int = n - 2;
-                return fib(a) + fib(b);
-            }
-        }
-        
-    }'''
-
     with open(file, "r", encoding='utf-8') as f:
         script = f.read()
-    print(type(script))
-    print(script)
-    # script = fibonacci
+
 
     ast, progress = process(script)
 
@@ -140,36 +137,11 @@ def build(file: str = Argument("", help="tzscript file to be parsed"),
 def represent(file: str = Argument("", help="tzscript file to be parsed"),
               out_file: str = Argument(None, help='michelson file to be generated')):
     """ generates the .tzs.repr the string representation of the code in the input """
-    fibonacci = '''
-    contract get_fib_n(n:int){
-        let last_fib_calculated: int = 0;
-
-        entry get_fib(n: int){
-            let result: int = fib(n);
-            last_fib_calculated = result;
-        }
-
-        func fib(n: int):int{
-            if (n <= 1) {
-                return n;
-            }
-            else {
-                let a: nat = n - 1;
-                let b: int = n - 2;
-                return fib(a) + fib(b);
-            }
-        }
-        
-    }
-    '''
 
     # with typer.progressbar(length=total) as progress:
     with open(file, "r") as f:
         script = f.read()
 
-        # script = fibonacci
-        # print(script)
-        # Tokenize Script
     ast, progress = process(script)
 
     print("\nGenerating String representation Code")
