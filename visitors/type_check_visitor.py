@@ -34,7 +34,7 @@ class TypeCheckVisitor(Visitor):
                 raise TypeError(
                     f"Incompatible types in variable declaration: expected {node.type}, got {node.expr.type}")
         elif 'type' in node.expr.__dict__:
-            if not self.is_compatible_type(node.expr.type, node.type):
+            if not self.is_compatible_type(node.expr, node):
                 raise TypeError(
                     f"Incompatible types in variable declaration: expected {node.type}, got {node.expr.type}")
 
@@ -46,7 +46,7 @@ class TypeCheckVisitor(Visitor):
         if node.id not in self.symbol_table:
             raise NameError(f"Variable {node.id} not defined")
         # check that the type of the expression is compatible with the variable's type
-        if not self.is_compatible_type(node.expr.type, self.symbol_table[node.id]):
+        if not self.is_compatible_type(node, node.expr):
             raise TypeError(
                 f"Incompatible types in assignment: expected {self.symbol_table[node.id]}, got {node.expr.type}")
 
@@ -110,20 +110,23 @@ class TypeCheckVisitor(Visitor):
     def visit_return_statement(self, node: ReturnStatementNode):
         node.expr.accept(self)
 
-    def visit_arith_node(self, node: Node, oper:str):
+    def visit_arith_node(self, node: Node, oper: str):
         if not self.get_type(node.left) == self.get_type(node.right):
-            if not self.is_compatible_type(self.get_type(node.left), self.get_type(node.right)):
+            if not self.is_compatible_type(node.left, node.right):
                 raise TypeError(
                     f"Cannot permform {oper} operation between {self.get_type(node.left)} and {self.get_type(node.right)}")
 
-    def is_compatible_type(self, expr_type, node_type):
-
-        if expr_type == node_type:
+    def is_compatible_type(self, left, right):
+        print(left, right)
+        if left.type == right.type:
             return True
-        if node_type == 'num' and (expr_type == 'nat' or expr_type == 'int'):
+        if left.type == 'num' and (right.type == 'nat' or right.type == 'int'):
             return True
-        if expr_type == 'num' and (node_type == 'nat' or node_type == 'int'):
-            return True
+        if right.type == 'num' and (left.type == 'nat' or left.type == 'int'):
+            if left.type == 'nat' and int(right.lex) > 0:
+                return True
+            else:
+                False
         # TODO get compatibility list
         return False
 

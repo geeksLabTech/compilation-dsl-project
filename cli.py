@@ -160,7 +160,7 @@ def represent(file: str = Argument("", help="tzscript file to be parsed"),
                 return n;
             }
             else {
-                let a: int = n - 1;
+                let a: nat = 0 - 1;
                 let b: int = n - 2;
                 return fib(a) + fib(b);
             }
