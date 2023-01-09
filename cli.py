@@ -210,11 +210,14 @@ def represent(file: str = Argument("", help="tzscript file to be parsed"),
         print("\nPerforming Type Check", end="")
         type_visitor = TypeCheckVisitor()
         type_result = type_visitor.visit_program(ast)
-        if not type_result:
-            print("Something Went Wrong")
-            return
+        if len(type_result) > 0:
 
-        print("... OK")
+            print("Something Went Wrong")
+
+            for err in type_result:
+                print(err)
+        else:
+            print("... OK")
         progress.update(1)
 
         # print("\nPerforming Scope Check", end="")
@@ -236,19 +239,19 @@ def represent(file: str = Argument("", help="tzscript file to be parsed"),
 
             for err in semantic_result:
                 print(err)
-            return
-        print("... OK")
+        else:
+            print("... OK")
         progress.update(1)
 
-        print("\nGenerating String representation Code", end="")
+        print("\nGenerating String representation Code")
         string_repr = FormatVisitor()
         result = string_repr.visit(ast)
         if out_file is None:
             out_file = file[:file.find(".tzs")]+".tzs.rep"
         with open(out_file, "w") as f:
             f.write(result)
-        print(f"\nGenerated {out_file}")
         progress.update(1)
+        print(f"\nGenerated {out_file}")
 
 
 @app.command()
