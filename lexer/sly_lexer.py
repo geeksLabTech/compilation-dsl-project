@@ -5,11 +5,13 @@ from grammar import Grammar
 from parser.tzscript_grammar import TZSCRIPT_GRAMMAR, idx, num, typex, contract, ifx, elsex, equal, plus, returnx, minus, star, div, semi, colon, comma, dot, opar, cpar, ocur, ccur, let, func, entry, equalequal, lessthan, greaterthan, lessthanequal, greaterthanequal
 from lexer.lex_token import Token
 
+
 class TzScriptLexer(Lexer):
-           
-    reserved_words = [ 'contract','entry','func','let','if','else','const','type','for','in','string','nat','int','map','optional','bool','None','true','false','return','calledBy']
+
+    reserved_words = ['contract', 'entry', 'func', 'let', 'if', 'else', 'const', 'type', 'for', 'in',
+                      'string', 'nat', 'int', 'map', 'optional', 'bool', 'None', 'true', 'false', 'return', 'calledBy']
     # Set of token names. This is always required
-    
+
     tokens = {
         COLON,
         SEMICOLON,
@@ -64,7 +66,7 @@ class TzScriptLexer(Lexer):
         STAR,
         DIV
     }
-    
+
     tokens.add(t for t in R_W)
 
     # String containing ignored characters (spaces and tabs)
@@ -102,7 +104,8 @@ class TzScriptLexer(Lexer):
     ATTRIBUTEPRODUCTION = r'AttributeProduction'
     PRODUCTION = r'Production'
     GRAMMAR = r'Grammar'
-    
+    STRING = r'\"([^\\\n]|(\\.))*?\"'
+
     # reserved Words
     ID["contract"] = CONTRACT
     ID['entry'] = ENTRY
@@ -129,12 +132,12 @@ class TzScriptLexer(Lexer):
     # Define a rule so we can track line numbers
     @_(r'\n+')
     def ignore_newline(self, t):
-        self.lineno += t.value.count('\n')    
+        self.lineno += t.value.count('\n')
 
     def t_OPERATOR(self, t):
         r'[=<>+-/*]+'
         return t
-    
+
     def t_COLON(self, t):
         r'\:'
         return t
@@ -180,7 +183,8 @@ class TzScriptLexer(Lexer):
         raise ValueError(f'Invalid token: {t.value[0]}')
 
 
-map_to_terminals_names = {'CONTRACT': contract.Name, 'ID': idx.Name, 'COLON': colon.Name, 'SEMICOLON': semi.Name, 'COMMA': comma.Name, 'INTEGER': num.Name, 'LPAREN': opar.Name, 'RPAREN': cpar.Name, 'LBRACE': ocur.Name, 'RBRACE': ccur.Name, 'LBRACKET': opar.Name, 'RBRACKET': cpar.Name, 'PLUS': plus.Name, 'STAR': star.Name, 'ENTRY': entry.Name, 'FUNC': func.Name, 'LET': let.Name, 'IF': ifx.Name, 'ELSE': elsex.Name, 'TYPE': typex.Name, 'STRING': typex.Name, 'NAT': typex.Name, 'INT': typex.Name, 'OPTIONAL': typex.Name, 'BOOL': typex.Name, 'EQUALEQUAL': equalequal.Name, 'LESSTHAN': lessthan.Name, 'GREATERTHAN': greaterthan.Name, 'LESSTHANEQUAL': lessthanequal.Name, 'GREATERTHANEQUAL': greaterthanequal.Name, 'EQUAL': equal.Name, 'MINUS': minus.Name, 'DIV': div.Name, 'RETURN': returnx.Name}  
+map_to_terminals_names = {'CONTRACT': contract.Name, 'ID': idx.Name, 'COLON': colon.Name, 'SEMICOLON': semi.Name, 'COMMA': comma.Name, 'INTEGER': num.Name, 'LPAREN': opar.Name, 'RPAREN': cpar.Name, 'LBRACE': ocur.Name, 'RBRACE': ccur.Name, 'LBRACKET': opar.Name, 'RBRACKET': cpar.Name, 'PLUS': plus.Name, 'STAR': star.Name, 'ENTRY': entry.Name, 'FUNC': func.Name, 'LET': let.Name, 'IF': ifx.Name,
+                          'ELSE': elsex.Name, 'TYPE': typex.Name, 'STRING': typex.Name, 'NAT': typex.Name, 'INT': typex.Name, 'OPTIONAL': typex.Name, 'BOOL': typex.Name, 'EQUALEQUAL': equalequal.Name, 'LESSTHAN': lessthan.Name, 'GREATERTHAN': greaterthan.Name, 'LESSTHANEQUAL': lessthanequal.Name, 'GREATERTHANEQUAL': greaterthanequal.Name, 'EQUAL': equal.Name, 'MINUS': minus.Name, 'DIV': div.Name, 'RETURN': returnx.Name}
 
 
 def process_lexer_tokens(lexer_tokens) -> list[Token]:
@@ -188,10 +192,11 @@ def process_lexer_tokens(lexer_tokens) -> list[Token]:
 
     for token in lexer_tokens:
         terminals_names.append(map_to_terminals_names[token.type])
-    
-    tokens: list[Token] = [] 
+
+    tokens: list[Token] = []
     for i in range(len(lexer_tokens)):
-        tokens.append(Token(lexer_tokens[i].value, TZSCRIPT_GRAMMAR[terminals_names[i]]))
+        tokens.append(
+            Token(lexer_tokens[i].value, TZSCRIPT_GRAMMAR[terminals_names[i]]))
     tokens.append(Token('EOF', TZSCRIPT_GRAMMAR.EOF))
 
     return tokens
