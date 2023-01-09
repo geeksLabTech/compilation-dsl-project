@@ -1,0 +1,5 @@
+pydot==1.4.2
+pytest==6.2.4
+pytezos==3.7.3
+sly==0.5
+typer==0.7.0

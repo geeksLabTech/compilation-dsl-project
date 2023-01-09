@@ -130,6 +130,15 @@ class SemanticCheckerVisitor(object):
         else:
             scope = Scope(parent=scope)
 
+        self.iterations = 1
+
+        for child in node.statements:
+            new_scope = self.visit(child, scope)
+            if new_scope is not None:
+                scope = new_scope
+
+        self.iterations += 1
+
         for child in node.statements:
             new_scope = self.visit(child, scope)
             if new_scope is not None:
@@ -139,8 +148,9 @@ class SemanticCheckerVisitor(object):
 
     @visitor.when(VarDeclarationNode)
     def visit(self, node: VarDeclarationNode, scope: Scope):
-        if scope.is_local_var(node.id):
-            self.errors.append(f'Variable {node.id} is used')
+        if self.iterations == 1:
+            if scope.is_local_var(node.id):
+                self.errors.append(f'Variable {node.id} is used')
 
         scope.define_variable(node.id)
         self.visit(node.expr, scope)
@@ -150,7 +160,8 @@ class SemanticCheckerVisitor(object):
     def visit(self, node: FuncDeclarationNode, scope: Scope):
 
         if scope.is_func_defined(node.id, len(node.params)):
-            self.errors.append(f'Function name {node.id} is used')
+            if self.iterations == 1:
+                self.errors.append(f'Function name {node.id} is used')
 
         scope.define_function(node.id, len(node.params))
         new_scope = scope.create_child_scope()
@@ -212,7 +223,8 @@ class SemanticCheckerVisitor(object):
             # print('enr')
             # print([(f.name, f.params) for f in scope.parent.local_funcs])
             # print('parent funcs', scope.parent.local_funcs)
-            self.errors.append(f'Function {node.id} is not defined')
+            if self.iterations == 2:
+                self.errors.append(f'Function {node.id} is not defined')
 
         # print(node.id) #TODO: change to get_local_function_info
         # if len(node.args) != len(scope.get_local_function_info(node.id, node.args)):

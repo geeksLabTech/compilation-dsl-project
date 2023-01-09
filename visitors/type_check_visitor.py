@@ -4,19 +4,26 @@ from visitors.visitor import Visitor
 
 class TypeCheckVisitor(Visitor):
     def __init__(self):
+        self.errors = []
+        self.it = 1
         self.symbol_table = {}  # symbol table to store variable and function types
 
     def visit_program(self, node: ProgramNode):
         # check types for program node
         for statement in node.statements:
             statement.accept(self)
-        return True
+        self.it += 1
+        for statement in node.statements:
+            statement.accept(self)
+
+        return self.errors
 
     def visit_if_node(self, node: IfNode):
         # check types for if node
         # check that the expression is of a boolean type
         if not self.is_boolean_type(node.expr):
-            raise TypeError("If statement expression must be of type boolean")
+            self.errors.append(
+                "If statement expression must be of type boolean")
         for statement in node.statements:
             statement.accept(self)
 
@@ -31,23 +38,29 @@ class TypeCheckVisitor(Visitor):
         # print(node.id, node.expr)
         if type(node.expr) is CallNode:
             # print("here")
+            if not node.expr.id in self.symbol_table:
+                self.symbol_table[node.expr.id] = {'return': '?'}
             f_type = self.symbol_table[node.expr.id]
             if not type(f_type) is str:
                 f_type = self.symbol_table[node.expr.id]['return']
 
             if not node.type == f_type:
-                raise TypeError(
-                    f"Incompatible types in variable declaration: expected {node.type}, got {f_type}")
+                if self.it == 2 and f_type == '?':
+                    self.errors.append(f'Undefined Function {node.expr.id}')
+                if f_type != '?':
+                    self.errors.append(
+                        f"Incompatible types in variable declaration: expected {node.type}, got {f_type}")
+
         if node.type == 'nat':
             if type(node.expr) is MinusNode and type(node.expr.left) is ConstantNumNode and type(node.expr.right) is ConstantNumNode:
                 if int(node.expr.left.lex) < int(node.expr.right.lex):
-                    raise TypeError(
+                    self.errors.append(
                         f"Value {int(node.expr.left.lex) - int(node.expr.right.lex)} cannot be assigned to 'nat' type varible")
 
         elif 'type' in node.expr.__dict__:
             # print("there")
             if not self.is_compatible_type(node, node.expr):
-                raise TypeError(
+                self.errors.append(
                     f"Incompatible types in variable declaration: expected {node.type}, got {node.expr.type}")
 
         self.symbol_table[node.id] = node.type
@@ -59,7 +72,7 @@ class TypeCheckVisitor(Visitor):
             raise NameError(f"Variable {node.id} not defined")
         # check that the type of the expression is compatible with the variable's type
         if not self.is_compatible_type(node, node.expr):
-            raise TypeError(
+            self.errors.append(
                 f"Incompatible types in assignment: expected {self.symbol_table[node.id]}, got {node.expr.type}")
 
     def visit_func_declaration_node(self, node: FuncDeclarationNode):
@@ -80,7 +93,7 @@ class TypeCheckVisitor(Visitor):
     def visit_var_call_node(self, node: VarCallNode):
         # print(self.symbol_table[node.id], self.get_type(node.expr))
         if not self.symbol_table[node.id] == self.get_type(node.expr):
-            raise TypeError(
+            self.errors.append(
                 f"Unable to assign {self.get_type(node.expr)} to {self.symbol_table[node.id]}")
 
     def visit_constant_num_node(self, node: ConstantNumNode):
@@ -107,7 +120,7 @@ class TypeCheckVisitor(Visitor):
         right = self.get_type(node.rigt)
 
         if not self.is_compatible_type(left, right):
-            raise TypeError(
+            self.errors.append(
                 f"Incompatible types in binary operation: {left} and {right}")
 
     def is_boolean_type(self, node: Node):
@@ -128,7 +141,7 @@ class TypeCheckVisitor(Visitor):
     def visit_arith_node(self, node: Node, oper: str):
         if not self.get_type(node.left) == self.get_type(node.right):
             if not self.is_compatible_type(node.left, node.right):
-                raise TypeError(
+                self.errors.append(
                     f"Cannot permform {oper} operation between {self.get_type(node.left)} and {self.get_type(node.right)}")
 
     def is_compatible_type(self, left, right):
