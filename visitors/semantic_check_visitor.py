@@ -209,6 +209,10 @@ class SemanticCheckerVisitor(object):
 
         return None
 
+    @visitor.when(ConstantStringNode)
+    def visit(self, node:ConstantStringNode, scope: Scope):
+        pass
+
     @visitor.when(VariableNode)
     def visit(self, node: VariableNode, scope: Scope):
         if not scope.is_local_var(node.lex):

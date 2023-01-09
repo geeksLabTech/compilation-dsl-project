@@ -1,4 +1,5 @@
 
+from cProfile import label
 from grammar import Grammar
 from parser.tzscript_ast import *
 
@@ -17,7 +18,7 @@ func_call, arg_list, var_call, return_stat  = TZSCRIPT_GRAMMAR.NonTerminals('<fu
 let, func, entry = TZSCRIPT_GRAMMAR.Terminals('let func entry')
 semi, colon, comma, dot, opar, cpar, ocur, ccur = TZSCRIPT_GRAMMAR.Terminals('; : , . ( ) { }')
 equal,equalequal, plus, minus, star, div,lessthanequal,greaterthanequal, iniquelaty, lessthan,greaterthan = TZSCRIPT_GRAMMAR.Terminals('= == + - * / <= >= != < >')
-idx, num, typex, contract, ifx, elsex,truex , falsex, returnx = TZSCRIPT_GRAMMAR.Terminals('id num type contract if else true false return')
+idx, num, typex, contract, ifx, elsex,truex , falsex, returnx, stringx, dquoutes = TZSCRIPT_GRAMMAR.Terminals('id num type contract if else true false return string_text "')
 
 # productions
 program %= contract + idx + opar + param_list + cpar + ocur + stat_list + ccur, lambda h,s: ProgramNode(s[2], s[4], s[7]), None, None, None, None, None, None,None,None
@@ -73,7 +74,7 @@ factor %= opar + expr + cpar, lambda h,s: s[2],None,None,None
 
 atom %= num, lambda h,s: ConstantNumNode(s[1]),None
 atom %= idx, lambda h,s: VariableNode(s[1]),None
-
+atom %= dquoutes + stringx + dquoutes, lambda h,s: ConstantStringNode(s[2]),None,None,None 
 atom %= truex, lambda h,s: TrueNode(),None
 atom %= falsex, lambda h,s: FalseNode(),None
 
