@@ -2,7 +2,7 @@ from sly import Lexer
 # from grammar import *
 from grammar import Grammar
 
-from parser.tzscript_grammar import TZSCRIPT_GRAMMAR, idx, num, typex, contract, ifx, elsex, equal, plus, returnx, minus, star, div, semi, colon, comma, dot, opar, cpar, ocur, ccur, let, func, entry, equalequal, lessthan, greaterthan, lessthanequal, greaterthanequal
+from parser.tzscript_grammar import TZSCRIPT_GRAMMAR, idx, num, typex, contract, ifx, elsex, equal, plus, returnx, minus, star, div, semi, colon, comma, dot, opar, cpar, ocur, ccur, let, func, entry, equalequal, lessthan, greaterthan, lessthanequal, greaterthanequal, dquoutes
 from lexer.lex_token import Token
 
 class TzScriptLexer(Lexer):
@@ -13,6 +13,7 @@ class TzScriptLexer(Lexer):
     tokens = {
         COLON,
         SEMICOLON,
+        DOUBLEQUOTES,
         COMMA,
         INTEGER,
         LPAREN,
@@ -62,7 +63,8 @@ class TzScriptLexer(Lexer):
         MINUS,
         PLUS,
         STAR,
-        DIV
+        DIV,
+        ADDRESS,
     }
     
     tokens.add(t for t in R_W)
@@ -74,6 +76,7 @@ class TzScriptLexer(Lexer):
     COLON = r'\:'
     SEMICOLON = r'\;'
     COMMA = r'\,'
+    DOUBLEQUOTES = r'\"'
     INTEGER = r'\d+'
     LPAREN = r'\('
     RPAREN = r'\)'
@@ -115,6 +118,7 @@ class TzScriptLexer(Lexer):
     ID['for'] = FOR
     ID['in'] = IN
     ID['string'] = TYPE
+    ID['address'] = TYPE
     ID['nat'] = TYPE
     ID['int'] = TYPE
     ID['map'] = TYPE
@@ -180,7 +184,7 @@ class TzScriptLexer(Lexer):
         raise ValueError(f'Invalid token: {t.value[0]}')
 
 
-map_to_terminals_names = {'CONTRACT': contract.Name, 'ID': idx.Name, 'COLON': colon.Name, 'SEMICOLON': semi.Name, 'COMMA': comma.Name, 'INTEGER': num.Name, 'LPAREN': opar.Name, 'RPAREN': cpar.Name, 'LBRACE': ocur.Name, 'RBRACE': ccur.Name, 'LBRACKET': opar.Name, 'RBRACKET': cpar.Name, 'PLUS': plus.Name, 'STAR': star.Name, 'ENTRY': entry.Name, 'FUNC': func.Name, 'LET': let.Name, 'IF': ifx.Name, 'ELSE': elsex.Name, 'TYPE': typex.Name, 'STRING': typex.Name, 'NAT': typex.Name, 'INT': typex.Name, 'OPTIONAL': typex.Name, 'BOOL': typex.Name, 'EQUALEQUAL': equalequal.Name, 'LESSTHAN': lessthan.Name, 'GREATERTHAN': greaterthan.Name, 'LESSTHANEQUAL': lessthanequal.Name, 'GREATERTHANEQUAL': greaterthanequal.Name, 'EQUAL': equal.Name, 'MINUS': minus.Name, 'DIV': div.Name, 'RETURN': returnx.Name}  
+map_to_terminals_names = {'CONTRACT': contract.Name, 'ID': idx.Name, 'COLON': colon.Name, 'SEMICOLON': semi.Name, 'COMMA': comma.Name, 'INTEGER': num.Name, 'LPAREN': opar.Name, 'RPAREN': cpar.Name, 'LBRACE': ocur.Name, 'RBRACE': ccur.Name, 'LBRACKET': opar.Name, 'RBRACKET': cpar.Name, 'PLUS': plus.Name, 'STAR': star.Name, 'ENTRY': entry.Name, 'FUNC': func.Name, 'LET': let.Name, 'IF': ifx.Name, 'ELSE': elsex.Name, 'TYPE': typex.Name, 'STRING': typex.Name, 'NAT': typex.Name, 'INT': typex.Name, 'OPTIONAL': typex.Name, 'BOOL': typex.Name, 'EQUALEQUAL': equalequal.Name, 'LESSTHAN': lessthan.Name, 'GREATERTHAN': greaterthan.Name, 'LESSTHANEQUAL': lessthanequal.Name, 'GREATERTHANEQUAL': greaterthanequal.Name, 'EQUAL': equal.Name, 'MINUS': minus.Name, 'DIV': div.Name, 'RETURN': returnx.Name, 'ADDRESS': typex.Name, 'DOUBLEQUOTES': dquoutes.Name}  
 
 
 def process_lexer_tokens(lexer_tokens) -> list[Token]:
