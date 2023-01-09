@@ -5,14 +5,32 @@ from parser.tzscript_grammar import TZSCRIPT_GRAMMAR, idx, num, typex, contract,
 from parser.slr_parser import SLR1Parser, build_slr_ast
 from visitors.type_check_visitor import TypeCheckVisitor
 from visitors.scope_check_visitor import ScopeCheckVisitor
-from visitors.semantic_check_visitor import SemanticCheckVisitor
+from visitors.semantic_check_visitor import SemanticCheckerVisitor
 from visitors.michelson_generator_visitor import MichelsonGeneratorVisitor
 from visitors.string_rep_visitor import FormatVisitor
 import typer
 
+map_to_terminals_names = {'CONTRACT': contract.Name, 'ID': idx.Name, 'COLON': colon.Name, 'SEMICOLON': semi.Name, 'COMMA': comma.Name, 'INTEGER': num.Name, 'LPAREN': opar.Name, 'RPAREN': cpar.Name, 'LBRACE': ocur.Name, 'RBRACE': ccur.Name, 'LBRACKET': opar.Name, 'RBRACKET': cpar.Name, 'PLUS': plus.Name, 'STAR': star.Name, 'ENTRY': entry.Name, 'FUNC': func.Name, 'LET': let.Name, 'IF': ifx.Name,
+                          'ELSE': elsex.Name, 'TYPE': typex.Name, 'STRING': typex.Name, 'NAT': typex.Name, 'INT': typex.Name, 'OPTIONAL': typex.Name, 'BOOL': typex.Name, 'EQUALEQUAL': equalequal.Name, 'LESSTHAN': lessthan.Name, 'GREATERTHAN': greaterthan.Name, 'LESSTHANEQUAL': lessthanequal.Name, 'GREATERTHANEQUAL': greaterthanequal.Name, 'EQUAL': equal.Name, 'MINUS': minus.Name, 'DIV': div.Name, 'RETURN': returnx.Name}
 
 
 app = Typer()
+
+
+def process_lexer_tokens(lexer_tokens) -> list[Token]:
+    terminals_names = []
+
+    for token in lexer_tokens:
+        terminals_names.append(map_to_terminals_names[token.type])
+
+    tokens: list[Token] = []
+    for i in range(len(lexer_tokens)):
+        tokens.append(
+            Token(lexer_tokens[i].value, TZSCRIPT_GRAMMAR[terminals_names[i]]))
+    tokens.append(Token('EOF', TZSCRIPT_GRAMMAR.EOF))
+
+    return tokens
+
 
 @app.command()
 def build(file: str = Argument("", help="tzscript file to be parsed"),
@@ -24,11 +42,6 @@ def build(file: str = Argument("", help="tzscript file to be parsed"),
     contract get_fib_n(n:int){
         let last_fib_calculated: int = 0;
 
-        entry get_fib(n: int){
-            let result: int = fib(n);
-            last_fib_calculated = result;
-        }
-
         func fib(n: int) : int{
             if (n <= 1) {
                 return n;
@@ -38,6 +51,11 @@ def build(file: str = Argument("", help="tzscript file to be parsed"),
                 let b: int = n - 2;
                 return fib(a) + fib(b);
             }
+        }
+        
+        entry get_fib(n: int){
+            let result: int = fib(n);
+            last_fib_calculated = result;
         }
     }
     '''
@@ -52,7 +70,7 @@ def build(file: str = Argument("", help="tzscript file to be parsed"),
         lexer = TzScriptLexer()
         lexer_tokens = list(lexer.tokenize(script))
         tokens = process_lexer_tokens(lexer_tokens)
-        
+
         print("... OK")
         progress.update(1)
 
@@ -101,8 +119,8 @@ def build(file: str = Argument("", help="tzscript file to be parsed"),
         progress.update(1)
 
         print("\nPerforming Semantic Check", end="")
-        semantic_visitor = SemanticCheckVisitor()
-        semantic_result = semantic_visitor.visit_program(ast)
+        semantic_visitor = SemanticCheckerVisitor()
+        semantic_result = semantic_visitor.visit(ast)
         if not semantic_result:
             print("\nSomething Went Wrong")
             return
@@ -132,29 +150,28 @@ def represent(file: str = Argument("", help="tzscript file to be parsed"),
     contract get_fib_n(n:int){
         let last_fib_calculated: int = 0;
 
-        entry get_fib(n: int){
-            let result: int = fib(n);
-            last_fib_calculated = result;
-        }
-
-        func fib(n: int) : int{
+        func fib(n: int):int{
             if (n <= 1) {
                 return n;
             }
             else {
-                let a: int = n - 1;
+                let a: nat = n - 1;
                 let b: int = n - 2;
                 return fib(a) + fib(b);
             }
         }
+        
+        entry get_fib(n: int){
+            let result: int = fib(n);
+            last_fib_calculated = result;
+        }
     }
     '''
-
 
     with typer.progressbar(length=total) as progress:
         with open(file, "r") as f:
             script = f.read()
-        
+
         script = fibonacci
         # print(script)
         # Tokenize Script
@@ -162,16 +179,16 @@ def represent(file: str = Argument("", help="tzscript file to be parsed"),
         lexer = TzScriptLexer()
         lexer_tokens = list(lexer.tokenize(script))
         tokens = process_lexer_tokens(lexer_tokens)
-        
+
         print("... OK")
         progress.update(1)
 
-        terminals = [t.token_type for t in tokens] 
+        terminals = [t.token_type for t in tokens]
 
         # Parse tokenized Script
         print("\nParsing Script", end="")
         parser = SLR1Parser(TZSCRIPT_GRAMMAR, verbose=False)
-        print(lexer_tokens)
+        # print(lexer_tokens)
         # tokens = [Token('contract', contract), Token('store_value', idx), Token('(', opar), Token('value', idx), Token(':', colon), Token('int', typex), Token(')', cpar), Token('{', ocur), Token('let', let), Token('storage', idx), Token(':', colon), Token('int', typex), Token('=', equal), Token('0', num), Token(';', semi), Token(
         #     'entry', entry), Token('replace', idx), Token('(', opar), Token('new_value', idx), Token(':', colon), Token('int', typex), Token(')', cpar), Token('{', ocur), Token('storage', idx), Token('=', equal), Token('new_value', idx), Token(';', semi), Token('}', ccur), Token('}', ccur), Token('EOF', TZSCRIPT_GRAMMAR.EOF)]
 
@@ -179,7 +196,7 @@ def represent(file: str = Argument("", help="tzscript file to be parsed"),
         derivation = parser(terminals, True)
         if derivation is None:
             print(
-                "Please re-run the command something unexpected (and unrelated to the parsing) happened")
+                "Something unexpected happened during parsing")
             return
         productions, operations = derivation
         print("... OK")
@@ -202,7 +219,7 @@ def represent(file: str = Argument("", help="tzscript file to be parsed"),
 
         print("\nPerforming Scope Check", end="")
         scope_visitor = ScopeCheckVisitor()
-        scope_result = scope_visitor.visit_program(ast)
+        scope_result = scope_visitor.visit(ast)
         if not scope_result:
             print("Something Went Wrong")
             return
@@ -211,8 +228,8 @@ def represent(file: str = Argument("", help="tzscript file to be parsed"),
         progress.update(1)
 
         print("\nPerforming Semantic Check", end="")
-        semantic_visitor = SemanticCheckVisitor()
-        semantic_result = semantic_visitor.visit_program(ast)
+        semantic_visitor = SemanticCheckerVisitor()
+        semantic_result = semantic_visitor.visit(ast)
         if not semantic_result:
             print("Something Went Wrong")
             return
@@ -221,11 +238,11 @@ def represent(file: str = Argument("", help="tzscript file to be parsed"),
 
         print("\nGenerating String representation Code", end="")
         string_repr = FormatVisitor()
-        string_repr.visit_program(ast)
+        result = string_repr.visit(ast)
         if out_file is None:
             out_file = file[:file.find(".tzs")]+".tzs.rep"
         with open(out_file, "w") as f:
-            f.write(string_repr.result)
+            f.write(result)
         print(f"Generated {out_file}")
         progress.update(1)
 
