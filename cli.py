@@ -1,5 +1,5 @@
 from typer import Typer, Argument
-from lexer.sly_lexer import TzScriptLexer
+from lexer.sly_lexer import TzScriptLexer, process_lexer_tokens
 from lexer.lex_token import Token
 from parser.tzscript_grammar import TZSCRIPT_GRAMMAR, idx, num, typex, contract, ifx, elsex, equal, plus, returnx, minus, star, div, semi, colon, comma, dot, opar, cpar, ocur, ccur, let, func, entry, equalequal, lessthan, greaterthan, lessthanequal, greaterthanequal
 from parser.slr_parser import SLR1Parser, build_slr_ast
@@ -10,24 +10,9 @@ from visitors.michelson_generator_visitor import MichelsonGeneratorVisitor
 from visitors.string_rep_visitor import FormatVisitor
 import typer
 
-map_to_terminals_names = {'CONTRACT': contract.Name, 'ID': idx.Name, 'COLON': colon.Name, 'SEMICOLON': semi.Name, 'COMMA': comma.Name, 'INTEGER': num.Name, 'LPAREN': opar.Name, 'RPAREN': cpar.Name, 'LBRACE': ocur.Name, 'RBRACE': ccur.Name, 'LBRACKET': opar.Name, 'RBRACKET': cpar.Name, 'PLUS': plus.Name, 'STAR': star.Name, 'ENTRY': entry.Name, 'FUNC': func.Name, 'LET': let.Name, 'IF': ifx.Name, 'ELSE': elsex.Name, 'TYPE': typex.Name, 'STRING': typex.Name, 'NAT': typex.Name, 'INT': typex.Name, 'OPTIONAL': typex.Name, 'BOOL': typex.Name, 'EQUALEQUAL': equalequal.Name, 'LESSTHAN': lessthan.Name, 'GREATERTHAN': greaterthan.Name, 'LESSTHANEQUAL': lessthanequal.Name, 'GREATERTHANEQUAL': greaterthanequal.Name, 'EQUAL': equal.Name, 'MINUS': minus.Name, 'DIV': div.Name, 'RETURN': returnx.Name}  
 
 
 app = Typer()
-
-
-def process_lexer_tokens(lexer_tokens) -> list[Token]:
-    terminals_names = []
-
-    for token in lexer_tokens:
-        terminals_names.append(map_to_terminals_names[token.type])
-    
-    tokens: list[Token] = [] 
-    for i in range(len(lexer_tokens)):
-        tokens.append(Token(lexer_tokens[i].value, TZSCRIPT_GRAMMAR[terminals_names[i]]))
-    tokens.append(Token('EOF', TZSCRIPT_GRAMMAR.EOF))
-
-    return tokens
 
 @app.command()
 def build(file: str = Argument("", help="tzscript file to be parsed"),
