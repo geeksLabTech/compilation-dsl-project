@@ -41,7 +41,6 @@ def process(script: str):
         lexer = TzScriptLexer()
         lexer_tokens = list(lexer.tokenize(script))
         tokens = process_lexer_tokens(lexer_tokens)
-
         print("... OK")
         progress.update(1)
 
@@ -115,7 +114,6 @@ def build(file: str = Argument("", help="tzscript file to be parsed"),
 
     with open(file, "r", encoding='utf-8') as f:
         script = f.read()
-
 
     ast, progress = process(script)
 

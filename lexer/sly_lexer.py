@@ -110,7 +110,6 @@ class TzScriptLexer(Lexer):
     ATTRIBUTEPRODUCTION = r'AttributeProduction'
     PRODUCTION = r'Production'
     GRAMMAR = r'Grammar'
-    
 
     # reserved Words
     ID["contract"] = CONTRACT
@@ -119,7 +118,7 @@ class TzScriptLexer(Lexer):
     ID['let'] = LET
     ID['if'] = IF
     ID['else'] = ELSE
-    ID['while']= WHILE
+    ID['while'] = WHILE
     ID['const'] = CONST
     ID['type'] = TYPE
     ID['for'] = FOR
@@ -191,7 +190,8 @@ class TzScriptLexer(Lexer):
         raise ValueError(f'Invalid token: {t.value[0]}')
 
 
-map_to_terminals_names = {'CONTRACT': contract.Name, 'ID': idx.Name, 'COLON': colon.Name, 'SEMICOLON': semi.Name, 'COMMA': comma.Name, 'INTEGER': num.Name, 'LPAREN': opar.Name, 'RPAREN': cpar.Name, 'LBRACE': ocur.Name, 'RBRACE': ccur.Name, 'LBRACKET': opar.Name, 'RBRACKET': cpar.Name, 'PLUS': plus.Name, 'STAR': star.Name, 'ENTRY': entry.Name, 'FUNC': func.Name, 'LET': let.Name, 'IF': ifx.Name, 'ELSE': elsex.Name, 'TYPE': typex.Name, 'STRING': typex.Name, 'NAT': typex.Name, 'INT': typex.Name, 'OPTIONAL': typex.Name, 'BOOL': typex.Name, 'EQUALEQUAL': equalequal.Name, 'LESSTHAN': lessthan.Name, 'GREATERTHAN': greaterthan.Name, 'LESSTHANEQUAL': lessthanequal.Name, 'GREATERTHANEQUAL': greaterthanequal.Name, 'EQUAL': equal.Name, 'MINUS': minus.Name, 'DIV': div.Name, 'RETURN': returnx.Name, 'ADDRESS': typex.Name, 'DOUBLEQUOTES': dquoutes.Name, 'STRINGTEXT': stringx.Name, 'WHILE': whilex.Name}  
+map_to_terminals_names = {'CONTRACT': contract.Name, 'ID': idx.Name, 'COLON': colon.Name, 'SEMICOLON': semi.Name, 'COMMA': comma.Name, 'INTEGER': num.Name, 'LPAREN': opar.Name, 'RPAREN': cpar.Name, 'LBRACE': ocur.Name, 'RBRACE': ccur.Name, 'LBRACKET': opar.Name, 'RBRACKET': cpar.Name, 'PLUS': plus.Name, 'STAR': star.Name, 'ENTRY': entry.Name, 'FUNC': func.Name, 'LET': let.Name, 'IF': ifx.Name, 'ELSE': elsex.Name, 'TYPE': typex.Name, 'STRING': typex.Name,
+                          'NAT': typex.Name, 'INT': typex.Name, 'OPTIONAL': typex.Name, 'BOOL': typex.Name, 'EQUALEQUAL': equalequal.Name, 'LESSTHAN': lessthan.Name, 'GREATERTHAN': greaterthan.Name, 'LESSTHANEQUAL': lessthanequal.Name, 'GREATERTHANEQUAL': greaterthanequal.Name, 'EQUAL': equal.Name, 'MINUS': minus.Name, 'DIV': div.Name, 'RETURN': returnx.Name, 'ADDRESS': typex.Name, 'DOUBLEQUOTES': dquoutes.Name, 'STRINGTEXT': stringx.Name, 'WHILE': whilex.Name}
 
 
 def process_lexer_tokens(lexer_tokens) -> list[Token]:
@@ -204,13 +204,15 @@ def process_lexer_tokens(lexer_tokens) -> list[Token]:
     for i in range(len(lexer_tokens)):
         ttype = lexer_tokens[i].type
         if ttype == 'STRINGTEXT':
-            tokens.append(Token('"', dquoutes))
             tokens.append(
-                Token(lexer_tokens[i].value, TZSCRIPT_GRAMMAR[terminals_names[i]]))
-            tokens.append(Token('"', dquoutes))
+                Token('"', dquoutes, lexer_tokens[i].lineno, lexer_tokens[i-1].index))
+            tokens.append(
+                Token(lexer_tokens[i].value, TZSCRIPT_GRAMMAR[terminals_names[i]], lexer_tokens[i].lineno, lexer_tokens[i].index))
+            tokens.append(
+                Token('"', dquoutes, lexer_tokens[i].lineno, lexer_tokens[i].index-1))
         else:
             tokens.append(
-                Token(lexer_tokens[i].value, TZSCRIPT_GRAMMAR[terminals_names[i]]))
-    tokens.append(Token('EOF', TZSCRIPT_GRAMMAR.EOF))
-    print(tokens)
+                Token(lexer_tokens[i].value, TZSCRIPT_GRAMMAR[terminals_names[i]], lexer_tokens[i].lineno, lexer_tokens[i].index))
+    tokens.append(Token('EOF', TZSCRIPT_GRAMMAR.EOF, -1, -1))
+    # print(tokens)
     return tokens
