@@ -131,6 +131,7 @@ class SemanticCheckerVisitor(object):
             scope = Scope(parent=scope)
 
         self.iterations = 1
+        scope.main_level = True
 
         for child in node.statements:
             new_scope = self.visit(child, scope)
@@ -183,6 +184,7 @@ class SemanticCheckerVisitor(object):
         if scope.is_func_defined(node.id, node.params):
             self.errors.append(f'Function name {node.id} is used')
 
+        scope.is_entry_in_scope = True        
         scope.define_function(node.id, len(node.params))
         scope_copied = Scope()
 
@@ -248,12 +250,20 @@ class SemanticCheckerVisitor(object):
     @visitor.when(IfNode)
     def visit(self, node: IfNode, scope: Scope):
         # new_scope = scope.create_child_scope()
+        if scope.main_level :
+            self.errors.append(f'If statement is not allowed in main level')
+        scope.is_if_in_scope = True
+        self.visit(node.expr, scope)
         for child in node.statements:
             self.visit(child, scope)
 
     @visitor.when(ElseNode)
     def visit(self, node: ElseNode, scope: Scope):
         # new_scope = scope.create_child_scope()
+        if not scope.is_if_in_scope:
+            self.errors.append(f'Else statement is not allowed without if statement')
+        else:
+            scope.is_if_in_scope = False
         for child in node.statements:
             self.visit(child, scope)
 
@@ -266,9 +276,19 @@ class SemanticCheckerVisitor(object):
 
     @visitor.when(ReturnStatementNode)
     def visit(self, node: ReturnStatementNode, scope: Scope):
+        if scope.main_level or scope.is_entry_in_scope:
+            self.errors.append(f'Return statement is not allowed in main level')
         self.visit(node.expr, scope)
 
     @visitor.when(AttrDeclarationNode)
     def visit(self, node: AttrDeclarationNode, scope: Scope):
         scope.define_variable(node.id)
         return scope
+
+    @visitor.when(WhileNode)
+    def visit(self, node: WhileNode, scope: Scope):
+        if scope.main_level :
+            self.errors.append(f'While statement is not allowed in main level')
+        self.visit(node.exp, scope)
+        for child in node.statements:
+            self.visit(child, scope)

@@ -2,8 +2,7 @@ from abc import ABC, abstractmethod
 
 import visitor
 
-class Node(ABC):
-    @abstractmethod
+class Node:
     def evaluate(self):
         raise NotImplementedError()
     
@@ -45,7 +44,6 @@ class BinaryNode(Node):
     def accept(self, visitor_):
         return visitor_.visit(self)
 
-    @abstractmethod
     def operate(self, lvalue, rvalue):
         raise NotImplementedError()
 
