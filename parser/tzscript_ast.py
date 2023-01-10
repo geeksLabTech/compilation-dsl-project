@@ -65,6 +65,13 @@ class FuncDeclarationNode(DeclarationNode):
     def accept(self, visitor):
         return visitor.visit_func_declaration_node(self)
 
+class WhileNode(Node):
+    def __init__(self,exp,statements):
+        self.exp = exp
+        self.statements = statements
+    def accept(self, visitor):
+        return visitor.visit_while_node(self)
+
 class EntryDeclarationNode(DeclarationNode):
     def __init__(self, idx, params, body):
         self.id = idx
