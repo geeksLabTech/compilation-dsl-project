@@ -137,7 +137,7 @@ class EqualNode(ExpressionNode):
         self.right = right
 
     def accept(self, visitor):
-        return visitor.visit_equal_node(self)
+        return visitor.visit_arith_node(self, "==")
 
 
 class IniquelatyNode(ExpressionNode):
@@ -146,7 +146,7 @@ class IniquelatyNode(ExpressionNode):
         self.right = right
 
     def accept(self, visitor):
-        return visitor.visit_not_equal_node(self)
+        return visitor.visit_arith_node(self, "!=")
 
 
 class LessThanNode(ExpressionNode):
@@ -155,7 +155,7 @@ class LessThanNode(ExpressionNode):
         self.right = right
 
     def accept(self, visitor):
-        return visitor.visit_less_node(self)
+        return visitor.visit_arith_node(self, "<")
 
 
 class LessThanEqualNode(ExpressionNode):
@@ -164,7 +164,7 @@ class LessThanEqualNode(ExpressionNode):
         self.right = right
 
     def accept(self, visitor):
-        return visitor.visit_less_equal_node(self)
+        return visitor.visit_arith_node(self, "<=")
 
 
 class GreaterThanNode(ExpressionNode):
@@ -173,7 +173,7 @@ class GreaterThanNode(ExpressionNode):
         self.right = right
 
     def accept(self, visitor):
-        return visitor.visit_greater_node(self)
+        return visitor.visit_arith_node(self, ">")
 
 
 class GreaterThanEqualNode(ExpressionNode):
@@ -182,8 +182,7 @@ class GreaterThanEqualNode(ExpressionNode):
         self.right = right
 
     def accept(self, visitor):
-        return visitor.visit_greater_equal_node(self)
-
+        return visitor.visit_arith_node(self, ">=")
 
 
 class TrueNode(ExpressionNode):
@@ -195,10 +194,12 @@ class FalseNode(ExpressionNode):
     def accept(self, visitor):
         return visitor.visit_false_node(self)
 
+
 class ConstantStringNode(AtomicNode):
     def __init__(self, lex):
         super().__init__(lex)
         self.type = 'string'
+
 
 class ConstantNumNode(AtomicNode):
     def __init__(self, lex):
@@ -247,4 +248,3 @@ class DivNode(BinaryNode):
 
     def accept(self, visitor):
         return visitor.visit_arith_node(self, '//')
-

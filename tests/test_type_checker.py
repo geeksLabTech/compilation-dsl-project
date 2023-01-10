@@ -43,7 +43,7 @@ def test_type_string():
                     return n;
                 }
                 else {
-                    let a: int = n - 1;
+                    let a: int = n - "a";
                     let b: int = n - 2;
                     return fib(a) + fib(b);
 

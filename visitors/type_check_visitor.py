@@ -25,6 +25,7 @@ class TypeCheckVisitor(Visitor):
         if not self.is_boolean_type(node.expr):
             self.errors.append(
                 "If statement expression must be of type boolean")
+        node.expr.accept(self)
         for statement in node.statements:
             statement.accept(self)
 
@@ -63,7 +64,7 @@ class TypeCheckVisitor(Visitor):
             if self.it == 1 and not self.is_compatible_type(node, node.expr):
                 self.errors.append(
                     f"Incompatible types in variable declaration: expected {node.type}, got {node.expr.type}")
-
+        node.expr.accept(self)
         self.symbol_table[node.id] = node.type
 
     def visit_assign_node(self, node: AssignNode):
@@ -151,21 +152,33 @@ class TypeCheckVisitor(Visitor):
                     f"Invalid return type for function call {self.func[-1]} expected {self.symbol_table[self.func[-1]]['return']}, got {node.expr.type}")
 
     def visit_arith_node(self, node: Node, oper: str):
+
+        if type(node.left) is ConstantNumNode or type(node.right) is ConstantNumNode:
+            if type(node.left) is ConstantStringNode or type(node.right) is ConstantStringNode:
+                if type(node.left) != type(node.right) and self.it == 1:
+                    self.errors.append(
+                        f"Cannot permform '{oper}' operation between {self.get_type(node.left)} and {self.get_type(node.right)}")
+                    return
+
         if not self.get_type(node.left) == self.get_type(node.right):
-            if not self.is_compatible_type(node.left, node.right):
+            node.right.accept(self)
+            node.left.accept(self)
+            if not self.is_compatible_type(node.left, node.right) and self.it == 1:
                 self.errors.append(
-                    f"Cannot permform {oper} operation between {self.get_type(node.left)} and {self.get_type(node.right)}")
+                    f"Cannot permform '{oper}' operation between {self.get_type(node.left)} and {self.get_type(node.right)}")
 
     def is_compatible_type(self, left, right):
+        left_type = self.get_type(left)
+        right_type = self.get_type(right)
 
-        if left.type == right.type:
+        if left_type == right_type:
             return True
-        if left.type == 'num' and (right.type == 'nat' or right.type == 'int'):
+        if left_type == 'num' and (right_type == 'nat' or right_type == 'int'):
             return True
-        if right.type == 'num':
-            if left.type == 'nat' and int(right.lex) > 0:
+        if right_type == 'num':
+            if left_type == 'nat' and int(right.lex) > 0:
                 return True
-            if left.type == 'int':
+            if left_type == 'int':
                 return True
             else:
                 False
