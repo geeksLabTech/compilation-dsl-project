@@ -68,6 +68,7 @@ class TzScriptLexer(Lexer):
         DIV,
         ADDRESS,
         STRINGTEXT,
+        WHILE
     }
 
     tokens.add(t for t in R_W)
@@ -118,6 +119,7 @@ class TzScriptLexer(Lexer):
     ID['let'] = LET
     ID['if'] = IF
     ID['else'] = ELSE
+    ID['while']= WHILE
     ID['const'] = CONST
     ID['type'] = TYPE
     ID['for'] = FOR
@@ -210,5 +212,5 @@ def process_lexer_tokens(lexer_tokens) -> list[Token]:
             tokens.append(
                 Token(lexer_tokens[i].value, TZSCRIPT_GRAMMAR[terminals_names[i]]))
     tokens.append(Token('EOF', TZSCRIPT_GRAMMAR.EOF))
-
+    print(tokens)
     return tokens

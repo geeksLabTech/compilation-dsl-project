@@ -17,7 +17,16 @@ class Scope:
         self.children = []
         self.var_index_at_parent = 0 if parent is None else len(parent.local_vars)
         self.func_index_at_parent = 0 if parent is None else len(parent.local_funcs)
-        
+        self.main_level = False
+        self.is_if_in_scope = False
+        self.is_entry_in_scope = False
+
+    # def main_scope(self):
+    #     self.main_level = True
+    
+    # def is_if_in_scope(self):
+    #     self.is_if_in_scope = True
+    
     def create_child_scope(self):
         child_scope = Scope(self)
         self.children.append(child_scope)

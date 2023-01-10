@@ -26,22 +26,26 @@ class ShiftReduceParser:
         while True:
             state = stack[-1]
             lookahead = w[cursor]
-            if self.verbose:
-                print(stack, '<---||--->', w[cursor:])
+        
 
             if(state, lookahead) not in self.action:
-                # print('mira donde rompe')
-                # print()
-                # print('STACk: ')
-                # print(stack)
-                # print()
-                # print((state,lookahead))
-                # print(self.action)
+       
+                excepted_char = ''
+                
+                for (state1,i) in self.action.keys():
+                    if i.IsTerminal and state1 == state:
+                        # print(i , 'terminaaaaaal')
+                        excepted_char += str(i)
+                parseado = ' '.join([str(m) for m in stack if not str(m).isnumeric()])
+                message_error = f'It was expected "{excepted_char}" received "{lookahead}" after {parseado}'
                 print("\nError. Aborting...")
+                print('')
+        
+                print("\n",message_error)
+                # print(w[cursor-1])
                 return None
 
-            # print('state, lookahead', state, lookahead)
-            # print(self.action)
+           
             if self.action[state, lookahead] == self.OK:
                 action = self.OK
             else:
