@@ -20,7 +20,29 @@ class Parent:
 
 class TzScriptToHighLevelIrVisitor:
     '''
-    Class to traverse TzScript ast and generate a high level intermediate representation ast
+    Class to traverse TzScript ast and generate a high level intermediate representation ast for getting close to
+    the Michelson language without move away to much from the TzScript language, another intermediate representation
+    will be needed. 
+    The structure for this intermediate representation is the following:
+    contract {
+        entrypoints {
+            id (params);
+            ...
+        }
+        storage {
+            id: type;
+            ...
+        }
+        code {
+            if (entrypoint_id) {
+                statement
+                ...
+
+            }
+    }
+
+    The calls to functions in entrypoints are replaced by the corresponding code of each function
+    In the case of recursive calls, a RecursiveCallNode is created
     '''
     def __init__(self) -> None:
         self.entrypoints_declarations: list[hl_ir.EntryPointDeclarationNode] = []
