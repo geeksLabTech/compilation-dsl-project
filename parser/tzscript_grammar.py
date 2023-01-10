@@ -18,8 +18,7 @@ func_call, arg_list, var_call, return_stat  = TZSCRIPT_GRAMMAR.NonTerminals('<fu
 let, func, entry = TZSCRIPT_GRAMMAR.Terminals('let func entry')
 semi, colon, comma, dot, opar, cpar, ocur, ccur = TZSCRIPT_GRAMMAR.Terminals('; : , . ( ) { }')
 equal,equalequal, plus, minus, star, div,lessthanequal,greaterthanequal, iniquelaty, lessthan,greaterthan = TZSCRIPT_GRAMMAR.Terminals('= == + - * / <= >= != < >')
-idx, num, typex, contract, ifx, elsex,truex , falsex, returnx, stringx, dquoutes = TZSCRIPT_GRAMMAR.Terminals('id num type contract if else true false return string_text "')
-idx, num, typex, contract, ifx, elsex,truex , falsex, returnx , whilex = TZSCRIPT_GRAMMAR.Terminals('id num type contract if else true false return while')
+idx, num, typex, contract, ifx, elsex,truex , falsex, returnx, stringx, dquoutes, whilex = TZSCRIPT_GRAMMAR.Terminals('id num type contract if else true false return string_text " while')
 
 # productions
 program %= contract + idx + opar + param_list + cpar + ocur + stat_list + ccur, lambda h,s: ProgramNode(s[2], s[4], s[7]), None, None, None, None, None, None,None,None
