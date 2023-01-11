@@ -14,6 +14,11 @@ class AttrDeclarationNode(DeclarationNode):
     def __init__(self, idx, typex):
         self.id = idx
         self.type = typex
+        
+class PushVariableNode(Node):
+    def __init__(self, idx, typex):
+        self.id = idx
+        self.type = typex
 
 
 class StorageDeclarationNode(DeclarationNode):
@@ -21,10 +26,18 @@ class StorageDeclarationNode(DeclarationNode):
         self.id = id
         self.type = typex
 
+class StoragesNode(DeclarationNode):
+    def __init__(self, storage_list : list[StorageDeclarationNode]):
+        self.storage_list = storage_list
+
 class EntryPointDeclarationNode(DeclarationNode):
     def __init__(self, idx, params: list[AttrDeclarationNode]):
         self.id = idx
         self.params = params
+
+class EntrypointsNode(DeclarationNode):
+    def __init__(self, entrypoint_list : list[EntryPointDeclarationNode]):
+        self.entrypoint_list = entrypoint_list
 
 class UtilityFunctionDefinition(Node):
     def __init__(self, idx, params, body) -> None:
@@ -37,7 +50,7 @@ class CodeNode(Node):
         self.statements = statements
 
 class ContractNode(Node):
-    def __init__(self, entrypoints: list[EntryPointDeclarationNode], storage: list[StorageDeclarationNode], code: CodeNode):
+    def __init__(self, entrypoints: EntrypointsNode, storage: StoragesNode, code: CodeNode):
         self.entrypoints = entrypoints
         self.storage = storage
         self.code = code
@@ -88,37 +101,52 @@ class VarCallNode(DeclarationNode):
     def __init__(self, idx, expr) -> None:
         self.id = idx
         self.expr = expr
-    
+
+class WhileDeclarationNode(DeclarationNode):
+    def __init__(self, expr, body) -> None:
+        self.expr = expr
+        self.body = body
 
 class VariableNode(AtomicNode):
     pass
 
-class PlusNode(BinaryNode):
-    pass
+class PlusNode(AtomicNode):
+    def __init__(self):
+        pass
 
-class MinusNode(BinaryNode):
-    pass
+class MinusNode(AtomicNode):
+    def __init__(self):
+        pass
+       
 
-class StarNode(BinaryNode):
-    pass
+class StarNode(AtomicNode):
+    def __init__(self):
+        pass
 
-class DivNode(BinaryNode):
-    pass
+class DivNode(AtomicNode):
+    def __init__(self):
+        pass
 
-class EqualNode(BinaryNode):
-    pass
+class EqualNode(AtomicNode):
+    def __init__(self):
+        pass
 
-class IniquelatyNode(BinaryNode):
-    pass
+class IniquelatyNode(AtomicNode):
+    def __init__(self):
+        pass
 
-class LessThanNode(BinaryNode):
-   pass
+class LessThanNode(AtomicNode):
+   def __init__(self):
+        pass
 
-class LessThanEqualNode(BinaryNode):
-    pass
+class LessThanEqualNode(AtomicNode):
+    def __init__(self):
+        pass
 
-class GreaterThanNode(BinaryNode):
-    pass
+class GreaterThanNode(AtomicNode):
+    def __init__(self):
+        pass
 
-class GreaterThanEqualNode(BinaryNode):
-    pass
+class GreaterThanEqualNode(AtomicNode):
+    def __init__(self):
+        pass
