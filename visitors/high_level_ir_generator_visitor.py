@@ -213,7 +213,7 @@ class TzScriptToHighLevelIrVisitor:
         for s in node.statements:
             self.visit(node.statements,new_parent)
         
-        
+
     @visitor.when(WhileNode)
     def visit(self, node: WhileNode, parent: Parent):
         self.visit(node.exp, parent)

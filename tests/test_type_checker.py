@@ -19,6 +19,7 @@ def process(script):
     parser = SLR1Parser(TZSCRIPT_GRAMMAR, verbose=False)
     derivation = parser(terminals, True)
     # print(derivation)
+    assert not derivation is None
     productions, operations = derivation
 
     ast = build_slr_ast(productions, operations, tokens)
