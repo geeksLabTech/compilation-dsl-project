@@ -230,7 +230,7 @@ class TzScriptToHighLevelIrVisitor:
 
     @visitor.when(IfNode)
     def visit(self, node: IfNode, parent: Parent):
-        self.visit(node.expr,parent)
+        self.visit(node.expr, parent)
         for idx, s in enumerate(node.statements):
             if type(node.statements[idx]) is IfNode and type(node.statements[idx+1]) is ElseNode:
                 self.else_node.append(node.statements[idx+1])
@@ -239,14 +239,7 @@ class TzScriptToHighLevelIrVisitor:
             self.visit(node.statements[idx], parent)
 
         cur_else_node: ElseNode = self.else_node.pop()
-
-        else_statements = []
-        for idx, s in enumerate(cur_else_node.statements):
-            if type(cur_else_node.statements[idx]) is IfNode and type(cur_else_node.statements[idx+1]) is ElseNode:
-                self.else_node.append(cur_else_node.statements[idx+1])
-            else:
-                self.else_node.append(None)
-            self.visit(cur_else_node.statements[idx], parent)
+        else_statements = self.visit(cur_else_node)
 
     @visitor.when(ElseNode)
     def visit(self, node: ElseNode, parent: Parent):
