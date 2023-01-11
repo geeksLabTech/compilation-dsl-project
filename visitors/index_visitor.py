@@ -28,6 +28,8 @@ class IndexVisitor(Visitor):
             print(self.index_list[self.last_index][0], "if")
         self.last_index += 1
 
+        node.expr.accept(self)
+
         for i in node.statements:
             i.accept(self)
 
@@ -35,7 +37,12 @@ class IndexVisitor(Visitor):
         if str(self.index_list[self.last_index][0]) == "else":
             self.final_dict[node] = self.index_list[self.last_index][1]
         else:
-            print(self.index_list[self.last_index][0], "else")
+            print(self.index_list[self.last_index][0],
+                  "else", self.index_list[self.last_index][1])
+        self.last_index += 1
+        for i in node.statements:
+            i.accept(self)
+
         self.last_index += 1
 
     def visit_return_statement_node(self, node: ReturnStatementNode):
@@ -50,7 +57,7 @@ class IndexVisitor(Visitor):
             self.final_dict[node] = self.index_list[self.last_index][1]
             # self.last_index += 5
         else:
-            print(self.index_list[self.last_index][0], "let")
+            print(self.index_list[self.last_index], "let", self.last_index)
         self.last_index += 5
         node.expr.accept(self)
 
@@ -71,6 +78,8 @@ class IndexVisitor(Visitor):
 
         for arg in node.params:
             arg.accept(self)
+
+        self.last_index += 1
 
         for st in node.body:
             st.accept(self)
@@ -115,7 +124,7 @@ class IndexVisitor(Visitor):
         node.right.accept(self)
 
     def visit_call_node(self, node: CallNode):
-        print(self.last_index)
+        # print(self.last_index)
         if str(self.index_list[self.last_index][0]) == "id":
             for arg in node.args:
                 arg.accept(self)
@@ -135,13 +144,19 @@ class IndexVisitor(Visitor):
         self.last_index += 2
         node.expr.accept(self)
 
-    def visit_arith_node(self, node: EqualNode, oper):
-        print(self.last_index)
-        if str(self.index_list[self.last_index+1][0]) == str(oper):
+    def visit_arith_node(self, node, oper):
+        # print(self.last_index)
+        if str(self.index_list[self.last_index][0]) == str(oper) or str(self.index_list[self.last_index+1][0]) == str(oper) or str(self.index_list[self.last_index+2][0]) == str(oper):
             self.final_dict[node] = self.index_list[self.last_index][1]
         else:
-            print(self.index_list[self.last_index+1][0], oper)
-        self.last_index += 3
+            print(self.index_list[self.last_index], oper)
+        self.last_index += 1
+        if type(node.left) is VariableNode:
+            node.left.accept(self)
+            self.last_index += 1
+        if type(node.right) is VariableNode:
+            node.right.accept(self)
+            self.last_index += 1
 
     def visit_true_node(self, node: TrueNode):
         pass
@@ -156,5 +171,15 @@ class IndexVisitor(Visitor):
         pass
 
     def visit_variable_node(self, node: VariableNode):
+
         self.final_dict[node] = self.index_list[self.last_index][1]
         # self.last_index += 1
+
+    def visit_return_statement(self, node: ReturnStatementNode):
+        self.final_dict[node] = self.index_list[self.last_index][1]
+        self.last_index += 1
+        node.expr.accept(self)
+        # print(node.expr)
+        if type(node.expr) is VariableNode:
+            self.last_index += 1
+        self.last_index += 1

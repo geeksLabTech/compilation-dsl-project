@@ -76,10 +76,10 @@ def process(script: str):
         progress.update(1)
 
         index_visitor = IndexVisitor(loc)
-        for i, val in enumerate(loc):
-            print((i, val))
+        # for i, val in enumerate(loc):
+        #     print((i, val))
         final_dict = index_visitor.visit_program(ast)
-        print(index_visitor.final_dict)
+        # print(index_visitor.final_dict)
 
         print("\nPerforming Type Check", end="")
         type_visitor = TypeCheckVisitor()
