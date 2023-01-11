@@ -18,7 +18,7 @@ class ShiftReduceParser:
     def _build_parsing_table(self):
         raise NotImplementedError()
 
-    def __call__(self, w, get_shift_reduce=False):
+    def __call__(self, w, loc, get_shift_reduce=False):
         stack = [0]
         cursor = 0
         output = []
@@ -26,26 +26,22 @@ class ShiftReduceParser:
         while True:
             state = stack[-1]
             lookahead = w[cursor]
-        
 
             if(state, lookahead) not in self.action:
-       
                 excepted_char = ''
-                
-                for (state1,i) in self.action.keys():
+
+                for (state1, i) in self.action.keys():
                     if i.IsTerminal and state1 == state:
-                        # print(i , 'terminaaaaaal')
                         excepted_char += str(i)
-                parseado = ' '.join([str(m) for m in stack if not str(m).isnumeric()])
+                parseado = ' '.join([str(m)
+                                    for m in stack if not str(m).isnumeric()])
                 message_error = f'It was expected "{excepted_char}" received "{lookahead}" after {parseado}'
                 print("\nError. Aborting...")
                 print('')
-        
-                print("\n",message_error)
+                print("\n", message_error)
                 # print(w[cursor-1])
                 return None
 
-           
             if self.action[state, lookahead] == self.OK:
                 action = self.OK
             else:
@@ -63,7 +59,7 @@ class ShiftReduceParser:
                 for symbol in reversed(body):
                     # print('stack', stack)
                     stack.pop()
-
+                    
                     assert stack.pop() == symbol
                     state = stack[-1]
                     # print(self.goto,'goto')

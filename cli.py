@@ -8,6 +8,7 @@ from visitors.scope_check_visitor import ScopeCheckVisitor
 from visitors.semantic_check_visitor import SemanticCheckerVisitor
 from visitors.michelson_generator_visitor import MichelsonGeneratorVisitor
 from visitors.string_rep_visitor import FormatVisitor
+from visitors.index_visitor import IndexVisitor
 import typer
 
 fibonacci = '''contract get_fib_n(n:int){
@@ -45,6 +46,12 @@ def process(script: str):
         progress.update(1)
 
         terminals = [t.token_type for t in tokens]
+        terminals_loc = [(t.line_no, t.col_no) for t in tokens]
+        loc = []
+
+        for i, tok in enumerate(terminals):
+            if not str(tok) in ['(', ':', ')', '}', '{', ';', '\"']:
+                loc.append((tok, terminals_loc[i]))
 
         # Parse tokenized Script
         print("\nParsing Script", end="")
@@ -54,7 +61,7 @@ def process(script: str):
         #     'entry', entry), Token('replace', idx), Token('(', opar), Token('new_value', idx), Token(':', colon), Token('int', typex), Token(')', cpar), Token('{', ocur), Token('storage', idx), Token('=', equal), Token('new_value', idx), Token(';', semi), Token('}', ccur), Token('}', ccur), Token('EOF', TZSCRIPT_GRAMMAR.EOF)]
 
         # terminals = [token.token_type for token in tokens]
-        derivation = parser(terminals, True)
+        derivation = parser(terminals, terminals_loc, True)
         if derivation is None:
             print(
                 "Something unexpected happened during parsing")
@@ -67,6 +74,12 @@ def process(script: str):
         ast = build_slr_ast(productions, operations, tokens)
         print("... OK")
         progress.update(1)
+
+        index_visitor = IndexVisitor(loc)
+        for i, val in enumerate(loc):
+            print((i, val))
+        final_dict = index_visitor.visit_program(ast)
+        print(index_visitor.final_dict)
 
         print("\nPerforming Type Check", end="")
         type_visitor = TypeCheckVisitor()

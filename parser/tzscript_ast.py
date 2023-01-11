@@ -76,12 +76,15 @@ class FuncDeclarationNode(DeclarationNode):
     def accept(self, visitor):
         return visitor.visit_func_declaration_node(self)
 
+
 class WhileNode(Node):
-    def __init__(self,exp,statements):
+    def __init__(self, exp, statements):
         self.exp = exp
         self.statements = statements
+
     def accept(self, visitor):
         return visitor.visit_while_node(self)
+
 
 class EntryDeclarationNode(DeclarationNode):
     def __init__(self, idx, params, body):
@@ -146,7 +149,8 @@ class EqualNode(ExpressionNode):
         return visitor.visit_arith_node(self, "==")
 
 
-class IniquelatyNode(ExpressionNode):
+class InequalityNode(ExpressionNode):
+    # class IniquelatyNode(ExpressionNode):
     def __init__(self, left, right) -> None:
         self.left = left
         self.right = right
@@ -217,7 +221,11 @@ class ConstantNumNode(AtomicNode):
 
 
 class VariableNode(AtomicNode):
-    pass
+    def __init__(self, lex):
+        self.lex = lex
+
+    def accept(self, visitor):
+        return visitor.visit_variable_node(self)
 
 
 class PlusNode(BinaryNode):

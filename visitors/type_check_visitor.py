@@ -145,6 +145,9 @@ class TypeCheckVisitor(Visitor):
 
             return True
 
+    def visit_variable_node(self, node: VariableNode):
+        pass
+
     def visit_return_statement(self, node: ReturnStatementNode):
         if 'type' in node.expr.__dict__:
             if node.expr.type != self.symbol_table[self.func[-1]] and self.it == 1:

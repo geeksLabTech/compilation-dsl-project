@@ -4,6 +4,7 @@ from abc import ABC, abstractmethod
 from lexer.int_generator import generator
 from parser.utils import ContainerSet
 
+
 class Automaton(ABC):
     @abstractmethod
     def __init__(self, states: int, finals: List[int], transitions: Dict[Tuple[int, str], List[int]], start=0):
@@ -14,27 +15,34 @@ class Automaton(ABC):
         self.tags = {}
         self.map = transitions
         self.vocabulary = set()
-        self.transitions: Dict[int, Dict[str, List[int]]] = { state: {} for state in range(states) }
-        
+        self.transitions: Dict[int, Dict[str, List[int]]] = {
+            state: {} for state in range(states)}
+
         for (origin, symbol), destinations in transitions.items():
-            assert hasattr(destinations, '__iter__'), 'Invalid collection of states'
+            assert hasattr(
+                destinations, '__iter__'), 'Invalid collection of states'
             self.transitions[origin][symbol] = destinations
             self.vocabulary.add(symbol)
-            
+
         self.vocabulary.discard('')
 
     def graph(self):
         G = pydot.Dot(rankdir='LR', margin=0.1)
-        G.add_node(pydot.Node('start', shape='plaintext', label='', width=0, height=0))
+        G.add_node(pydot.Node('start', shape='plaintext',
+                   label='', width=0, height=0))
 
         for (start, tran), destinations in self.map.items():
             tran = 'ε' if tran == '' else tran
-            G.add_node(pydot.Node(str(start), shape='circle', style='bold' if start in self.finals else ''))
+            G.add_node(pydot.Node(str(start), shape='circle',
+                       style='bold' if start in self.finals else ''))
             for end in destinations:
-                G.add_node(pydot.Node(str(end), shape='circle', style='bold' if end in self.finals else ''))
-                G.add_edge(pydot.Edge(str(start), str(end), label=tran, labeldistance=2))
+                G.add_node(pydot.Node(str(end), shape='circle',
+                           style='bold' if end in self.finals else ''))
+                G.add_edge(pydot.Edge(str(start), str(
+                    end), label=tran, labeldistance=2))
 
-        G.add_edge(pydot.Edge('start', str(self.start), label='', style='dashed'))
+        G.add_edge(pydot.Edge('start', str(
+            self.start), label='', style='dashed'))
         return G
 
     def _repr_svg_(self):
@@ -42,13 +50,12 @@ class Automaton(ABC):
             return self.graph().create_svg().decode('utf8')
         except:
             pass
-    
 
 
 class NFA(Automaton):
     def __init__(self, states: int, finals: List[int], transitions: Dict[Tuple[int, str], List[int]], start=0):
         super().__init__(states, finals, transitions, start)
-        
+
     def epsilon_transitions(self, state):
         assert state in self.transitions, 'Invalid state'
         try:
@@ -56,16 +63,18 @@ class NFA(Automaton):
         except KeyError:
             return ()
 
+
 class DFA(Automaton):
-    
+
     def __init__(self, states: int, finals: List[int], transitions: Dict[Tuple[int, str], int], start=0):
         assert all(isinstance(value, int) for value in transitions.values())
         assert all(len(symbol) > 0 for origin, symbol in transitions)
-       
-        processed_transitions = { key: [value] for key, value in transitions.items() }
+
+        processed_transitions = {key: [value]
+                                 for key, value in transitions.items()}
         super().__init__(states, finals, processed_transitions, start)
         self.current = start
-        
+
     def _move(self, symbol):
         if self.current in self.transitions:
             # print('cual current sera', self.current)
@@ -73,10 +82,10 @@ class DFA(Automaton):
             if symbol in self.transitions[self.current]:
                 return self.transitions[self.current][symbol][0]
         return None
-        
+
     def _reset(self):
         self.current = self.start
-        
+
     def recognize(self, string):
         self._reset()
         last_char = -1
@@ -86,7 +95,7 @@ class DFA(Automaton):
             self.current = self._move(char)
             if self.current is None:
                 return False, last_char, previous
-        
+
         return self.current in self.finals and last_char == len(string) - 1, last_char, self.current
 
 
@@ -98,13 +107,16 @@ def move(automaton: NFA, states: List[int], symbol: str):
         if symbol in transitions:
             for x in transitions[symbol]:
                 moves.add(x)
-    
+
     return moves
 
+
 def epsilon_closure(automaton: NFA, states: list[int]):
-    pending = [ s for s in states ] # equivalente a list(states) pero me gusta así :p
-    closure = { s for s in states } # equivalente a  set(states) pero me gusta así :p
-    
+    # equivalente a list(states) pero me gusta así :p
+    pending = [s for s in states]
+    # equivalente a  set(states) pero me gusta así :p
+    closure = {s for s in states}
+
     while pending:
         state = pending.pop()
         # Your code here
@@ -116,28 +128,28 @@ def epsilon_closure(automaton: NFA, states: list[int]):
                 closure.add(x)
                 pending.append(x)
 
-   
     return ContainerSet(*closure)
+
 
 def nfa_to_dfa(automaton: NFA):
     transitions = {}
-    
+
     start = epsilon_closure(automaton, [automaton.start])
     start.id = 0
     start.is_final = any(s in automaton.finals for s in start)
-    states = [ start ]
-    pending = [ start ]
+    states = [start]
+    pending = [start]
     while pending:
         state = pending.pop()
         for symbol in automaton.vocabulary:
-                
+
             try:
                 transitions[state.id, symbol]
                 assert False, 'Invalid DFA!!!'
             except KeyError:
                 moves = move(automaton, list(state), symbol)
                 new_state = epsilon_closure(automaton, list(moves))
-                
+
                 if len(new_state) > 0:
                     if new_state != state:
                         viewed_status = None
@@ -147,24 +159,26 @@ def nfa_to_dfa(automaton: NFA):
                             pass
 
                         if viewed_status is None:
-                            new_state.id = len(states) 
-                            new_state.is_final = any(s in automaton.finals for s in new_state)
+                            new_state.id = len(states)
+                            new_state.is_final = any(
+                                s in automaton.finals for s in new_state)
                             pending = [new_state] + pending
                             states.append(new_state)
                         else:
                             new_state.id = states[viewed_status].id
-                            
+
                         transitions[state.id, symbol] = new_state.id
-                    else :
+                    else:
                         transitions[state.id, symbol] = state.id
-        
-    finals = [ state.id for state in states if state.is_final ]
+
+    finals = [state.id for state in states if state.is_final]
     dfa = DFA(len(states), finals, transitions)
     return dfa
 
+
 def automata_union(a1, a2):
     transitions = {}
-    
+
     start = 0
     # From this number on, states of a1 will be relocated
     d1 = 1
@@ -173,81 +187,89 @@ def automata_union(a1, a2):
     final = a2.states + d2
     # print(a1.map.items())
     # print(final)
-    
+
     for (origin, symbol), destinations in a1.map.items():
-        ## Relocate a1 transitions ...
-        transitions[(origin + d1, symbol)] = [destination + d1 for destination in destinations]
+        # Relocate a1 transitions ...
+        transitions[(origin + d1, symbol)] = [destination +
+                                              d1 for destination in destinations]
 
     for (origin, symbol), destinations in a2.map.items():
-        ## Relocate a2 transitions ...
-        transitions[(origin + d2, symbol)] = [destination + d2 for destination in destinations]
+        # Relocate a2 transitions ...
+        transitions[(origin + d2, symbol)] = [destination +
+                                              d2 for destination in destinations]
 
-    ## Add transitions from start state ...
+    # Add transitions from start state ...
     transitions[(start, '')] = [d1, d2]
-    
-    ## Add transitions to final state ...
+
+    # Add transitions to final state ...
     for x in a1.finals:
-        transitions[(x + d1, '')] = [final]        
-    
+        transitions[(x + d1, '')] = [final]
+
     for x in a2.finals:
         transitions[(x + d2, '')] = [final]
 
     states = a1.states + a2.states + 2
-    finals = { final }
-    
+    finals = {final}
+
     return NFA(states, finals, transitions, start)
+
 
 def automata_concatenation(a1, a2):
     transitions = {}
-    
+
     start = 0
     d1 = 0
     d2 = a1.states + d1
     final = a2.states + d2 - 1
-    
+
     for (origin, symbol), destinations in a1.map.items():
-        transitions[(origin, symbol)] = [destination for destination in destinations]
-        
+        transitions[(origin, symbol)] = [
+            destination for destination in destinations]
+
     for (origin, symbol), destinations in a2.map.items():
-        ## Relocate a2 transitions ...
-        transitions[(origin + d2, symbol)] = [destination + d2 for destination in destinations]
-    
-    ## Add transitions to final state ...
+        # Relocate a2 transitions ...
+        transitions[(origin + d2, symbol)] = [destination +
+                                              d2 for destination in destinations]
+
+    # Add transitions to final state ...
     for x in a1.finals:
         transitions[(x, '')] = [d2]
-        
+
     states = a1.states + a2.states
-    finals = { final }
+    finals = {final}
     # print(transitions)
     # print(final)
     return NFA(states, finals, transitions, start)
+
 
 def automata_closure(a1):
     # This algorithm creates two new states
     # A new start state with an epsilon transition to the original start
     # A new final state with an epsilon transition from the original final state
     transitions = {}
-    
+
     start = 0
     d1 = 1
     final = a1.states + d1
-    
+
     for (origin, symbol), destinations in a1.map.items():
-        ## Relocate automaton transitions ...
-        transitions[(origin + d1, symbol)] = [destination + d1 for destination in destinations]
-    
-    ## Add transitions from start state ...
+        # Relocate automaton transitions ...
+        transitions[(origin + d1, symbol)] = [destination +
+                                              d1 for destination in destinations]
+
+    # Add transitions from start state ...
     transitions[(start, '')] = [d1, final]
-    
-    ## Add transitions to final state and to start state ...
+
+    # Add transitions to final state and to start state ...
     for x in a1.finals:
         transitions[(x + d1, '')] = [start]
         transitions[(x + d1, '')] = [final]
 
-    states = a1.states +  2
-    finals = { final }
-    
+    states = a1.states + 2
+    finals = {final}
+
     return NFA(states, finals, transitions, start)
+
 
 class State:
     def __init__(self, state, final=False, formatter=lambda x: str(x), shape='circle'):
@@ -299,36 +321,37 @@ class State:
 
     def to_deterministic(self, formatter=lambda x: str(x)):
         closure = self.epsilon_closure
-        
+
         start = State(tuple(closure), any(s.final for s in closure), formatter)
         if start.final:
             for s in closure:
                 if s.final:
                     if start.tag is not None:
-                        if start.tag[1]<s.tag[1]:
+                        if start.tag[1] < s.tag[1]:
                             start.tag = s.tag
                     else:
                         start.tag = s.tag
 
-        closures = [ closure ]
-        states = [ start ]
-        pending = [ start ]
+        closures = [closure]
+        states = [start]
+        pending = [start]
 
         while pending:
             state = pending.pop()
-            symbols = { symbol for s in state.state for symbol in s.transitions }
+            symbols = {symbol for s in state.state for symbol in s.transitions}
 
             for symbol in symbols:
                 move = self.move_by_state(symbol, *state.state)
                 closure = self.epsilon_closure_by_state(*move)
 
                 if closure not in closures:
-                    new_state = State(tuple(closure), any(s.final for s in closure), formatter)
+                    new_state = State(tuple(closure), any(
+                        s.final for s in closure), formatter)
                     if new_state.final:
                         for s in closure:
                             if s.final:
                                 if new_state.tag is not None:
-                                    if new_state.tag[1]<s.tag[1]:
+                                    if new_state.tag[1] < s.tag[1]:
                                         new_state.tag = s.tag
                                 else:
                                     new_state.tag = s.tag
@@ -353,14 +376,14 @@ class State:
                 state.tag = tag
                 all_finals.append(state)
             states.append(state)
-        
+
         for x in states:
             if x.final:
-                x.all_finals=all_finals
+                x.all_finals = all_finals
 
         for (origin, symbol), destinations in nfa.map.items():
             origin = states[origin]
-            origin[symbol] = [ states[d] for d in destinations ]
+            origin[symbol] = [states[d] for d in destinations]
 
         if get_states:
             return states[nfa.start], states
@@ -368,11 +391,11 @@ class State:
 
     @staticmethod
     def move_by_state(symbol, *states):
-        return { s for state in states if state.has_transition(symbol) for s in state[symbol]}
+        return {s for state in states if state.has_transition(symbol) for s in state[symbol]}
 
     @staticmethod
     def epsilon_closure_by_state(*states):
-        closure = { state for state in states }
+        closure = {state for state in states}
 
         l = 0
         while l != len(closure):
@@ -380,7 +403,7 @@ class State:
             tmp = [s for s in closure]
             for s in tmp:
                 for epsilon_state in s.epsilon_transitions:
-                        closure.add(epsilon_state)
+                    closure.add(epsilon_state)
         return closure
 
     @property
@@ -439,21 +462,26 @@ class State:
 
     def graph(self):
         G = pydot.Dot(rankdir='LR', margin=0.1)
-        G.add_node(pydot.Node('start', shape='plaintext', label='', width=0, height=0))
+        G.add_node(pydot.Node('start', shape='plaintext',
+                   label='', width=0, height=0))
 
         visited = set()
+
         def visit(start):
             ids = id(start)
             if ids not in visited:
                 visited.add(ids)
-                G.add_node(pydot.Node(ids, label=start.name, shape=self.shape, style='bold' if start.final else ''))
+                G.add_node(pydot.Node(ids, label=start.name,
+                           shape=self.shape, style='bold' if start.final else ''))
                 for tran, destinations in start.transitions.items():
                     for end in destinations:
                         visit(end)
-                        G.add_edge(pydot.Edge(ids, id(end), label=tran, labeldistance=2))
+                        G.add_edge(pydot.Edge(
+                            ids, id(end), label=tran, labeldistance=2))
                 for end in start.epsilon_transitions:
                     visit(end)
-                    G.add_edge(pydot.Edge(ids, id(end), label='ε', labeldistance=2))
+                    G.add_edge(pydot.Edge(
+                        ids, id(end), label='ε', labeldistance=2))
 
         visit(self)
         G.add_edge(pydot.Edge('start', id(self), label='', style='dashed'))
@@ -469,14 +497,17 @@ class State:
     def write_to(self, fname):
         return self.graph().write_svg(fname)
 
+
 def multiline_formatter(state):
     return '\n'.join(str(item) for item in state)
+
 
 def lr0_formatter(state):
     try:
         return '\n'.join(str(item)[:-4] for item in state)
     except TypeError:
         return str(state)[:-4]
+
 
 def state_union(s1: State, s2: State):
     new_start = State(generator.generate_number())
@@ -486,7 +517,7 @@ def state_union(s1: State, s2: State):
 
     for x in s1.all_finals:
         x.add_epsilon_transition(new_final)
-    
+
     for x in s2.all_finals:
         x.add_epsilon_transition(new_final)
 
