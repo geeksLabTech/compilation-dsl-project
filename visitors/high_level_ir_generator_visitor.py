@@ -248,6 +248,11 @@ class TzScriptToHighLevelIrVisitor:
                 self.else_node.append(None)
             self.visit(cur_else_node.statements[idx], parent)
 
+    @visitor.when(ElseNode)
+    def visit(self, node: ElseNode, parent: Parent):
+        for child in node.statements:
+            self.visit(child, parent)
+
     @visitor.when(WhileNode)
     def visit(self, node: WhileNode, parent: Parent):
         self.visit(node.exp, parent)
