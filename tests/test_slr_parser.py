@@ -12,7 +12,7 @@ def test_productions_and_operations_hello_world():
    tokens = [Token('contract',contract),Token('store_value',idx),Token('(',opar),Token('value',idx),Token(':',colon),Token('int',typex),Token(')',cpar),Token('{',ocur),Token('let',let),Token('storage',idx),Token(':',colon),Token('int',typex),Token('=',equal),Token('0',num),Token(';',semi),Token('entry',entry),Token('replace',idx),Token('(',opar),Token('new_value',idx),Token(':',colon),Token('int',typex),Token(')',cpar),Token('{',ocur),Token('storage',idx),Token('=',equal),Token('new_value',idx),Token(';',semi),Token('}',ccur),Token('}',ccur),Token('EOF',TZSCRIPT_GRAMMAR.EOF)]
 
    terminals = [token.token_type for token in tokens]
-   derivation = parser(terminals, True)
+   derivation = parser(terminals,True)
    assert derivation is not None
    productions, operations = derivation
    print(' real productions')

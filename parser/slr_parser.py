@@ -18,7 +18,7 @@ class ShiftReduceParser:
     def _build_parsing_table(self):
         raise NotImplementedError()
 
-    def __call__(self, w, loc, get_shift_reduce=False):
+    def __call__(self, w, get_shift_reduce=False):
         stack = [0]
         cursor = 0
         output = []
@@ -59,7 +59,7 @@ class ShiftReduceParser:
                 for symbol in reversed(body):
                     # print('stack', stack)
                     stack.pop()
-                    
+
                     assert stack.pop() == symbol
                     state = stack[-1]
                     # print(self.goto,'goto')

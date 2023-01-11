@@ -61,7 +61,7 @@ def process(script: str):
         #     'entry', entry), Token('replace', idx), Token('(', opar), Token('new_value', idx), Token(':', colon), Token('int', typex), Token(')', cpar), Token('{', ocur), Token('storage', idx), Token('=', equal), Token('new_value', idx), Token(';', semi), Token('}', ccur), Token('}', ccur), Token('EOF', TZSCRIPT_GRAMMAR.EOF)]
 
         # terminals = [token.token_type for token in tokens]
-        derivation = parser(terminals, terminals_loc, True)
+        derivation = parser(terminals, True)
         if derivation is None:
             print(
                 "Something unexpected happened during parsing")
