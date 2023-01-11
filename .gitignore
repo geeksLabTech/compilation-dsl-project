@@ -3,13 +3,6 @@ __pycache__/
 *.py[cod]
 *$py.class
 
-#.tzs files
-*.tzs
-*.tzs.rep
-
-# michelson Files
-*.tz
-
 # C extensions
 *.so
 

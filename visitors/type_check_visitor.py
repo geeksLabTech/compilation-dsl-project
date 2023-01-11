@@ -102,10 +102,11 @@ class TypeCheckVisitor(Visitor):
             a.accept(self)
 
     def visit_var_call_node(self, node: VarCallNode):
-        # print(self.symbol_table[node.id], self.get_type(node.expr))
-        if not self.symbol_table[node.id] == self.get_type(node.expr):
-            self.errors.append(
-                (f"Unable to assign {self.get_type(node.expr)} to {self.symbol_table[node.id]}", node))
+        if not self.symbol_table[node.id] == self.get_type(node.expr) and not self.is_compatible_type(node, node.expr) and self.it == 2:
+            # print(self.symbol_table[node.id], self.get_type(node.expr))
+            if not (self.get_type(node.expr) in ['num', 'int'] and self.symbol_table[node.id] in ['num', 'int']):
+                self.errors.append(
+                    (f"Unable to assign {self.get_type(node.expr)} to {self.symbol_table[node.id]}", node))
 
     def visit_constant_num_node(self, node: ConstantNumNode):
         pass
@@ -182,6 +183,8 @@ class TypeCheckVisitor(Visitor):
 
         if left_type == right_type:
             return True
+        if left_type == 'int' and (right_type == 'num' or right_type == 'nat'):
+            return True
         if left_type == 'num' and (right_type == 'nat' or right_type == 'int'):
             return True
         if right_type == 'num':
@@ -203,4 +206,8 @@ class TypeCheckVisitor(Visitor):
         if 'type' in node.__dict__:
             return node.type
         else:
+            if type(node) in [PlusNode, MinusNode, StarNode, DivNode]:
+                return 'num'
+            elif type(node) in [LessThanEqualNode, LessThanNode, GreaterThanNode, GreaterThanEqualNode, EqualNode]:
+                return 'bool'
             return None

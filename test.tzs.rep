@@ -1,0 +1,14 @@
+\__ProgramNode: contract node.idx(n : int) [<stat>; ... <stat>;]
+	\__AttrDeclarationNode: n : int
+		\__VarDeclarationNode: let last_fib_calculated = <expr> : int
+			\__ ConstantNumNode: 1
+		\__EntryDeclarationNode: Entry get_fib(n : int)
+			\__AttrDeclarationNode: n : int
+				\__VarDeclarationNode: let result = <expr> : int
+					\__CallNode: fib(<expr>, ..., <expr>)
+						\__ VariableNode: n
+				\__VarCallNode: last_fib_calculated = <expr>
+					\__ VariableNode: result
+		\__FuncDeclarationNode: def fib(n : int) : int
+n : int
+[]
