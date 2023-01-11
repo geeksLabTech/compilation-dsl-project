@@ -112,8 +112,8 @@ class TzScriptToHighLevelIrVisitor:
         new_parent = Parent(LevelRepresentatives.EntryPoint, node.id)
 
         for idx, s in enumerate(node.body):
-            if type(node.statements[idx]) is IfNode and type(node.statements[idx+1]) is ElseNode:
-                self.else_node.append(node.statements[idx+1])
+            if type(node.body[idx]) is IfNode and type(node.body[idx+1]) is ElseNode:
+                self.else_node.append(node.body[idx+1])
             else:
                 self.else_node.append(None)
 
@@ -230,7 +230,7 @@ class TzScriptToHighLevelIrVisitor:
 
     @visitor.when(IfNode)
     def visit(self, node: IfNode, parent: Parent):
-        self.visit(node.expr, parent)
+        self.visit(node.expr,parent)
         for idx, s in enumerate(node.statements):
             if type(node.statements[idx]) is IfNode and type(node.statements[idx+1]) is ElseNode:
                 self.else_node.append(node.statements[idx+1])
