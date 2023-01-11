@@ -150,8 +150,8 @@ class SemanticCheckerVisitor(object):
     @visitor.when(VarDeclarationNode)
     def visit(self, node: VarDeclarationNode, scope: Scope):
         if self.iterations == 1:
-            if scope.is_local_var(node.id):
-                self.errors.append(f'Variable {node.id} is used')
+            if scope.is_local_var(node.id) and self.iterations == 1:
+                self.errors.append((f'Variable {node.id} is used', node))
 
         scope.define_variable(node.id)
         self.visit(node.expr, scope)
@@ -162,7 +162,7 @@ class SemanticCheckerVisitor(object):
 
         if scope.is_func_defined(node.id, len(node.params)):
             if self.iterations == 1:
-                self.errors.append(f'Function name {node.id} is used')
+                self.errors.append((f'Function name {node.id} is used', node))
 
         scope.define_function(node.id, len(node.params))
         new_scope = scope.create_child_scope()
@@ -181,10 +181,10 @@ class SemanticCheckerVisitor(object):
 
     @visitor.when(EntryDeclarationNode)
     def visit(self, node: EntryDeclarationNode, scope: Scope):
-        if scope.is_func_defined(node.id, node.params):
-            self.errors.append(f'Function name {node.id} is used')
+        if scope.is_func_defined(node.id, node.params) and self.iterations == 1:
+            self.errors.append((f'Function name {node.id} is used', node))
 
-        scope.is_entry_in_scope = True        
+        scope.is_entry_in_scope = True
         scope.define_function(node.id, len(node.params))
         scope_copied = Scope()
 
@@ -206,19 +206,19 @@ class SemanticCheckerVisitor(object):
 
     @visitor.when(ConstantNumNode)
     def visit(self, node: ConstantNumNode, scope: Scope):
-        if not node.lex.isnumeric():
-            self.errors.append(f'Value is not Numeric')
+        if not node.lex.isnumeric() and self.iterations == 1:
+            self.errors.append((f'Value is not Numeric', node))
 
         return None
 
     @visitor.when(ConstantStringNode)
-    def visit(self, node:ConstantStringNode, scope: Scope):
+    def visit(self, node: ConstantStringNode, scope: Scope):
         pass
 
     @visitor.when(VariableNode)
     def visit(self, node: VariableNode, scope: Scope):
         if not scope.is_local_var(node.lex):
-            self.errors.append(f'Invalid variable {node.lex}')
+            self.errors.append((f'Invalid variable {node.lex}', node))
 
     @visitor.when(CallNode)
     def visit(self, node: CallNode, scope: Scope):
@@ -230,7 +230,8 @@ class SemanticCheckerVisitor(object):
             # print([(f.name, f.params) for f in scope.parent.local_funcs])
             # print('parent funcs', scope.parent.local_funcs)
             if self.iterations == 2:
-                self.errors.append(f'Function {node.id} is not defined')
+                self.errors.append(
+                    (f'Function {node.id} is not defined', node))
 
         # print(node.id) #TODO: change to get_local_function_info
         # if len(node.args) != len(scope.get_local_function_info(node.id, node.args)):
@@ -250,8 +251,9 @@ class SemanticCheckerVisitor(object):
     @visitor.when(IfNode)
     def visit(self, node: IfNode, scope: Scope):
         # new_scope = scope.create_child_scope()
-        if scope.main_level :
-            self.errors.append(f'If statement is not allowed in main level')
+        if scope.main_level and self.iterations == 1:
+            self.errors.append(
+                (f'If statement is not allowed in main level', node))
         scope.is_if_in_scope = True
         self.visit(node.expr, scope)
         for child in node.statements:
@@ -260,8 +262,9 @@ class SemanticCheckerVisitor(object):
     @visitor.when(ElseNode)
     def visit(self, node: ElseNode, scope: Scope):
         # new_scope = scope.create_child_scope()
-        if not scope.is_if_in_scope:
-            self.errors.append(f'Else statement is not allowed without if statement')
+        if not scope.is_if_in_scope and self.iterations == 1:
+            self.errors.append(
+                (f'Else statement is not allowed without if statement', node))
         else:
             scope.is_if_in_scope = False
         for child in node.statements:
@@ -271,13 +274,14 @@ class SemanticCheckerVisitor(object):
     def visit(self, node: VarCallNode, scope: Scope):
         # print('estoy en', node.id, scope.local_vars)
         self.visit(node.expr, scope)
-        if not scope.is_local_var(node.id):
-            self.errors.append(f'Variable {node.id} is not defined')
+        if not scope.is_local_var(node.id) and self.iterations == 1:
+            self.errors.append((f'Variable {node.id} is not defined', node))
 
     @visitor.when(ReturnStatementNode)
     def visit(self, node: ReturnStatementNode, scope: Scope):
-        if scope.main_level or scope.is_entry_in_scope:
-            self.errors.append(f'Return statement is not allowed in main level')
+        if scope.main_level or scope.is_entry_in_scope and self.iterations == 1:
+            self.errors.append(
+                (f'Return statement is not allowed in main level', node))
         self.visit(node.expr, scope)
 
     @visitor.when(AttrDeclarationNode)
@@ -287,8 +291,9 @@ class SemanticCheckerVisitor(object):
 
     @visitor.when(WhileNode)
     def visit(self, node: WhileNode, scope: Scope):
-        if scope.main_level :
-            self.errors.append(f'While statement is not allowed in main level')
+        if scope.main_level and self.iterations == 1:
+            self.errors.append(
+                (f'While statement is not allowed in main level', node))
         self.visit(node.exp, scope)
         for child in node.statements:
             self.visit(child, scope)
