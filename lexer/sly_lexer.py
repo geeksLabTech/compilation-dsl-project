@@ -202,6 +202,7 @@ def process_lexer_tokens(lexer_tokens) -> list[Token]:
 
     tokens: list[Token] = []
     for i in range(len(lexer_tokens)):
+        # print(lexer_tokens[i])
         ttype = lexer_tokens[i].type
         if ttype == 'STRINGTEXT':
             tokens.append(

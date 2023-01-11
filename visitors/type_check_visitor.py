@@ -24,7 +24,7 @@ class TypeCheckVisitor(Visitor):
         # check that the expression is of a boolean type
         if not self.is_boolean_type(node.expr):
             self.errors.append(
-                "If statement expression must be of type boolean")
+                ("If statement expression must be of type boolean", nodes))
         node.expr.accept(self)
         for statement in node.statements:
             statement.accept(self)
@@ -48,22 +48,22 @@ class TypeCheckVisitor(Visitor):
 
             if not node.type == f_type:
                 if self.it == 2 and f_type == '?':
-                    self.errors.append(f'Undefined Function {node.expr.id}')
+                    self.errors.append((f'Undefined Function {node.expr.id}', node))
                 if f_type != '?':
                     self.errors.append(
-                        f"Incompatible types in variable declaration: expected {node.type}, got {f_type}")
+                        (f"Incompatible types in variable declaration: expected {node.type}, got {f_type}", node))
 
         if node.type == 'nat':
             if type(node.expr) is MinusNode and type(node.expr.left) is ConstantNumNode and type(node.expr.right) is ConstantNumNode:
                 if self.it == 1 and int(node.expr.left.lex) < int(node.expr.right.lex):
                     self.errors.append(
-                        f"Value {int(node.expr.left.lex) - int(node.expr.right.lex)} cannot be assigned to 'nat' type variable")
+                        (f"Value {int(node.expr.left.lex) - int(node.expr.right.lex)} cannot be assigned to 'nat' type variable",node))
 
         elif 'type' in node.expr.__dict__:
             # print("there")
             if self.it == 1 and not self.is_compatible_type(node, node.expr):
                 self.errors.append(
-                    f"Incompatible types in variable declaration: expected {node.type}, got {node.expr.type}")
+                    (f"Incompatible types in variable declaration: expected {node.type}, got {node.expr.type}",node))
         node.expr.accept(self)
         self.symbol_table[node.id] = node.type
 
@@ -71,11 +71,11 @@ class TypeCheckVisitor(Visitor):
         # check types for assignment node
         # check that the variable being assigned to is in the symbol table
         if node.id not in self.symbol_table:
-            raise NameError(f"Variable {node.id} not defined")
+            raise NameError((f"Variable {node.id} not defined",node))
         # check that the type of the expression is compatible with the variable's type
         if not self.is_compatible_type(node, node.expr):
             self.errors.append(
-                f"Incompatible types in assignment: expected {self.symbol_table[node.id]}, got {node.expr.type}")
+                (f"Incompatible types in assignment: expected {self.symbol_table[node.id]}, got {node.expr.type}", node))
 
     def visit_func_declaration_node(self, node: FuncDeclarationNode):
         # check types for function declaration node
@@ -104,7 +104,7 @@ class TypeCheckVisitor(Visitor):
         # print(self.symbol_table[node.id], self.get_type(node.expr))
         if not self.symbol_table[node.id] == self.get_type(node.expr):
             self.errors.append(
-                f"Unable to assign {self.get_type(node.expr)} to {self.symbol_table[node.id]}")
+                (f"Unable to assign {self.get_type(node.expr)} to {self.symbol_table[node.id]}",node))
 
     def visit_constant_num_node(self, node: ConstantNumNode):
         pass
@@ -131,7 +131,7 @@ class TypeCheckVisitor(Visitor):
 
         if not self.is_compatible_type(left, right):
             self.errors.append(
-                f"Incompatible types in binary operation: {left} and {right}")
+                (f"Incompatible types in binary operation: {left} and {right}",node))
 
     def is_boolean_type(self, node: Node):
 
@@ -152,7 +152,7 @@ class TypeCheckVisitor(Visitor):
         if 'type' in node.expr.__dict__:
             if node.expr.type != self.symbol_table[self.func[-1]] and self.it == 1:
                 self.errors.append(
-                    f"Invalid return type for function call {self.func[-1]} expected {self.symbol_table[self.func[-1]]['return']}, got {node.expr.type}")
+                    (f"Invalid return type for function call {self.func[-1]} expected {self.symbol_table[self.func[-1]]['return']}, got {node.expr.type}", node))
 
     def visit_arith_node(self, node: Node, oper: str):
 
@@ -160,7 +160,7 @@ class TypeCheckVisitor(Visitor):
             if type(node.left) is ConstantStringNode or type(node.right) is ConstantStringNode:
                 if type(node.left) != type(node.right) and self.it == 1:
                     self.errors.append(
-                        f"Cannot permform '{oper}' operation between {self.get_type(node.left)} and {self.get_type(node.right)}")
+                        (f"Cannot permform '{oper}' operation between {self.get_type(node.left)} and {self.get_type(node.right)}", node))
                     return
 
         if not self.get_type(node.left) == self.get_type(node.right):
@@ -168,7 +168,7 @@ class TypeCheckVisitor(Visitor):
             node.left.accept(self)
             if not self.is_compatible_type(node.left, node.right) and self.it == 1:
                 self.errors.append(
-                    f"Cannot permform '{oper}' operation between {self.get_type(node.left)} and {self.get_type(node.right)}")
+                    (f"Cannot permform '{oper}' operation between {self.get_type(node.left)} and {self.get_type(node.right)}", node))
 
     def is_compatible_type(self, left, right):
         left_type = self.get_type(left)

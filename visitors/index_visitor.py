@@ -159,15 +159,19 @@ class IndexVisitor(Visitor):
             self.last_index += 1
 
     def visit_true_node(self, node: TrueNode):
+        self.last_index +=1
         pass
 
     def visit_false_node(self, node: FalseNode):
+        self.last_index+= 1
         pass
 
     def visit_constant_string_node(self, node: ConstantStringNode):
+        self.last_index+= 1
         pass
 
     def visit_constant_num_node(self, node: ConstantNumNode):
+        # self.last_index += 1
         pass
 
     def visit_variable_node(self, node: VariableNode):

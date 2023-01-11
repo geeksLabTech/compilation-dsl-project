@@ -46,7 +46,7 @@ def process(script: str):
         progress.update(1)
 
         terminals = [t.token_type for t in tokens]
-        terminals_loc = [(t.line_no, t.col_no) for t in tokens]
+        terminals_loc = [t.line_no for t in tokens]
         loc = []
 
         for i, tok in enumerate(terminals):
@@ -89,7 +89,7 @@ def process(script: str):
             print("\nSomething Went Wrong")
 
             for err in type_result:
-                print(err)
+                print(err[0], "at line", final_dict[err[1]])
         else:
             print("... OK")
         progress.update(1)
@@ -112,7 +112,7 @@ def process(script: str):
             print("\nSomething Went Wrong")
 
             for err in semantic_result:
-                print(err)
+                print(err[0], "at line", final_dict[err[1]])
         else:
             print("... OK")
         progress.update(1)
