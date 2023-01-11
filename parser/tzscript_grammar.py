@@ -21,17 +21,7 @@ equal,equalequal, plus, minus, star, div,lessthanequal,greaterthanequal, iniquel
 idx, num, typex, contract, ifx, elsex,truex , falsex, returnx, stringx, dquoutes, whilex,stor = TZSCRIPT_GRAMMAR.Terminals('id num type contract if else true false return string_text " while stor')
 
 # productions
-program %= contract + idx + opar + param_list + cpar + ocur +  stat_list + ccur, lambda h,s: ProgramNode(s[2], s[4], s[7]), None, None, None, None, None, None,None,None
-
-stat %= def_func, lambda h, s: s[1], None
-stat %= def_entry, lambda h, s: s[1], None
-stat %= while_stat, lambda h, s: s[1], None
-stat %= if_stat, lambda h, s: s[1], None
-stat %= else_stat, lambda h, s: s[1], None
-stat %= return_stat, lambda h, s: s[1], None
-stat %= var_call, lambda h, s: s[1], None
-stat %= let_var, lambda h, s: s[1], None
-
+program %= contract + idx + opar + param_list + cpar + ocur +  stat_list + ccur, lambda h,s: ProgramNode(s[2], s[4], s[7]), None,None, None, None, None,None,None,None
 
 stat_list %= stat_list + stat  ,lambda h,s: s[1] + [s[2]] ,None,None
 stat_list %= stat, lambda h,s: [s[1]],None
@@ -46,7 +36,7 @@ stat %= var_call, lambda h,s: s[1],None
 stat %= let_var, lambda h,s: s[1],None
 stat %= storage, lambda h,s: s[1],None
 
-storage %= stor + idx + colon + typex + semi, lambda h,s: StorageNode(s[2], s[4]),None,None,None 
+storage %= stor + idx + colon + typex + semi, lambda h,s: StorageNode(s[2]),None,None,None,None,None
 
 while_stat %= whilex + opar + expr + cpar + ocur + stat_list + ccur, lambda h,s: WhileNode(s[3], s[6]),None,None,None,None,None,None,None
 if_stat %= ifx + opar + expr + cpar + ocur + stat_list + ccur, lambda h,s: IfNode(s[3], s[6]),None,None,None,None,None,None,None
@@ -55,7 +45,7 @@ return_stat %= returnx + expr + semi, lambda h,s: ReturnStatementNode(s[2]),None
 
 def_entry %= entry + idx + opar + param_list + cpar + ocur + stat_list + \
     ccur, lambda h, s: EntryDeclarationNode(
-        s[2], s[4], s[7]), None, None, None, None, None, None, None, None
+        s[2], s[4], s[7]), None, None, None, None, None, None, None,None
 
 param_list %= param, lambda h, s: [s[1]], None
 param_list %= param + comma + \
