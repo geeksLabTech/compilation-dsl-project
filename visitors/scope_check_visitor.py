@@ -1,8 +1,10 @@
 from visitors.visitor import Visitor
 
+
 class ScopeCheckVisitor(Visitor):
     def __init__(self):
-        self.scopes = [{}]  # stack of scopes, with the top of the stack representing the current scope
+        # stack of scopes, with the top of the stack representing the current scope
+        self.scopes = [{}]
 
     def visit_program(self, node):
         # add the parameters to the current scope
@@ -31,7 +33,7 @@ class ScopeCheckVisitor(Visitor):
             statement.accept(self)
         # remove the scope for the else block
         self.scopes.pop()
-        
+
     def visit_var_declaration_node(self, node):
         # visit the expression being assigned to the variable
         node.expr.accept(self)
@@ -62,6 +64,20 @@ class ScopeCheckVisitor(Visitor):
         # remove the scope for the function
         self.scopes.pop()
 
+    def visit_call_node(self, node):
+        pass
+
+    def visit_arith_node(self, node, oper):
+        node.left.accept(self)
+        node.right.accept(self)
+
+    def visit_return_node(self, node):
+        node.expr.accept(self)
+    
+    def visit_variable_node(self, node):
+        if not node.id in self.scopes[-1]:
+            self.errors.append()
+
     def visit_attr_declaration_node(self, node):
         # add the attribute to the current scope
         self.scopes[-1][node.id] = node
@@ -89,5 +105,7 @@ class ScopeCheckVisitor(Visitor):
 
     def visit_constant_num_node(self, node):
         pass
+
+
 class ScopeError(Exception):
     pass

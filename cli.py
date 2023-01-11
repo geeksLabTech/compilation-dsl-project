@@ -36,7 +36,7 @@ app = Typer()
 
 
 def process(script: str):
-    with typer.progressbar(length=7) as progress:
+    with typer.progressbar(length=6) as progress:
         # Tokenize Script
         print("\nTokenizing Script", end="")
         lexer = TzScriptLexer()
@@ -89,7 +89,10 @@ def process(script: str):
             print("\nSomething Went Wrong")
 
             for err in type_result:
-                print(err[0], "at line", final_dict[err[1]])
+                try:
+                    print(err[0], "at line", final_dict[err[1]])
+                except:
+                    print(err[0])
         else:
             print("... OK")
         progress.update(1)
@@ -102,7 +105,7 @@ def process(script: str):
         #     return
 
         # print("... OK")
-        progress.update(1)
+        # progress.update(1)
 
         print("\nPerforming Semantic Check", end="")
         semantic_visitor = SemanticCheckerVisitor()
@@ -112,7 +115,11 @@ def process(script: str):
             print("\nSomething Went Wrong")
 
             for err in semantic_result:
-                print(err[0], "at line", final_dict[err[1]])
+
+                try:
+                    print(err[0], "at line", final_dict[err[1]])
+                except:
+                    print(err[0])
         else:
             print("... OK")
         progress.update(1)

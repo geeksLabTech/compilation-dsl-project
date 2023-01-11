@@ -56,8 +56,6 @@ class IndexVisitor(Visitor):
         if str(self.index_list[self.last_index][0]) == "let":
             self.final_dict[node] = self.index_list[self.last_index][1]
             # self.last_index += 5
-        else:
-            print(self.index_list[self.last_index], "let", self.last_index)
         self.last_index += 5
         node.expr.accept(self)
 
@@ -111,8 +109,6 @@ class IndexVisitor(Visitor):
         if str(self.index_list[self.last_index][0]) == "id":
             self.final_dict[node] = self.index_list[self.last_index][1]
             # self.last_index += 1
-        else:
-            print(self.index_list[self.last_index][0], "id")
         self.last_index += 2
 
     def visit_atomic_node(self, node: AtomicNode):
@@ -130,8 +126,6 @@ class IndexVisitor(Visitor):
                 arg.accept(self)
             self.final_dict[node] = self.index_list[self.last_index][1]
             # self.last_index += 1
-        else:
-            print(self.index_list[self.last_index][0], "id")
         self.last_index += 1
         for arg in node.args:
             self.last_index += 1
@@ -148,8 +142,6 @@ class IndexVisitor(Visitor):
         # print(self.last_index)
         if str(self.index_list[self.last_index][0]) == str(oper) or str(self.index_list[self.last_index+1][0]) == str(oper) or str(self.index_list[self.last_index+2][0]) == str(oper):
             self.final_dict[node] = self.index_list[self.last_index][1]
-        else:
-            print(self.index_list[self.last_index], oper)
         self.last_index += 1
         if type(node.left) is VariableNode:
             node.left.accept(self)
