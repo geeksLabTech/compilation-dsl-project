@@ -18,7 +18,7 @@ def process(script):
     # Parse tokenized Script
     parser = SLR1Parser(TZSCRIPT_GRAMMAR, verbose=False)
     derivation = parser(terminals, True)
-
+    print(derivation)
     productions, operations = derivation
 
     ast = build_slr_ast(productions, operations, tokens)
@@ -54,7 +54,7 @@ def test_type_string():
 
     type_result = process(script)
     assert len(type_result) == 1
-    assert type_result[0] == 'Incompatible types in variable declaration: expected string, got num'
+    assert type_result[0][0] == 'Incompatible types in variable declaration: expected string, got num'
 
 
 def test_type_int():
@@ -82,7 +82,7 @@ def test_type_int():
 
     type_result = process(script)
     assert len(type_result) == 1
-    assert type_result[0] == 'Incompatible types in variable declaration: expected int, got string'
+    assert type_result[0][0] == 'Incompatible types in variable declaration: expected int, got string'
 
 
 def test_type_nat():
@@ -111,7 +111,7 @@ def test_type_nat():
     type_result = process(script)
 
     assert len(type_result) == 1
-    assert type_result[0] == "Value -1 cannot be assigned to 'nat' type variable"
+    assert type_result[0][0] == "Value -1 cannot be assigned to 'nat' type variable"
 
 
 def test_return_func():
@@ -139,4 +139,4 @@ def test_return_func():
     type_result = process(script)
 
     assert len(type_result) == 1
-    assert type_result[0] == "Invalid return type for function call fib expected int, got string"
+    assert type_result[0][0] == "Invalid return type for function call fib expected int, got string"

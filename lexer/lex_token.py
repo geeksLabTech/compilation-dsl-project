@@ -14,7 +14,7 @@ class Token:
         Token's type.
     """
 
-    def __init__(self, lex: str, token_type: Terminal, line_no: int, col_no: int):
+    def __init__(self, lex: str, token_type: Terminal, line_no: int = 0, col_no: int = 0):
         self.lex = lex
         self.token_type = token_type
         self.line_no = line_no

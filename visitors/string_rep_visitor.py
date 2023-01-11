@@ -151,7 +151,6 @@ class FormatVisitor(object):
         params = '\n'.join(self.visit(param, tabs + 1)
                            for param in node.params)
         # print(node.body, 'body')
-
         body = '\n'.join(self.visit(child, tabs + 2) for child in node.body)
         # print(self.visit(node.body, tabs + 2), 'body')
 
