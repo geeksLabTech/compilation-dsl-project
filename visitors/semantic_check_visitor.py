@@ -162,8 +162,9 @@ class SemanticCheckerVisitor(object):
 
         if scope.is_func_defined(node.id, len(node.params)):
             if self.iterations == 1:
-                self.errors.append((f'Function name {node.id} is used', node))
-
+                self.errors.append(f'Function name {node.id} is used')
+        if scope.is_entry_in_scope:
+            self.errors.append(f'Function {node.id} is defined after entry point')
         scope.define_function(node.id, len(node.params))
         new_scope = scope.create_child_scope()
         for arg in node.params:
@@ -181,10 +182,10 @@ class SemanticCheckerVisitor(object):
 
     @visitor.when(EntryDeclarationNode)
     def visit(self, node: EntryDeclarationNode, scope: Scope):
-        if scope.is_func_defined(node.id, node.params) and self.iterations == 1:
-            self.errors.append((f'Function name {node.id} is used', node))
-
-        scope.is_entry_in_scope = True
+        if scope.is_func_defined(node.id, node.params):
+            self.errors.append(f'Function name {node.id} is used')
+        
+        scope.is_entry_in_scope = True        
         scope.define_function(node.id, len(node.params))
         scope_copied = Scope()
 

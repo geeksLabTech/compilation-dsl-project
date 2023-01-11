@@ -3,73 +3,7 @@ from parser.tzscript_ast import *
 import visitors.visitor_d as visitor
 
 
-class StringReprVisitor(Visitor):
-    def __init__(self, tabs=0):
-        self.result = ""  # string representation of the AST
-        self.tabs = 0
 
-    def visit_program(self, node: ProgramNode):
-        self.result += f"program {node.idx}({', '.join(param.id for param in node.params)}):\n"
-        self.Lia = '\t' * self.tabs + f'\\__ProgramNode [<stat>; ... <stat>;]'
-        for statement in node.statements:
-            statement.accept(self)
-
-    def visit_if_node(self, node):
-        self.result += "    if "
-        node.expr.accept(self)
-        self.result += ":\n"
-        for statement in node.statements:
-            statement.accept(self)
-
-    def visit_else_node(self, node):
-        self.result += "    else:\n"
-        for statement in node.statements:
-            statement.accept(self)
-
-    def visit_var_declaration_node(self, node):
-        self.result += f"    {node.type} {node.id} = "
-        node.expr.accept(self)
-        self.result += "\n"
-
-    def visit_entry_declaration_node(self, node):
-        # self.result += f"Entry Declaration Node: \n"
-        self.result += f"{node.id}("
-        for n in node.params:
-            n.accept(self)
-        self.result += '):\n'
-        for st in node.body:
-            self.result += '\t'
-            st.accept(self)
-        self.result += '\n'
-
-    def visit_assign_node(self, node):
-        self.result += f"    {node.id} = "
-        node.expr.accept(self)
-        self.result += "\n"
-
-    def visit_func_declaration_node(self, node):
-        self.result += f"    def {node.id}({', '.join(param.id for param in node.params)})"
-        if node.type:
-            self.result += f" -> {node.type}"
-        self.result += ":\n"
-        for statement in node.body:
-            statement.accept(self)
-
-    def visit_attr_declaration_node(self, node):
-        self.result += f" {node.type} {node.id}"
-
-    def visit_atomic_node(self, node):
-        self.result += f" {node.lex}\n"
-
-    def visit_constant_num_node(self, node):
-        self.result += f" {node.lex}\n"
-
-    def visit_var_call_node(self, node):
-        self.result += f"{node.id} = "
-        node.expr.accept(self)
-
-    def visit_call_node(self, node: CallNode):
-        self.result += f"Call Node: {node.id} {node.args}"
 
 
 class FormatVisitor(object):
@@ -187,3 +121,5 @@ class FormatVisitor(object):
         ans = '\t' * tabs + f'\\__VarCallNode: {node.id} = <expr>'
         expr = self.visit(node.expr, tabs + 1)
         return f'{ans}\n{expr}'
+    
+   

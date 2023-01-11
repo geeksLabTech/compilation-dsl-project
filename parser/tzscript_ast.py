@@ -38,6 +38,12 @@ class ElseNode(Node):
     def accept(self, visitor):
         return visitor.visit_else_node(self)
 
+class StorageNode(Node):
+    def __init__(self, statements) -> None:
+        self.statements = statements
+
+    def accept(self, visitor):
+        return visitor.visit_storage_node(self)
 
 class ReturnStatementNode(Node):
     def __init__(self, expr) -> None:
