@@ -54,7 +54,7 @@ class SemanticCheckerVisitor(object):
     def visit(self, node: VarDeclarationNode, scope: Scope,parent):
         if self.iterations == 1:
             if scope.is_local_var(node.id) and self.iterations == 1:
-                self.errors.append((f'Variable {node.id} is used', node))
+                self.errors.append((f'Variable  is used', node))
 
         scope.define_variable(node.id)
         self.visit(node.expr, scope,parent)
@@ -66,11 +66,12 @@ class SemanticCheckerVisitor(object):
         if scope.is_func_defined(node.id, len(node.params)):
             if self.iterations == 1:
                 self.errors.append(f'Function name {node.id} is used')
-        if scope.is_entry_in_scope:
+        if scope.is_entry_in_scope and self.iterations == 1:
             self.errors.append(f'Function {node.id} is defined after entry point')
         scope.define_function(node.id, len(node.params))
         new_scope = scope.create_child_scope()
         new_parent = Parent(LevelRepresentatives.Function,node.id)
+        
         for arg in node.params:
             # print(arg.id, 'arg id')
             scope_update = self.visit(arg, new_scope,new_parent)
@@ -90,11 +91,11 @@ class SemanticCheckerVisitor(object):
 
     @visitor.when(EntryDeclarationNode)
     def visit(self, node: EntryDeclarationNode, scope: Scope,parent):
-        if scope.is_func_defined(node.id, node.params):
-            self.errors.append(f'Entry name {node.id} is used')
+        if scope.is_func_defined(node.id, node.params) and self.iterations == 1:
+            self.errors.append(f'Entry name  is used')
         
-        if parent.level == LevelRepresentatives.EntryPoint:
-            self.errors.append(f'Entry {node.id} statament is not allowed inside entry statament')
+        if parent.level == LevelRepresentatives.EntryPoint and self.iterations == 1:
+            self.errors.append(f'Entry  statament is not allowed inside entry statament')
         new_parent = Parent(LevelRepresentatives.EntryPoint,node.id)
         scope.is_entry_in_scope = True        
         scope.define_function(node.id, len(node.params))
@@ -119,8 +120,8 @@ class SemanticCheckerVisitor(object):
     @visitor.when(ConstantNumNode)
     def visit(self, node: ConstantNumNode, scope: Scope,parent):
         if not node.lex.isnumeric() and self.iterations == 1:
-            self.errors.append((f'Value is not Numeric', node))
-        if parent == LevelRepresentatives.Program:
+            self.errors.append((f'Value is not Numeric'))
+        if parent.level == LevelRepresentatives.Program and self.iterations == 1:
             self.errors.append(f'In the corpus of the program declare entry functions or variables not this constant {node.lex}')
 
         return None
@@ -131,10 +132,10 @@ class SemanticCheckerVisitor(object):
 
     @visitor.when(VariableNode)
     def visit(self, node: VariableNode, scope: Scope,parent):
-        if not scope.is_local_var(node.lex):
-            self.errors.append((f'Invalid variable {node.lex}', node))
-        if parent == LevelRepresentatives.Program:
-            self.errors.append(f'In the corpus of the program declare entry functions or variables not this constant {node.lex}')
+        if not scope.is_local_var(node.lex) and self.iterations == 1:
+            self.errors.append((f'Invalid variable {node.lex}'))
+        if parent.level == LevelRepresentatives.Program and self.iterations == 1:
+            self.errors.append(f'In the corpus of the program declare entry functions or variables not this constant ')
 
     @visitor.when(CallNode)
     def visit(self, node: CallNode, scope: Scope, parent):
@@ -143,8 +144,8 @@ class SemanticCheckerVisitor(object):
             if self.iterations == 2:
                 self.errors.append(
                     (f'Function {node.id} is not defined', node))
-        if parent == LevelRepresentatives.Program:
-            self.errors.append(f'In the corpus of the program declare entry functions or variables not this call {node.id}')
+        if parent.level == LevelRepresentatives.Program and self.iterations == 1:
+            self.errors.append(f'In the corpus of the program declare entry functions or variables not this call ')
         
 
         for child in node.args:
@@ -157,17 +158,18 @@ class SemanticCheckerVisitor(object):
     def visit(self, node: BinaryNode, scope: Scope,parent):
         self.visit(node.left, scope,parent)
         self.visit(node.right, scope,parent)
-        if parent == LevelRepresentatives.Program:
+        if parent.level == LevelRepresentatives.Program and self.iterations == 1:
             self.errors.append(f'In the corpus of the program declare entry functions or variables not this operation')
 
     @visitor.when(IfNode)
     def visit(self, node: IfNode, scope: Scope,parent):
+        print(parent == LevelRepresentatives.Function)
         # new_scope = scope.create_child_scope()
         if scope.main_level and self.iterations == 1:
             self.errors.append(
                 (f'If statement is not allowed in main level', node))
-        if parent == LevelRepresentatives.Program:
-            self.errors.append(f'In the corpus of the program declare entry functions or variables not this statament if{node.expr}')
+        if parent.level == LevelRepresentatives.Program and self.iterations == 1:
+            self.errors.append(f'In the corpus of the program declare entry functions or variables not this statament if')
         scope.is_if_in_scope = True
         self.visit(node.expr, scope,parent)
         for child in node.statements:
@@ -178,10 +180,10 @@ class SemanticCheckerVisitor(object):
         # new_scope = scope.create_child_scope()
         if not scope.is_if_in_scope and self.iterations == 1:
             self.errors.append(
-                (f'Else statement is not allowed without if statement', node))
+                (f'Else statement is not allowed without if statement'))
         else:
             scope.is_if_in_scope = False
-        if parent == LevelRepresentatives.Program:
+        if parent.level == LevelRepresentatives.Program and self.iterations == 1:
             self.errors.append(f'In the corpus of the program declare entry functions or variables not this else')
         for child in node.statements:
             self.visit(child, scope,parent)
@@ -191,15 +193,17 @@ class SemanticCheckerVisitor(object):
         # print('estoy en', node.id, scope.local_vars)
         self.visit(node.expr, scope,parent)
         if not scope.is_local_var(node.id) and self.iterations == 1:
-            self.errors.append((f'Variable {node.id} is not defined'))
+            self.errors.append((f'Variable  is not defined'))
 
     @visitor.when(ReturnStatementNode)
     def visit(self, node: ReturnStatementNode, scope: Scope,parent):
-        if parent == LevelRepresentatives.Program:
-            self.errors.append(f'In the corpus of the program declare entry functions or variables not this return {node.expr}')
-        if not parent == LevelRepresentatives.Function:
+        if parent.level == LevelRepresentatives.Program and self.iterations == 1:
+            self.errors.append(f'In the corpus of the program declare entry functions or variables not this return ')
+        if not parent.level == LevelRepresentatives.Function and self.iterations == 1:
+            # print('entre')
+            print(parent)
             self.errors.append(
-                (f'Return statement is not allowed in a funcion'))
+                (f'Return statement is only allowed in a funcion'))
         self.visit(node.expr, scope,parent)
 
     @visitor.when(AttrDeclarationNode)
@@ -210,8 +214,8 @@ class SemanticCheckerVisitor(object):
 
     @visitor.when(WhileNode)
     def visit(self, node: WhileNode, scope: Scope,parent):
-        if parent == LevelRepresentatives.Program:
-            self.errors.append(f'In the corpus of the program declare entry functions or variables not this while{node.exp}')
+        if parent.level == LevelRepresentatives.Program and self.iterations == 1:
+            self.errors.append(f'In the corpus of the program declare entry functions or variables not this while')
         if scope.main_level and self.iterations == 1:
             self.errors.append(
                 (f'While statement is not allowed in main level'))
