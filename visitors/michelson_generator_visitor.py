@@ -84,3 +84,14 @@ class MichelsonGenerator(object):
     @visitor.on(LessThanEqualNode)
     def visit(self, node: LessThanEqualNode):
         self.code += "LE;\nPAIR;\n"
+
+    @visitor.on(WhileDeclarationNode)
+    def visit(self, node: WhileDeclarationNode):
+        self.code += "WHILE ("
+        self.visit(node.expr)
+        self.code += ") DO\n"
+
+        for st in node.body:
+            self.visit(st)
+
+        self.code += "END\n"
