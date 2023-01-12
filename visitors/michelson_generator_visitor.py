@@ -76,44 +76,45 @@ class MichelsonGenerator(object):
 
     @visitor.on(PlusNode)
     def visit(self, node: PlusNode):
-        self.code += "ADD;\nPAIR;\n"
+        self.code += "ADD;\n"
 
     @visitor.on(StarNode)
     def visit(self, node: StarNode):
-        self.code += "MUL\nPAIR;\n"
+        self.code += "MUL\n"
 
     @visitor.on(MinusNode)
     def visit(self, node: MinusNode):
-        self.code += "SUB;\nPAIR;\n"
+        self.code += "SUB;\n"
 
     @visitor.on(DivNode)
     def visit(self, node: DivNode):
-        self.code += "EDIV;\nPAIR;\n"
+        self.code += "EDIV;\n"
 
     @visitor.on(EqualNode)
     def visit(self, node: EqualNode):
-        self.code += "EQ;\nPAIR;\n"
+        self.code += "EQ;\n"
 
     @visitor.on(InequalityNode)
     def visit(self, node: InequalityNode):
-        self.code += "NEQ;\nPAIR;\n"
+        self.code += "NEQ;\n"
 
     @visitor.on(GreaterThanNode)
     def visit(self, node: GreaterThanNode):
-        self.code += "GT;\nPAIR;\n"
+        self.code += "GT;\n"
 
     @visitor.on(GreaterThanEqualNode)
     def visit(self, node: GreaterThanEqualNode):
-        self.code += "GE;\nPAIR;\n"
+        self.code += "GE;\n"
 
     @visitor.on(LessThanNode)
     def visit(self, node: LessThanNode):
-        self.code += "LT;\nPAIR;\n"
+        self.code += "LT;\n"
 
     @visitor.on(LessThanEqualNode)
     def visit(self, node: LessThanEqualNode):
-        self.code += "LE;\nPAIR;\n"
+        self.code += "LE;\n"
 
+    # this is wrong
     @visitor.on(WhileDeclarationNode)
     def visit(self, node: WhileDeclarationNode):
         self.code += "WHILE ("
