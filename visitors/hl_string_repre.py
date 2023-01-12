@@ -9,12 +9,12 @@ class HLReprVisitor(object):
         pass
 
     @visitor.when(ContractNode)
-    def visit(self , node ,tabs = 0):
+    def visit(self , node: ContractNode ,tabs = 0):
         ans = '\t' * tabs + 'contract { entrypoint{...} storage{...} code{...}} '
-        entrepoint = self.visit(node.entrepoint , tabs + 1)
+        entrypoints = self.visit(node.entrypoints , tabs + 1)
         storage = self.visit(node.storage , tabs + 1)
         code = self.visit(node.code , tabs + 1)
-        return f'{ans}\n{entrepoint}\n{storage}\n{code}'
+        return f'{ans}\n{entrypoints}\n{storage}\n{code}'
 
     @visitor.when(EntrypointsNode)
     def visit(self , node , tabs = 0):
@@ -64,6 +64,22 @@ class HLReprVisitor(object):
         expr = self.visit(node.expr , tabs + 1)
         loop = '\n'.join(self.visit(child , tabs + 1) for child in node.body)
         return f'{ans}\n{expr}\n{loop}'
+
+    @visitor.when(IfEntryNode)
+    def visit(self, node: IfEntryNode, tabs = 0):
+        ans = '\t' * tabs + f'\\__IfEntryNode: if {node.entry_id} then  else '
+        statements = '\n'.join(self.visit(child, tabs + 1) for child in node.statements)
+        return f'{ans}\n{statements}'
+
+    @visitor.when(PushValueNode)
+    def visit(self, node: PushValueNode, tabs = 0):
+        ans = '\t' * tabs + f'\\__PushValueNode: push {node.type} {node.value}'
+        return f'{ans}'
+
+    @visitor.when(PushVariableNode)
+    def visit(self, node: PushVariableNode, tabs = 0):
+        ans = '\t' * tabs + f'\\__PushVariableNode: push {node.type} {node.id}'
+        return f'{ans}'
 
 
         
