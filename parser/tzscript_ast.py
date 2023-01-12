@@ -223,6 +223,8 @@ class ConstantAddressNode(AtomicNode):
     def __init__(self, lex):
         super().__init__(lex)
         self.type = 'address'
+    def accept(self, visitor):
+        return visitor.visit_address_node(self)
 
 
 class ConstantNumNode(AtomicNode):

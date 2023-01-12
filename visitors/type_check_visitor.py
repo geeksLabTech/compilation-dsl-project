@@ -1,3 +1,4 @@
+import hashlib
 from parser.tzscript_ast import *
 from visitors.visitor import Visitor
 
@@ -147,8 +148,11 @@ class TypeCheckVisitor(Visitor):
 
             return True
 
-    def visit_address_node(self, node: Add):
-        
+    def visit_address_node(self, node: ConstantAddressNode):
+        if type(node.lex) is str:
+            if not self.is_valid_tezos_address(node.lex):
+                self.errors.append(("Invalid tezos address", node))
+
     def visit_variable_node(self, node: VariableNode):
         pass
 
@@ -213,3 +217,34 @@ class TypeCheckVisitor(Visitor):
             elif type(node) in [LessThanEqualNode, LessThanNode, GreaterThanNode, GreaterThanEqualNode, EqualNode]:
                 return 'bool'
             return None
+
+
+def is_valid_tezos_address(self, address: str) -> bool:
+    # Check if the address is 36 characters long and starts with 'tz1'
+    if len(address) != 36 or not address.startswith('tz1') or not address.startswith('tz2') or not address.startswith('tz3'):
+        return False
+
+    # Decode the base58 address
+    decoded = self.b58decode(address)
+
+    # Check the checksum
+    checksum = decoded[-4:]
+    body = decoded[:-4]
+    expected_checksum = hashlib.sha256(
+        hashlib.sha256(body).digest()).digest()[:4]
+    if checksum != expected_checksum:
+        return False
+
+    return True
+
+
+def b58decode(self, address: str) -> bytes:
+
+    BASE58_ALPHABET = '123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz'
+    # Initialize the result to 0
+    result = 0
+    # Iterate through each character in the encoded string
+    for char in address:
+        # Raise the result to the 58th power and add the numerical value of the current character
+        result = result * 58 + BASE58_ALPHABET.index(char)
+    # The result is n
