@@ -20,6 +20,10 @@ class PushVariableNode(Node):
         self.id = idx
         self.type = typex
 
+class PushValueNode(Node):
+    def __init__(self, value, type) -> None:
+        self.value = value
+        self.type = type
 
 class StorageDeclarationNode(DeclarationNode):
     def __init__(self, id, typex):
@@ -68,6 +72,7 @@ class RecursiveFunctionNode(Node):
 class RecursiveCallNode(Node):
     def __init__(self, params):
         self.params = params
+
 
 class IfStatementNode(Node):
     def __init__(self, expr, then_clause, else_clause) -> None:
