@@ -115,6 +115,7 @@ class TzScriptToHighLevelIrVisitor:
 
         statements = []
         for s in node.body:
+            print('statements in entry: ', s)
             statements.extend(self.visit(s, new_parent))
 
         statements = self.merge_if_else_nodes(statements)
@@ -160,6 +161,7 @@ class TzScriptToHighLevelIrVisitor:
 
     @visitor.when(BinaryNode)
     def visit(self, node: BinaryNode, parent: Parent):
+        print('here')
         nodes = []
         nodes.extend(self.visit(node.left, parent))
         nodes.extend(self.visit(node.right, parent))
@@ -170,7 +172,7 @@ class TzScriptToHighLevelIrVisitor:
             #     self.utility_functions[parent.id].body.append(hl_ir.EqualNode())
         elif isinstance(node, InequalityNode):
             if parent.level == LevelRepresentatives.EntryPoint:
-                nodes.append(hl_ir.IniquelatyNode())
+                nodes.append(hl_ir.InequalityNode())
             # else:
             #     self.utility_functions[parent.id].body.append(hl_ir.IniquelatyNode())
         elif isinstance(node, LessThanNode):
@@ -242,10 +244,11 @@ class TzScriptToHighLevelIrVisitor:
     @visitor.when(WhileNode)
     def visit(self, node: WhileNode, parent: Parent):
         statements = []
-
+        print('statement in while')
         expr = self.visit(node.expr, parent)
         
         for s in node.statements:
+            
             statements.extend(self.visit(s, parent))
 
         statements = self.merge_if_else_nodes(statements)
@@ -258,6 +261,15 @@ class TzScriptToHighLevelIrVisitor:
     @visitor.when(ConstantStringNode)
     def visit(self, node: ConstantNumNode, parent: Parent):
         return [hl_ir.PushValueNode(node.lex, node.type)]
+
+    @visitor.when(VarCallNode)
+    def visit(self, node: VarCallNode, parent: Parent):
+        expr = self.visit(node.expr, parent)
+        return expr + [hl_ir.PushVariableNode(node.id, '')]
+
+    @visitor.when(VariableNode)
+    def visit(self, node: VariableNode, parent: Parent):
+        return [hl_ir.GetToTopNode(node.lex)]
 
     # def replace_calls_in_function(self, function: hl_ir.UtilityFunctionDefinition):
     #     statements = []
