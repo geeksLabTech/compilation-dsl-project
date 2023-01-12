@@ -4,40 +4,58 @@ import visitors.visitor_d as visitor
 
 
 class MichelsonGenerator(object):
+    def __init__(self):
+        self.code = ''
+
     @visitor.on('node')
     def visit(self, node):
         pass
 
     @visitor.on(ContractNode)
     def visit(self, node: ContractNode):
-        code = ""
+        self.code = ""
 
         for i, entry_node in enumerate(node.entrypoints.entrypoint_list):
-            code += f"entrypoint {entry_node.i} "
+            self.code += f"entrypoint {entry_node.i} "
             # handle parameters
-            code += "( "
+            self.code += "( "
             if len(entry_node.params) >= 1:
                 for param in entry_node.params:
-                    code += f"parameter {param.type}; "
+                    self.code += f"parameter {param.type}; "
             else:
-                code += f"unit;"
+                self.code += f"unit;"
 
             if node.storage[i].storage_list:
                 for param in entry_node.params:
-                    code += f"{param.type}"
+                    self.code += f"{param.type}"
             elif len(entry_node.params) == 1:
                 param = entry_node.params[0]
-                code += f"storage {param.type}; "
+                self.code += f"storage {param.type}; "
             else:
-                code += f"unit"
-            code += ")\n"
+                self.code += f"unit"
+            self.code += ")\n"
 
-            code += "code{"
+            self.code += "self.code{"
 
-            # code is for contract and no idea where is the entrypoint code
-            for st in node.code.statements:
+            # self.code is for contract and no idea where is the entrypoint self.code
+            for st in node.self.code.statements:
                 self.visit(st)
 
-            code += "}\n"
+            self.code += "}\n"
 
-        code += "}"
+        self.code += "}"
+
+    @visitor.on(IfStatementNode)
+    def visit(self, node: IfStatementNode):
+
+        self.code += "IF {\n"
+        for st in node.then_clause:
+            self.visit(st)
+        self.code += "}\n"
+        if not node.else_clause is None:
+            self.code += '{\n'
+
+            for st in node.else_clause:
+                self.visit(st)
+
+            self.code += '}\n'
