@@ -146,7 +146,7 @@ class VarCallNode(DeclarationNode):
         return visitor.visit_var_call_node(self)
 
 
-class EqualNode(ExpressionNode):
+class EqualNode(BinaryNode):
     def __init__(self, left, right) -> None:
         self.left = left
         self.right = right
@@ -155,7 +155,7 @@ class EqualNode(ExpressionNode):
         return visitor.visit_arith_node(self, "==")
 
 
-class InequalityNode(ExpressionNode):
+class InequalityNode(BinaryNode):
     # class IniquelatyNode(ExpressionNode):
     def __init__(self, left, right) -> None:
         self.left = left
@@ -165,7 +165,7 @@ class InequalityNode(ExpressionNode):
         return visitor.visit_arith_node(self, "!=")
 
 
-class LessThanNode(ExpressionNode):
+class LessThanNode(BinaryNode):
     def __init__(self, left, right) -> None:
         self.left = left
         self.right = right
@@ -174,7 +174,7 @@ class LessThanNode(ExpressionNode):
         return visitor.visit_arith_node(self, "<")
 
 
-class LessThanEqualNode(ExpressionNode):
+class LessThanEqualNode(BinaryNode):
     def __init__(self, left, right) -> None:
         self.left = left
         self.right = right
@@ -183,7 +183,7 @@ class LessThanEqualNode(ExpressionNode):
         return visitor.visit_arith_node(self, "<=")
 
 
-class GreaterThanNode(ExpressionNode):
+class GreaterThanNode(BinaryNode):
     def __init__(self, left, right) -> None:
         self.left = left
         self.right = right
@@ -192,7 +192,7 @@ class GreaterThanNode(ExpressionNode):
         return visitor.visit_arith_node(self, ">")
 
 
-class GreaterThanEqualNode(ExpressionNode):
+class GreaterThanEqualNode(BinaryNode):
     def __init__(self, left, right) -> None:
         self.left = left
         self.right = right
@@ -201,12 +201,12 @@ class GreaterThanEqualNode(ExpressionNode):
         return visitor.visit_arith_node(self, ">=")
 
 
-class TrueNode(ExpressionNode):
+class TrueNode(BinaryNode):
     def accept(self, visitor):
         return visitor.visit_true_node(self)
 
 
-class FalseNode(ExpressionNode):
+class FalseNode(BinaryNode):
     def accept(self, visitor):
         return visitor.visit_false_node(self)
 
