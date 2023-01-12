@@ -85,7 +85,7 @@ class FuncDeclarationNode(DeclarationNode):
 
 class WhileNode(Node):
     def __init__(self, exp, statements):
-        self.exp = exp
+        self.expr = exp
         self.statements = statements
 
     def accept(self, visitor):
