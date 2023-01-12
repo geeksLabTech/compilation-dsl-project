@@ -47,15 +47,14 @@ class MichelsonGenerator(object):
             else:
                 self.code += "unit;\n"
 
-            self.code += "code{"
+        self.code += "code{"
 
-            # self.code is for contract and no idea where is the entrypoint self.code
-            for st in node.self.code.statements:
-                self.visit(st)
+        # self.code is for contract and no idea where is the entrypoint self.code
+        for st in node.self.code.statements:
+            self.visit(st)
 
-            self.code += "}\n"
-
-        self.code += "}"
+        self.code += "}\n"
+        self.code += "}\n"
 
     @visitor.on(PushValueNode)
     def visit(self, node: PushValueNode):
