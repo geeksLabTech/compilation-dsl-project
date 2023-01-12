@@ -128,7 +128,7 @@ class FormatVisitor(object):
     @visitor.when(WhileNode)
     def visit(self,node,tabs = 0):
         ans = '\t' * tabs + f'\\__WhileNode: while <expr> then [<stat>; ... <stat>;]'
-        expr = self.visit(node.exp, tabs + 1)
+        expr = self.visit(node.expr, tabs + 1)
         statements = '\n'.join(self.visit(child, tabs + 1)
                                for child in node.statements)
         return f'{ans}\n{expr}\n{statements}'

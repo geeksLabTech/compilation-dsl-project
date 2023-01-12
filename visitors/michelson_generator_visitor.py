@@ -45,6 +45,22 @@ class MichelsonGenerator(object):
 
         self.code += "}"
 
+    @visitor.on(PushValueNode)
+    def visit(self, node: PushValueNode):
+        if str(node.type) == 'num':
+            tp = 'int'
+        else:
+            tp = node.type
+        self.code += f"PUSH {tp} {node.value};\n"
+
+    @visitor.on(PushVariableNode)
+    def visit(self, node: PushVariableNode):
+        # TODO GET VALUE of ID
+        if str(node.type) == 'num':
+            tp = 'int'
+        else:
+            tp = node.type
+        self.code += f"PUSH {tp} {node.id};\n"
     @visitor.on(PlusNode)
     def visit(self, node: PlusNode):
         self.code += "ADD;\nPAIR;\n"

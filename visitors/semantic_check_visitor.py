@@ -81,10 +81,10 @@ class SemanticCheckerVisitor(object):
             scope_update = self.visit(body, new_scope,new_parent)
             if scope_update is not None:
                 new_scope = scope_update
-        # for idx, s in enumerate(node.body):
-        #     if idx >= len(node.body): break
-        #     if type(node.body[idx]) is not IfNode and type (node.body[idx+1]) is ElseNode:
-        #         self.errors.append(f'Before else there can only be one if')
+        for idx, s in enumerate(node.body):
+            if idx + 1 >= len(node.body): break
+            if type(node.body[idx]) is not IfNode and type (node.body[idx+1]) is ElseNode:
+                self.errors.append(f'Before else there can only be one if')
 
         return scope
 
@@ -215,6 +215,6 @@ class SemanticCheckerVisitor(object):
         if scope.main_level and self.iterations == 1:
             self.errors.append(
                 (f'While statement is not allowed in main level'))
-        self.visit(node.exp, scope,parent)
+        self.visit(node.expr, scope,parent)
         for child in node.statements:
             self.visit(child, scope,parent)
