@@ -45,17 +45,53 @@ class MichelsonGenerator(object):
 
         self.code += "}"
 
-    @visitor.on(IfStatementNode)
-    def visit(self, node: IfStatementNode):
+    @visitor.on(PlusNode)
+    def visit(self, node: PlusNode):
+        self.code += "ADD;\nPAIR;\n"
 
-        self.code += "IF {\n"
-        for st in node.then_clause:
+    @visitor.on(StarNode)
+    def visit(self, node: StarNode):
+        self.code += "MUL\nPAIR;\n"
+
+    @visitor.on(MinusNode)
+    def visit(self, node: MinusNode):
+        self.code += "SUB;\nPAIR;\n"
+
+    @visitor.on(DivNode)
+    def visit(self, node: DivNode):
+        self.code += "EDIV;\nPAIR;\n"
+
+    @visitor.on(EqualNode)
+    def visit(self, node: EqualNode):
+        self.code += "EQ;\nPAIR;\n"
+
+    @visitor.on(InequalityNode)
+    def visit(self, node: InequalityNode):
+        self.code += "NEQ;\nPAIR;\n"
+
+    @visitor.on(GreaterThanNode)
+    def visit(self, node: GreaterThanNode):
+        self.code += "GT;\nPAIR;\n"
+
+    @visitor.on(GreaterThanEqualNode)
+    def visit(self, node: GreaterThanEqualNode):
+        self.code += "GE;\nPAIR;\n"
+
+    @visitor.on(LessThanNode)
+    def visit(self, node: LessThanNode):
+        self.code += "LT;\nPAIR;\n"
+
+    @visitor.on(LessThanEqualNode)
+    def visit(self, node: LessThanEqualNode):
+        self.code += "LE;\nPAIR;\n"
+
+    @visitor.on(WhileDeclarationNode)
+    def visit(self, node: WhileDeclarationNode):
+        self.code += "WHILE ("
+        self.visit(node.expr)
+        self.code += ") DO\n"
+
+        for st in node.body:
             self.visit(st)
-        self.code += "}\n"
-        if not node.else_clause is None:
-            self.code += '{\n'
 
-            for st in node.else_clause:
-                self.visit(st)
-
-            self.code += '}\n'
+        self.code += "END\n"

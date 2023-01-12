@@ -34,7 +34,7 @@ class SemanticCheckerVisitor(object):
 
         self.iterations = 1
         scope.main_level = True
-        parent = Parent(LevelRepresentatives.Program,node.id)
+        parent = Parent(LevelRepresentatives.Program,node.idx)
 
         for child in node.statements:
             new_scope = self.visit(child, scope , parent)
@@ -81,9 +81,10 @@ class SemanticCheckerVisitor(object):
             scope_update = self.visit(body, new_scope,new_parent)
             if scope_update is not None:
                 new_scope = scope_update
-        for idx, s in enumerate(node.body):
-            if type(node.body[idx]) is not IfNode and type (node.body[idx+1]) is ElseNode:
-                self.errors.append(f'Before else there can only be one if')
+        # for idx, s in enumerate(node.body):
+        #     if idx >= len(node.body): break
+        #     if type(node.body[idx]) is not IfNode and type (node.body[idx+1]) is ElseNode:
+        #         self.errors.append(f'Before else there can only be one if')
 
         return scope
 
@@ -190,15 +191,15 @@ class SemanticCheckerVisitor(object):
         # print('estoy en', node.id, scope.local_vars)
         self.visit(node.expr, scope,parent)
         if not scope.is_local_var(node.id) and self.iterations == 1:
-            self.errors.append((f'Variable {node.id} is not defined', node))
+            self.errors.append((f'Variable {node.id} is not defined'))
 
     @visitor.when(ReturnStatementNode)
     def visit(self, node: ReturnStatementNode, scope: Scope,parent):
         if parent == LevelRepresentatives.Program:
             self.errors.append(f'In the corpus of the program declare entry functions or variables not this return {node.expr}')
-        if scope.main_level or scope.is_entry_in_scope and self.iterations == 1:
+        if not parent == LevelRepresentatives.Function:
             self.errors.append(
-                (f'Return statement is not allowed in main level', node))
+                (f'Return statement is not allowed in a funcion'))
         self.visit(node.expr, scope,parent)
 
     @visitor.when(AttrDeclarationNode)
@@ -213,7 +214,7 @@ class SemanticCheckerVisitor(object):
             self.errors.append(f'In the corpus of the program declare entry functions or variables not this while{node.exp}')
         if scope.main_level and self.iterations == 1:
             self.errors.append(
-                (f'While statement is not allowed in main level', node))
+                (f'While statement is not allowed in main level'))
         self.visit(node.exp, scope,parent)
         for child in node.statements:
             self.visit(child, scope,parent)
