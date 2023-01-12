@@ -16,26 +16,38 @@ class MichelsonGenerator(object):
         self.code = ""
 
         for i, entry_node in enumerate(node.entrypoints.entrypoint_list):
-            self.code += f"entrypoint {entry_node.i} "
+            # self.code += ""
             # handle parameters
-            self.code += "( "
+            # self.code += "( "
             if len(entry_node.params) >= 1:
-                for param in entry_node.params:
-                    self.code += f"parameter {param.type}; "
-            else:
-                self.code += f"unit;"
+                self.code += f"parameter "
+                close = []
+                for i, param in enumerate(entry_node.params):
+                    if len(entry_node.params) > 1 and i != len(entry_node.params)-1:
+                        self.code += f"( or {param}"
+                        close.append(")")
+                for c in close:
+                    self.code += c
 
-            if node.storage[i].storage_list:
-                for param in entry_node.params:
-                    self.code += f"{param.type}"
-            elif len(entry_node.params) == 1:
-                param = entry_node.params[0]
-                self.code += f"storage {param.type}; "
+                self.code += ";\n"
             else:
-                self.code += f"unit"
-            self.code += ")\n"
+                self.code += f"unit;\n"
 
-            self.code += "self.code{"
+            # process storage
+            self.code += "storage"
+            if len(node.storage[i].storage_list) > 0:
+                close = []
+                for i, s in enumerate(node.storage[i].storage_list):
+                    if i != len(node.storage[i].storage_list)-1:
+                        self.code += f"( or {s} "
+                        close.append(")")
+                for c in close:
+                    self.code += c
+                self.code += ";\n"
+            else:
+                self.code += "unit;\n"
+
+            self.code += "code{"
 
             # self.code is for contract and no idea where is the entrypoint self.code
             for st in node.self.code.statements:
@@ -61,6 +73,7 @@ class MichelsonGenerator(object):
         else:
             tp = node.type
         self.code += f"PUSH {tp} {node.id};\n"
+
     @visitor.on(PlusNode)
     def visit(self, node: PlusNode):
         self.code += "ADD;\nPAIR;\n"
