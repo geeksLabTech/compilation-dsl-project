@@ -38,12 +38,14 @@ class ElseNode(Node):
     def accept(self, visitor):
         return visitor.visit_else_node(self)
 
+
 class StorageNode(Node):
     def __init__(self, statements) -> None:
         self.statements = statements
 
     def accept(self, visitor):
         return visitor.visit_storage_node(self)
+
 
 class ReturnStatementNode(Node):
     def __init__(self, expr) -> None:
@@ -215,6 +217,12 @@ class ConstantStringNode(AtomicNode):
     def __init__(self, lex):
         super().__init__(lex)
         self.type = 'string'
+
+
+class ConstantAddressNode(AtomicNode):
+    def __init__(self, lex):
+        super().__init__(lex)
+        self.type = 'address'
 
 
 class ConstantNumNode(AtomicNode):

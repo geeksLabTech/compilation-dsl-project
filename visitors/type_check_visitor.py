@@ -147,6 +147,8 @@ class TypeCheckVisitor(Visitor):
 
             return True
 
+    def visit_address_node(self, node: Add):
+        
     def visit_variable_node(self, node: VariableNode):
         pass
 
