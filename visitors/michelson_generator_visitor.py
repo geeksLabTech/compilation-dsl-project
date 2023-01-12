@@ -1,68 +1,61 @@
-from visitors.visitor import Visitor
-from parser.tzscript_ast import *
+# from parser.tzscript_ast import *
+from intermediate_ast.high_level_ir_ast import *
+import visitors.visitor_d as visitor
 
-class MichelsonGeneratorVisitor(Visitor):
+
+class MichelsonGenerator(object):
     def __init__(self):
-        self.result = []
-    
-    def visit_program(self, node: ProgramNode):
-        self.result.append("parameter (pair")
-        for param in node.params:
-            self.result.append(param.accept(self))
-        self.result.append(")")
-        self.result.append("storage (pair")
-        for statement in node.statements:
-            self.result.append(statement.accept(self))
-        self.result.append(")")
-        return "\n".join(self.result)
+        self.code = ''
 
-    def visit_if_node(self, node: IfNode):
-        self.result.append("if")
-        self.result.append(node.expr.accept(self))
-        self.result.append("then")
-        for statement in node.statements:
-            self.result.append(statement.accept(self))
-        self.result.append("else")
-        return "\n".join(self.result)
+    @visitor.on('node')
+    def visit(self, node):
+        pass
 
-    def visit_else_node(self, node: ElseNode):
-        for statement in node.statements:
-            self.result.append(statement.accept(self))
-        return "\n".join(self.result)
+    @visitor.on(ContractNode)
+    def visit(self, node: ContractNode):
+        self.code = ""
 
-    def visit_var_declaration_node(self, node: VarDeclarationNode):
-        self.result.append(f"{node.id} : {node.type}")
-        self.result.append(node.expr.accept(self))
-        return "\n".join(self.result)
+        for i, entry_node in enumerate(node.entrypoints.entrypoint_list):
+            self.code += f"entrypoint {entry_node.i} "
+            # handle parameters
+            self.code += "( "
+            if len(entry_node.params) >= 1:
+                for param in entry_node.params:
+                    self.code += f"parameter {param.type}; "
+            else:
+                self.code += f"unit;"
 
-    def visit_assign_node(self, node: AssignNode):
-        self.result.append(f"{node.id} <- {node.expr.accept(self)}")
-        return "\n".join(self.result)
+            if node.storage[i].storage_list:
+                for param in entry_node.params:
+                    self.code += f"{param.type}"
+            elif len(entry_node.params) == 1:
+                param = entry_node.params[0]
+                self.code += f"storage {param.type}; "
+            else:
+                self.code += f"unit"
+            self.code += ")\n"
 
-    def visit_func_declaration_node(self, node: FuncDeclarationNode):
-        self.result.append(f"{node.id} (pair")
-        for param in node.params:
-            self.result.append(param.accept(self))
-        self.result.append(") : {node.type}")
-        for statement in node.body:
-            self.result.append(statement.accept(self))
-        return "\n".join(self.result)
+            self.code += "self.code{"
 
-    def visit_attr_declaration_node(self, node: AttrDeclarationNode):
-        self.result.append(f"{node.id} : {node.type}")
-        return "\n".join(self.result)
+            # self.code is for contract and no idea where is the entrypoint self.code
+            for st in node.self.code.statements:
+                self.visit(st)
 
-    def visit_atomic_node(self, node: AtomicNode):
-        return node.lex
+            self.code += "}\n"
 
-    def visit_binary_node(self, node: BinaryNode):
-        return f"{node.left.accept(self)} {node.right.accept(self)}"
+        self.code += "}"
 
-    def visit_call_node(self, node: CallNode):
-        func_name = node.id
-        args_code = []
-        for arg in node.args:
-            arg_code = arg.accept(self)
-            args_code.append(arg_code)
+    @visitor.on(IfStatementNode)
+    def visit(self, node: IfStatementNode):
 
-        return f"{func_name} {' '.join(args_code)}"
+        self.code += "IF {\n"
+        for st in node.then_clause:
+            self.visit(st)
+        self.code += "}\n"
+        if not node.else_clause is None:
+            self.code += '{\n'
+
+            for st in node.else_clause:
+                self.visit(st)
+
+            self.code += '}\n'
