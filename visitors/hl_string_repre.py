@@ -39,16 +39,17 @@ class HLReprVisitor(object):
         return f'{ans}'
 
     @visitor.when(CodeNode)
-    def visit(self , node , tabs = 0):
+    def visit(self , node: CodeNode , tabs = 0):
         ans = '\t' * tabs + 'code { <stat> , <stat> , ... , <stat> }'
+        print('los: ', node.statements)
         code = '\n'.join(self.visit(child , tabs + 1) for child in node.statements)
         return f'{ans}\n{code}'
     
-    @visitor.when(VarDeclarationNode)
-    def visit(self , node , tabs = 0):
-        ans = '\t' * tabs + f'\\__VarDeclarationNode: let {node.id} = <expr> : {node.type}'
-        expr = self.visit(node.expr , tabs + 1)
-        return f'{ans}\n{expr}'
+    # @visitor.when(VarDeclarationNode)
+    # def visit(self , node , tabs = 0):
+    #     ans = '\t' * tabs + f'\\__VarDeclarationNode: let {node.id} = <expr> : {node.type}'
+    #     expr = self.visit(node.expr , tabs + 1)
+    #     return f'{ans}\n{expr}'
 
     @visitor.when(IfStatementNode)
     def visit(self , node , tabs = 0):
@@ -67,7 +68,23 @@ class HLReprVisitor(object):
 
     @visitor.when(IfEntryNode)
     def visit(self, node: IfEntryNode, tabs = 0):
-        ans = '\t' * tabs + f'\\__IfEntryNode: if {node.entry_id} then  else '
+        ans = '\t' * tabs + f'\\__IfEntryNode: if {node.entry_id} then '
+        print('If entry:', node.statements)
+        # for child in node.statements:
+        #     f = self.visit(child, tabs+1)
+        #     print(f'f: {f}')
+        #     print(f'child: {child}')
+        #     try:
+        #         print(child.id)
+        #         print(child.type)
+        #         print('paso')
+        #     except:
+        #         print('aaaaaaaa')
+        #     print(f'child type: {type(child)} {isinstance(child, PushVariableNode)}')
+        
+        # print()
+        # x=[self.visit(child, tabs + 1) for child in node.statements]
+        # print('x', x)
         statements = '\n'.join(self.visit(child, tabs + 1) for child in node.statements)
         return f'{ans}\n{statements}'
 
@@ -78,9 +95,22 @@ class HLReprVisitor(object):
 
     @visitor.when(PushVariableNode)
     def visit(self, node: PushVariableNode, tabs = 0):
+        
         ans = '\t' * tabs + f'\\__PushVariableNode: push {node.type} {node.id}'
+        print('ans de variable', node.type, node.id)
         return f'{ans}'
 
+    @visitor.when(GetToTopNode)
+    def visit(self, node: GetToTopNode, tabs=0):
+        ans = '\t' * tabs + f'\\__GetToTopNode: get {node.id}'
+        return f'{ans}'
+
+    @visitor.when(OperationNode)
+    def visit(self, node: OperationNode, tabs = 0):
+        print('operacion')
+        ans = '\t' * tabs + f'\\__ {node.__class__.__name__}'
+        print('ans deplus', ans)
+        return f'{ans}'
 
         
 
