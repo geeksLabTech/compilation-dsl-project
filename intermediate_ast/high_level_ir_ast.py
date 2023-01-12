@@ -131,7 +131,7 @@ class EqualNode(AtomicNode):
     def __init__(self):
         pass
 
-class IniquelatyNode(AtomicNode):
+class InequalityNode(AtomicNode):
     def __init__(self):
         pass
 
