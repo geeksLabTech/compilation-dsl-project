@@ -102,7 +102,7 @@ def process(script: str, num_steps=6):
         print("...OK")
         progress.update(1)
 
-        return ir, progress
+        return ast, ir, progress
 
 
 @app.command()
@@ -113,12 +113,12 @@ def build(file: str = Argument("", help="tzscript file to be parsed"),
     with open(file, "r", encoding='utf-8') as f:
         script = f.read()
 
-    ast, progress = process(script, 7)
+    ast, ir, progress = process(script, 6)
 
     print("\nGenerating Michelson Code", end="")
     # TODO uncomment this when code generation is working OK
     visit_generator = MichelsonGenerator()
-    visit_generator.visit(ast)
+    visit_generator.visit(ir)
     # michelson_result = michelson_geneator.result
     michelson_result = visit_generator.code
     if out_file is None:
@@ -138,27 +138,29 @@ def represent(file: str = Argument("", help="tzscript file to be parsed"),
     with open(file, "r") as f:
         script = f.read()
 
-    ast, progress = process(script)
+    ast, ir, progress = process(script, 7)
 
     print("\nGenerating String representation Code for base AST")
     string_repr = FormatVisitor()
-    result = string_repr.visit(ast)
+    result = str(string_repr.visit(ast))
     if out_file is None:
         out_file = file[:file.find(".tzs")]+".tzs.rep"
     with open(out_file, "w") as f:
+
         f.write(result)
     progress.update(1)
 
     print("\nGenerating String representation Code for intermediate AST")
     hl_repr = HLReprVisitor()
-    result = hl_repr.visit(ast)
+    result = hl_repr.visit(ir)
     if out_file is None:
         out_file = file[:file.find(".tzs")]+".tzs.rep"
     with open(out_file, "a+") as f:
-        f.write("\n")
-        f.write(result)
+        f.write("\n\n")
+        f.write(str(result))
     progress.update(1)
     print(f"\nGenerated {out_file}")
+
 
 if __name__ == "__main__":
     app()

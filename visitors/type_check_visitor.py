@@ -177,7 +177,7 @@ class TypeCheckVisitor(Visitor):
                     (f"Invalid return type for function call {self.func[-1]} expected {self.symbol_table[self.func[-1]]['return']}, got {node.expr.type}", node))
 
     def visit_while_node(self, node: WhileNode):
-        node.exp.accept(self)
+        node.expr.accept(self)
         for st in node.statements:
             st.accept(self)
 
