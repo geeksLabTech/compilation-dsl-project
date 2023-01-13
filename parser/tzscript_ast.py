@@ -1,3 +1,5 @@
+from utils import is_valid_tezos_address
+
 
 class Node:
     def accept(self, visitor):
@@ -216,13 +218,12 @@ class FalseNode(BinaryNode):
 class ConstantStringNode(AtomicNode):
     def __init__(self, lex):
         super().__init__(lex)
-        self.type = 'string'
+        # print(str(lex), "tz1QV341nbgxbyzd8SYU7fJtNScaLVPMZkGC")
+        if not is_valid_tezos_address(str(lex)[1:-1]):
+            self.type = 'string'
+        else:
+            self.type = 'address'
 
-
-class ConstantAddressNode(AtomicNode):
-    def __init__(self, lex):
-        super().__init__(lex)
-        self.type = 'address'
     def accept(self, visitor):
         return visitor.visit_address_node(self)
 

@@ -25,7 +25,8 @@ class IndexVisitor(Visitor):
         if str(self.index_list[self.last_index][0]) == "if":
             self.final_dict[node] = self.index_list[self.last_index][1]
         else:
-            print(self.index_list[self.last_index][0], "if")
+            pass
+            # print(self.index_list[self.last_index][0], "if")
         self.last_index += 1
 
         node.expr.accept(self)
@@ -37,8 +38,9 @@ class IndexVisitor(Visitor):
         if str(self.index_list[self.last_index][0]) == "else":
             self.final_dict[node] = self.index_list[self.last_index][1]
         else:
-            print(self.index_list[self.last_index][0],
-                  "else", self.index_list[self.last_index][1])
+            pass
+            # print(self.index_list[self.last_index][0],
+            #   "else", self.index_list[self.last_index][1])
         self.last_index += 1
         for i in node.statements:
             i.accept(self)
@@ -63,7 +65,8 @@ class IndexVisitor(Visitor):
         if str(self.index_list[self.last_index][0]) == "id" and str(self.index_list[self.last_index+1][0]) == id:
             self.final_dict[node] = self.index_list[self.last_index][1]
         else:
-            print(self.index_list[self.last_index][0], "id")
+            # print(self.index_list[self.last_index][0], "id")
+            pass
         self.last_index += 3
 
     def visit_func_declaration_node(self, node: FuncDeclarationNode):
@@ -71,7 +74,8 @@ class IndexVisitor(Visitor):
             self.final_dict[node] = self.index_list[self.last_index][1]
             # self.last_index += 1
         else:
-            print(self.index_list[self.last_index][0], "func")
+            # print(self.index_list[self.last_index][0], "func")
+            pass
         self.last_index += 2
 
         for arg in node.params:
@@ -151,16 +155,19 @@ class IndexVisitor(Visitor):
             self.last_index += 1
 
     def visit_true_node(self, node: TrueNode):
-        self.last_index +=1
+        self.last_index += 1
         pass
 
     def visit_false_node(self, node: FalseNode):
-        self.last_index+= 1
+        self.last_index += 1
         pass
 
     def visit_constant_string_node(self, node: ConstantStringNode):
-        self.last_index+= 1
+        self.last_index += 1
         pass
+
+    def visit_address_node(self, node: ConstantStringNode):
+        self.last_index += 1
 
     def visit_constant_num_node(self, node: ConstantNumNode):
         # self.last_index += 1

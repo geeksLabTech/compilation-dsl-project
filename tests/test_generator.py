@@ -1,4 +1,5 @@
-contract sum_2nums(n:int){
+
+code = """contract sum_2nums(n:int){
     let x: int = 0;
 
     entry sum(n:int){
@@ -7,4 +8,4 @@ contract sum_2nums(n:int){
         x = a + b;
     }
         
-    }
+    }"""

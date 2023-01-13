@@ -6,7 +6,7 @@ from parser.slr_parser import SLR1Parser, build_slr_ast
 from visitors.type_check_visitor import TypeCheckVisitor
 from visitors.scope_check_visitor import ScopeCheckVisitor
 from visitors.semantic_check_visitor import SemanticCheckerVisitor
-from visitors.michelson_generator_visitor import MichelsonGeneratorVisitor
+from visitors.michelson_generator_visitor import MichelsonGenerator
 from visitors.string_rep_visitor import FormatVisitor
 from visitors.index_visitor import IndexVisitor
 import typer
@@ -139,10 +139,10 @@ def build(file: str = Argument("", help="tzscript file to be parsed"),
 
     print("\nGenerating Michelson Code", end="")
     # TODO uncomment this when code generation is working OK
-    # michelson_generator = MichelsonGeneratorVisitor()
-    # michelson_generator.visit_program(ast)
+    michelson_generator = MichelsonGenerator()
+    michelson_generator.visit(ast)
     # michelson_result = michelson_geneator.result
-    michelson_result = "NOT IMPLEMENTED YET"
+    michelson_result = michelson_generator.code
     if out_file is None:
         out_file = file[:file.find(".tzs")]+".tz"
     with open(out_file, "w") as f:
