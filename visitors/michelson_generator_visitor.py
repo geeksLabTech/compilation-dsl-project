@@ -7,11 +7,12 @@ import visitors.visitor_d as visitor
 
 
 class StackValue:
-    def __init__(self, value, type, id, belongs_to_storage = False):
+    def __init__(self, value, type, id, belongs_to_storage=False):
         self.value = value
         self.type = type
         self.id = id
         self.belongs_to_storage = belongs_to_storage
+
 
 class MichelsonGenerator(object):
     def __init__(self):
@@ -35,7 +36,7 @@ class MichelsonGenerator(object):
         #     # handle parameters
         #     # self.code += "( "
         #     if len(entry_node.params) >= 1:
-                
+
         #         close = []
         #         for i, param in enumerate(entry_node.params):
         #             if len(entry_node.params) > 1 and i != len(entry_node.params)-1:
@@ -47,12 +48,12 @@ class MichelsonGenerator(object):
         #         self.code += ";\n"
         #     else:
         #         self.code += f"unit;\n"
-        
+
         # We will asume only one entry and storage for simplicity
         # Entry with only one param
         entry = node.entrypoints.entrypoint_list[0]
         self.code += f"{entry.params[0].type} %{entry.id};\n"
-        
+
         # process storage
         self.code += "storage"
         storage = node.storage.storage_list[0]
@@ -64,7 +65,6 @@ class MichelsonGenerator(object):
         value = 0 if 'int' else '0'
         self.stack.append(StackValue(value, storage.type, storage.id, True))
         self.stack.append(StackValue(value, entry.params[0].type, entry.id))
-
 
         # Figure this out later
         # if len(node.storage.storage_list) > 0:
@@ -88,7 +88,7 @@ class MichelsonGenerator(object):
         for st in node.code.statements:
             self.visit(st)
 
-        # Next section is because every michelson program needs to end with a PAIR of list of OPERATIONS, value 
+        # Next section is because every michelson program needs to end with a PAIR of list of OPERATIONS, value
         # This way needs improvement
 
         # Remove unused variables
@@ -105,7 +105,7 @@ class MichelsonGenerator(object):
         print('current code: ', self.code)
         print()
         assert len(self.stack) == 1
-        self.code += 'NIL OPERATION;\n'
+        self.code += 'NIL operation;\n'
         self.code += 'PAIR;\n'
 
         self.code += "}\n"
@@ -125,7 +125,7 @@ class MichelsonGenerator(object):
             tp = 'int'
         else:
             tp = node.type
-        
+
         self.code += f"PUSH {tp} {node.value};\n"
         self.stack.append(StackValue(node.value, node.type, None))
 
@@ -135,59 +135,66 @@ class MichelsonGenerator(object):
         self.stack.append(StackValue(value.value, value.type, node.id))
 
     @visitor.when(ReplaceVariableNode)
-    def visit(self, node:ReplaceVariableNode):
+    def visit(self, node: ReplaceVariableNode):
         michelson_index = 0
-        index_in_stack = 0 
+        index_in_stack = 0
         for i in range(len(self.stack)-1, -1, -1):
             if self.stack[i].id == node.id:
                 # self.code += f'DIG {michelson_index};\n'
                 index_in_stack = i
                 break
-            michelson_index+=1
-        
+            michelson_index += 1
+
         self.put_value_to_top_in_stack(index_in_stack)
         previous_value = self.stack.pop()
         # self.code += 'DROP;\n'
         print('current stack, ', self.stack)
         print('current-code: ', self.code)
         next_value = self.stack.pop()
-        self.stack.append(StackValue(next_value.value, next_value.type, previous_value.id, previous_value.belongs_to_storage))
+        self.stack.append(StackValue(next_value.value, next_value.type,
+                          previous_value.id, previous_value.belongs_to_storage))
 
     @visitor.when(PlusNode)
     def visit(self, node: PlusNode):
         first, second = self.prepare_for_binary_op()
         self.code += "ADD;\n"
-        self.stack.append(StackValue(first.value + second.value, first.type, None)) 
+        self.stack.append(StackValue(
+            first.value + second.value, first.type, None))
 
     @visitor.when(StarNode)
     def visit(self, node: StarNode):
         first, second = self.prepare_for_binary_op()
         self.code += "MUL;\n"
-        self.stack.append(StackValue(first.value * second.value, first.type, None))
+        self.stack.append(StackValue(
+            first.value * second.value, first.type, None))
 
     @visitor.when(MinusNode)
     def visit(self, node: MinusNode):
         first, second = self.prepare_for_binary_op()
         self.code += "SUB;\n"
-        self.stack.append(StackValue(first.value - second.value, first.type, None))
+        self.stack.append(StackValue(
+            first.value - second.value, first.type, None))
 
     @visitor.when(DivNode)
     def visit(self, node: DivNode):
         first, second = self.prepare_for_binary_op()
         self.code += "EDIV;\n"
-        self.stack.append(StackValue(first.value / second.value, first.type, None))
+        self.stack.append(StackValue(
+            first.value / second.value, first.type, None))
 
     @visitor.when(EqualNode)
     def visit(self, node: EqualNode):
         first, second = self.prepare_for_binary_op()
         self.code += "EQ;\n"
-        self.stack.append(StackValue(first.value == second.value, 'bool', None))
+        self.stack.append(StackValue(
+            first.value == second.value, 'bool', None))
 
     @visitor.when(InequalityNode)
     def visit(self, node: InequalityNode):
         first, second = self.prepare_for_binary_op()
         self.code += "NEQ;\n"
-        self.stack.append(StackValue(first.value != second.value, 'bool', None))
+        self.stack.append(StackValue(
+            first.value != second.value, 'bool', None))
 
     @visitor.when(GreaterThanNode)
     def visit(self, node: GreaterThanNode):
@@ -199,7 +206,8 @@ class MichelsonGenerator(object):
     def visit(self, node: GreaterThanEqualNode):
         first, second = self.prepare_for_binary_op()
         self.code += "GE;\n"
-        self.stack.append(StackValue(first.value >= second.value, 'bool', None))
+        self.stack.append(StackValue(
+            first.value >= second.value, 'bool', None))
 
     @visitor.when(LessThanNode)
     def visit(self, node: LessThanNode):
@@ -211,7 +219,8 @@ class MichelsonGenerator(object):
     def visit(self, node: LessThanEqualNode):
         first, second = self.prepare_for_binary_op()
         self.code += "LE;\n"
-        self.stack.append(StackValue(first.value <= second.value, 'bool', None))
+        self.stack.append(StackValue(
+            first.value <= second.value, 'bool', None))
 
     @visitor.when(GetToTopNode)
     def visit(self, node: GetToTopNode):
@@ -320,14 +329,14 @@ class MichelsonGenerator(object):
 
     def remains_non_storage_var(self):
         michelson_index = 0
-        index_in_stack = 0 
+        index_in_stack = 0
         for i in range(len(self.stack)-1, -1, -1):
             if self.stack[i].belongs_to_storage:
                 index_in_stack = i
                 return True, index_in_stack, michelson_index
-                
-            michelson_index+=1
-        
+
+            michelson_index += 1
+
         return False, False, False
 
     def fill_reference_counter (self, statements):

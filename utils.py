@@ -2,18 +2,17 @@
 
 # from typing import Self
 from grammar import EOF, Epsilon, Grammar, Production, Sentence, Symbol
-
-
-
-
+import hashlib
+import base58
 
 
 def inspect(item, grammar_name='G', mapper=None):
     try:
         return mapper[item]
-    except (TypeError, KeyError ):
+    except (TypeError, KeyError):
         if isinstance(item, dict):
-            items = ',\n   '.join(f'{inspect(key, grammar_name, mapper)}: {inspect(value, grammar_name, mapper)}' for key, value in item.items() )
+            items = ',\n   '.join(
+                f'{inspect(key, grammar_name, mapper)}: {inspect(value, grammar_name, mapper)}' for key, value in item.items())
             return f'{{\n   {items} \n}}'
         elif isinstance(item, ContainerSet):
             args = f'{ ", ".join(inspect(x, grammar_name, mapper) for x in item.set) } ,' if item.set else ''
@@ -25,17 +24,19 @@ def inspect(item, grammar_name='G', mapper=None):
         elif isinstance(item, Symbol):
             return f"G['{item.Name}']"
         elif isinstance(item, Sentence):
-            items = ', '.join(inspect(s, grammar_name, mapper) for s in item._symbols)
+            items = ', '.join(inspect(s, grammar_name, mapper)
+                              for s in item._symbols)
             return f'Sentence({items})'
         elif isinstance(item, Production):
             left = inspect(item.Left, grammar_name, mapper)
             right = inspect(item.Right, grammar_name, mapper)
             return f'Production({left}, {right})'
         elif isinstance(item, tuple) or isinstance(item, list):
-            ctor = ('(', ')') if isinstance(item, tuple) else ('[',']')
+            ctor = ('(', ')') if isinstance(item, tuple) else ('[', ']')
             return f'{ctor[0]} {("%s, " * len(item)) % tuple(inspect(x, grammar_name, mapper) for x in item)}{ctor[1]}'
         else:
             raise ValueError(f'Invalid: {item}')
+
 
 def pprint(item, header=""):
     if header:
@@ -51,3 +52,41 @@ def pprint(item, header=""):
         print(']')
     else:
         print(item)
+
+
+def base58check_decode(encoded):
+    # Decode the encoded string using base58 decoding
+    decoded = base58.b58decode(encoded)
+
+    # Extract the version byte, payload, and checksum
+    version = decoded[0]
+    payload = decoded[1:-4]
+    st = decoded[:-4]
+    checksum = decoded[-4:]
+
+    # Calculate double SHA-256 hash of the version payload
+    first_hash = hashlib.sha256(st).digest()
+    second_hash = hashlib.sha256(first_hash).digest()
+
+    # Take the first 4 bytes of the second hash as the calculated checksum
+    calculated_checksum = second_hash[:4]
+
+    # Verify that the calculated checksum matches the original checksum
+    if calculated_checksum != checksum:
+        raise ValueError("Invalid checksum")
+
+    return version, payload
+
+
+def is_valid_tezos_address(address):
+    # Check if address is a valid Base58 encoded string
+    try:
+        version, payload = base58check_decode(address)
+    except ValueError:
+        return False
+
+    # Check if version byte corresponds to Tezos address format
+    if version not in [6, 7, 8]:
+        return False
+
+    return True

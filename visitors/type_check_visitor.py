@@ -1,6 +1,8 @@
 import hashlib
+import base58
 from parser.tzscript_ast import *
 from visitors.visitor import Visitor
+from utils import is_valid_tezos_address
 
 
 class TypeCheckVisitor(Visitor):
@@ -52,8 +54,11 @@ class TypeCheckVisitor(Visitor):
                     self.errors.append(
                         (f'Undefined Function {node.expr.id}', node))
                 if f_type != '?':
-                    self.errors.append(
-                        (f"Incompatible types in variable declaration: expected {node.type}, got {f_type}", node))
+                    if node.type == 'address':
+                        self.errors.append(("Invalid Tezos Address", node))
+                    else:
+                        self.errors.append(
+                            (f"Incompatible types in variable declaration: expected {node.type}, got {f_type}", node))
 
         if node.type == 'nat':
             if type(node.expr) is MinusNode and type(node.expr.left) is ConstantNumNode and type(node.expr.right) is ConstantNumNode:
@@ -64,8 +69,11 @@ class TypeCheckVisitor(Visitor):
         elif 'type' in node.expr.__dict__:
             # print("there")
             if self.it == 1 and not self.is_compatible_type(node, node.expr):
-                self.errors.append(
-                    (f"Incompatible types in variable declaration: expected {node.type}, got {node.expr.type}", node))
+                if node.type == 'address':
+                    self.errors.append(("Invalid Tezos Address", node))
+                else:
+                    self.errors.append(
+                        (f"Incompatible types in variable declaration: expected {node.type}, got {node.expr.type}", node))
         node.expr.accept(self)
         self.symbol_table[node.id] = node.type
 
@@ -76,8 +84,11 @@ class TypeCheckVisitor(Visitor):
             raise NameError((f"Variable {node.id} not defined", node))
         # check that the type of the expression is compatible with the variable's type
         if not self.is_compatible_type(node, node.expr):
-            self.errors.append(
-                (f"Incompatible types in assignment: expected {self.symbol_table[node.id]}, got {node.expr.type}", node))
+            if "type" in node.__dict__ and node.type == 'address':
+                self.errors.append(("Invalid Tezos Address", node))
+            else:
+                self.errors.append(
+                    (f"Incompatible types in assignment: expected {self.symbol_table[node.id]}, got {node.expr.type}", node))
 
     def visit_func_declaration_node(self, node: FuncDeclarationNode):
         # check types for function declaration node
@@ -133,8 +144,11 @@ class TypeCheckVisitor(Visitor):
         right = self.get_type(node.rigt)
 
         if not self.is_compatible_type(left, right):
-            self.errors.append(
-                (f"Incompatible types in binary operation: {left} and {right}", node))
+            if "type" in node.__dict__ and node.type == 'address':
+                self.errors.append(("Invalid Tezos Address", node))
+            else:
+                self.errors.append(
+                    (f"Incompatible types in binary operation: {left} and {right}", node))
 
     def is_boolean_type(self, node: Node):
 
@@ -148,9 +162,9 @@ class TypeCheckVisitor(Visitor):
 
             return True
 
-    def visit_address_node(self, node: ConstantAddressNode):
-        if type(node.lex) is str:
-            if not self.is_valid_tezos_address(node.lex):
+    def visit_address_node(self, node: ConstantStringNode):
+        if node.type == 'address' and type(node.lex) is str:
+            if not is_valid_tezos_address(node.lex[1:-1]):
                 self.errors.append(("Invalid tezos address", node))
 
     def visit_variable_node(self, node: VariableNode):
@@ -217,34 +231,3 @@ class TypeCheckVisitor(Visitor):
             elif type(node) in [LessThanEqualNode, LessThanNode, GreaterThanNode, GreaterThanEqualNode, EqualNode]:
                 return 'bool'
             return None
-
-
-def is_valid_tezos_address(self, address: str) -> bool:
-    # Check if the address is 36 characters long and starts with 'tz1'
-    if len(address) != 36 or not address.startswith('tz1') or not address.startswith('tz2') or not address.startswith('tz3'):
-        return False
-
-    # Decode the base58 address
-    decoded = self.b58decode(address)
-
-    # Check the checksum
-    checksum = decoded[-4:]
-    body = decoded[:-4]
-    expected_checksum = hashlib.sha256(
-        hashlib.sha256(body).digest()).digest()[:4]
-    if checksum != expected_checksum:
-        return False
-
-    return True
-
-
-def b58decode(self, address: str) -> bytes:
-
-    BASE58_ALPHABET = '123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz'
-    # Initialize the result to 0
-    result = 0
-    # Iterate through each character in the encoded string
-    for char in address:
-        # Raise the result to the 58th power and add the numerical value of the current character
-        result = result * 58 + BASE58_ALPHABET.index(char)
-    # The result is n
