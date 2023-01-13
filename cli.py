@@ -14,27 +14,6 @@ from visitors.hl_string_repre import HLReprVisitor
 from visitors.michelson_generator_visitor import MichelsonGenerator
 import typer
 
-fibonacci = '''contract get_fib_n(n:int){
-        let last_fib_calculated: int = 0;
-        
-        entry get_fib(n: int){
-            let result: int = fib(n);
-            last_fib_calculated = result;
-        }
-
-        func fib(n: int) : int{
-            if (n <= 1) {
-                return n;
-            }
-            else {
-                let a: int = n - 1;
-                let b: int = n - 2;
-                return fib(a) + fib(b);
-            }
-        }
-        
-    }'''
-
 app = Typer()
 
 
@@ -180,24 +159,6 @@ def represent(file: str = Argument("", help="tzscript file to be parsed"),
         f.write(result)
     progress.update(1)
     print(f"\nGenerated {out_file}")
-
-
-@app.command()
-def build_run(file: str = Argument("", help="tzscript file to be parsed"),
-              out_file: str = Argument(None, help='michelson file to be generated and runned')):
-    """ generates the .tz michelson script from the tzscript file specified and executes it"""
-    build(file, out_file)
-    print("Executing file...")
-    # Run out_file
-    # TODO make the run script
-
-
-@app.command()
-def run(file: str = Argument(None, help='michelson file to be runned')):
-    print("Executing file...")
-    # Run out_file
-    # TODO make the run script
-
 
 if __name__ == "__main__":
     app()

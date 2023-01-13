@@ -2,11 +2,34 @@ parameter int %sum;
 storage int;
 code {
 UNPAIR;
-PUSH int 2;
-PUSH int 3;
+PUSH nat 2;
+PUSH nat 3;
 DIG 1;
 DIG 1;
+DUP;
+DIG 2;
+SWAP;
+GT;
+IF
+then {
+DIG 1;
+DUP;
+DIG 2;
+SWAP;
 ADD;
+DROP;
+}
+else {
+DIG 0;
+DUP;
+DIG 2;
+SWAP;
+SUB;
+DIG 1;
+DROP;
+}
+DIG 0;
+DROP
 DIG 0;
 DROP
 NIL operation;

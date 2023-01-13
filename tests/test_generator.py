@@ -13,6 +13,7 @@ from visitors.hl_string_repre import HLReprVisitor
 from visitors.michelson_generator_visitor import MichelsonGenerator
 import pytest
 
+
 def process(script):
     lexer = TzScriptLexer()
     lexer_tokens = list(lexer.tokenize(script))
@@ -83,3 +84,63 @@ PAIR;
 }
 """
     assert process(code) == expected_result
+
+
+def test_if_else():
+    test = '''
+contract get_fib_n(n : int){
+
+    let x: int = 0;
+
+    entry sum(n: int){
+        let a: int = 2;
+        let b: int = 3;
+        if (a > b) {
+            x = a + b;
+        }
+        else {
+            x = a - b;
+        }
+
+    }
+}
+'''
+    result = '''parameter int %sum;
+storage int;
+code {
+UNPAIR;
+PUSH nat 2;
+PUSH nat 3;
+DIG 1;
+DIG 1;
+DUP;
+DIG 2;
+SWAP;
+GT;
+IF
+then {
+DIG 1;
+DUP;
+DIG 2;
+SWAP;
+ADD;
+DROP;
+}
+else {
+DIG 0;
+DUP;
+DIG 2;
+SWAP;
+SUB;
+DIG 1;
+DROP;
+}
+DIG 0;
+DROP
+DIG 0;
+DROP
+NIL operation;
+PAIR;
+}
+'''
+    assert process(test) == result

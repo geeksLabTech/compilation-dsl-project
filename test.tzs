@@ -1,10 +1,16 @@
-contract sum_2nums(n:int){
+contract get_fib_n(n : int){
+
     let x: int = 0;
 
-    entry sum(n:int){
+    entry sum(n: int){
         let a: int = 2;
         let b: int = 3;
-        x = a + b;
+        if (a > b) {
+            x = a + b;
+        }
+        else {
+            x = a - b;
+        }
+
     }
-        
-    }
+}
