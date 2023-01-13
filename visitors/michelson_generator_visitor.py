@@ -277,14 +277,23 @@ class MichelsonGenerator(object):
 
     @visitor.when(WhileDeclarationNode)
     def visit(self, node: WhileDeclarationNode):
+        for st in node.expr:
+            self.visit(st)
+        
+        copied_stack = self.stack.copy()
         self.code += "LOOP {"
-        self.visit(node.expr)
-        self.code += "} DO\n"
-
         for st in node.body:
             self.visit(st)
+        
+        for st in node.expr:
+            self.visit(st)
+        self.code += "IF\n"
+        self.code += 'then { PUSH FALSE; }\n'
+        self.code += 'else { PUSH TRUE; }\n'
+        self.code += "} \n"
 
-        self.code += "END\n"
+        self.stack = copied_stack.copy()
+
 
     def prepare_for_binary_op(self) -> tuple[StackValue, StackValue]:
         assert len(self.stack) >= 2
