@@ -118,7 +118,7 @@ DIG 2;
 SWAP;
 GT;
 IF
-then {
+{
 DIG 1;
 DUP;
 DIG 2;
@@ -126,7 +126,7 @@ SWAP;
 ADD;
 DROP;
 }
-else {
+{
 DIG 0;
 DUP;
 DIG 2;
