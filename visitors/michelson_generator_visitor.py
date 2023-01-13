@@ -150,14 +150,14 @@ class MichelsonGenerator(object):
         index_in_stack = 0
         for i in range(len(self.stack)-1, -1, -1):
             if self.stack[i].id == node.id:
-                # self.code += f'DIG {michelson_index};\n'
+                self.code += f'DIG {michelson_index};\n'
                 index_in_stack = i
                 break
             michelson_index += 1
 
         self.put_value_to_top_in_stack(index_in_stack)
         previous_value = self.stack.pop()
-        # self.code += 'DROP;\n'
+        self.code += 'DROP;\n'
         print('current stack, ', self.stack)
         print('current-code: ', self.code)
         next_value = self.stack.pop()
