@@ -260,13 +260,13 @@ class MichelsonGenerator(object):
         assert condition.type == 'bool'
         copied_stack = self.stack.copy()
 
-        self.code += 'then {\n'
+        self.code += '{\n'
         for st in node.then_clause:
             self.visit(st)
         self.code += '}\n'
 
         self.stack = copied_stack.copy()
-        self.code += 'else {\n'
+        self.code += '{\n'
         for st in node.else_clause:
             self.visit(st)
         self.code += '}\n'
@@ -288,8 +288,8 @@ class MichelsonGenerator(object):
         for st in node.expr:
             self.visit(st)
         self.code += "IF\n"
-        self.code += 'then { PUSH FALSE; }\n'
-        self.code += 'else { PUSH TRUE; }\n'
+        self.code += '{ PUSH FALSE; }\n'
+        self.code += '{ PUSH TRUE; }\n'
         self.code += "} \n"
 
         self.stack = copied_stack.copy()
