@@ -28,6 +28,10 @@ class PushValueNode(Node):
         self.value = value
         self.type = type
 
+class ReplaceVariableNode(Node):
+    def __init__(self, id) -> None:
+        self.id = id
+
 class StorageDeclarationNode(DeclarationNode):
     def __init__(self, id, typex):
         self.id = id
