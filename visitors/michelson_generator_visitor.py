@@ -102,7 +102,7 @@ class MichelsonGenerator(object):
         while remains:
             self.put_value_to_top_in_stack(stack_idx)
             self.code += f'DIG {michelson_idx};\n'
-            self.code += f'DROP\n'
+            self.code += f'DROP;\n'
             self.stack.pop()
             remains, stack_idx, michelson_idx = self.remains_non_storage_var()
 
@@ -288,8 +288,8 @@ class MichelsonGenerator(object):
         for st in node.expr:
             self.visit(st)
         self.code += "IF\n"
-        self.code += '{ PUSH FALSE; }\n'
-        self.code += '{ PUSH TRUE; }\n'
+        self.code += '{ PUSH False; }\n'
+        self.code += '{ PUSH True; }\n'
         self.code += "} \n"
 
         self.stack = copied_stack.copy()

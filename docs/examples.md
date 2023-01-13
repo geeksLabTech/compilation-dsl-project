@@ -4,7 +4,7 @@
 ```python
 contract store_value(admin: adress){
 
-    var storage: nat = 0;
+    let storage: nat = 0;
 
     entry replace(new_value: nat){
         storage = new_value;
@@ -30,11 +30,11 @@ contract sum_2nums(n:int){
 
 ## Contrato que calcula n-esimo termino de fibonacci (no disponible su generación)
 ```python
-contract get_fib_n(){
-    let last_fib_calculated = 0;
+contract get_fib_n(x:int){
+    let last_fib_calculated: int = 0;
 
     entry get_fib(n: nat){
-        let result = fib(n);
+        let result: nat = fib(n);
         last_fib_calculated = result;
     }
 
