@@ -127,9 +127,9 @@ class SemanticCheckerVisitor(object):
     def visit(self, node: ConstantNumNode, scope: Scope, parent):
         if not node.lex.isnumeric() and self.iterations == 1:
             self.errors.append((f'Value is not Numeric', node))
-        if parent.level == LevelRepresentatives.Program and self.iterations == 1:
-            self.errors.append(
-                (f'In the corpus of the program declare entry functions or variables not this constant {node.lex}', node))
+        # if parent.level == LevelRepresentatives.Program and self.iterations == 1:
+        #     self.errors.append(
+        #         (f'In the corpus of the program declare entry functions or variables not this constant {node.lex}', node))
 
         return None
 
@@ -141,9 +141,9 @@ class SemanticCheckerVisitor(object):
     def visit(self, node: VariableNode, scope: Scope, parent):
         if not scope.is_local_var(node.lex) and self.iterations == 1:
             self.errors.append((f'Invalid variable {node.lex}',node))
-        if parent.level == LevelRepresentatives.Program and self.iterations == 1:
-            self.errors.append(
-                (f'In the corpus of the program declare entry functions or variables not this constant ',node))
+        # if parent.level == LevelRepresentatives.Program and self.iterations == 1:
+        #     self.errors.append(
+        #         (f'In the corpus of the program declare entry functions or variables not this constant ',node))
 
     @visitor.when(CallNode)
     def visit(self, node: CallNode, scope: Scope, parent):
