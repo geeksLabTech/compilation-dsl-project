@@ -265,7 +265,7 @@ class TzScriptToHighLevelIrVisitor:
     @visitor.when(VarCallNode)
     def visit(self, node: VarCallNode, parent: Parent):
         expr = self.visit(node.expr, parent)
-        return expr + [hl_ir.PushVariableNode(node.id, '')]
+        return expr + [hl_ir.ReplaceVariableNode(node.id)]
 
     @visitor.when(VariableNode)
     def visit(self, node: VariableNode, parent: Parent):
