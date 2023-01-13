@@ -69,12 +69,14 @@ def test_basic_sum():
 storage int;
 code {
 UNPAIR;
-PUSH int 2;
-PUSH int 3;
+PUSH nat 2;
+PUSH nat 3;
 DIG 1;
 DIG 1;
 ADD;
-DIG 0;
+DIG 2;
+DROP;
+DIG 1;
 DROP
 NIL operation;
 PAIR;
