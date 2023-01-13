@@ -1,7 +1,9 @@
 contract sum_2nums(n:int){
+    calledBy 
     let x: int = 0;
 
-    entry sum(n:int){
+    entry sum(n:optional){
+        
         let a: int = 2;
         let b: int = 3;
         x = a + b;

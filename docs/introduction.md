@@ -4,7 +4,7 @@
 ## Documentacion
 El núcleo de esta documentación es la Referencia del lenguaje organizada en cuatro partes (Declaraciones, Tipos, Instrucciones y Expresiones), sobre las que se encuentran artículos temáticos que explican los conceptos básicos del lenguaje y los detalles de su implementación.
 
-## Hello World
+## Variable modification
 ```
 contract store_value(value: int){
 
