@@ -187,6 +187,7 @@ class TzScriptToHighLevelIrVisitor:
             #     self.utility_functions[parent.id].body.append(hl_ir.LessThanEqualNode())
         elif isinstance(node, GreaterThanNode):
             if parent.level == LevelRepresentatives.EntryPoint:
+                print('lo creeeeee')
                 nodes.append(hl_ir.GreaterThanNode())
             # else:
             #     self.utility_functions[parent.id].body.append(hl_ir.GreaterThanNode())
@@ -202,6 +203,7 @@ class TzScriptToHighLevelIrVisitor:
             #     self.utility_functions[parent.id].body.append(hl_ir.PlusNode())
         elif isinstance(node, MinusNode):
             if parent.level == LevelRepresentatives.EntryPoint:
+                nodes.reverse()
                 nodes.append(hl_ir.MinusNode())
             # else:
             #     self.utility_functions[parent.id].body.append(hl_ir.MinusNode())
@@ -212,6 +214,7 @@ class TzScriptToHighLevelIrVisitor:
             #     self.utility_functions[parent.id].body.append(hl_ir.StarNode())
         elif isinstance(node, DivNode):
             if parent.level == LevelRepresentatives.EntryPoint:
+                nodes.reverse()
                 nodes.append(hl_ir.DivNode())
             # else:
             #     self.utility_functions[parent.id].body.append(hl_ir.DivNode())
@@ -248,7 +251,6 @@ class TzScriptToHighLevelIrVisitor:
         expr = self.visit(node.expr, parent)
         
         for s in node.statements:
-            
             statements.extend(self.visit(s, parent))
 
         statements = self.merge_if_else_nodes(statements)
@@ -270,7 +272,7 @@ class TzScriptToHighLevelIrVisitor:
     @visitor.when(VariableNode)
     def visit(self, node: VariableNode, parent: Parent):
         return [hl_ir.GetToTopNode(node.lex)]
-
+    
     # def replace_calls_in_function(self, function: hl_ir.UtilityFunctionDefinition):
     #     statements = []
     #     for i, statement in enumerate(function.body):
@@ -308,14 +310,17 @@ class TzScriptToHighLevelIrVisitor:
 
     def merge_if_else_nodes(self, statements):
         new_statements = []
-        for i, statement in enumerate(statements):
-            if isinstance(statement, IfNode) and i+1 < len(statements):
+        i = 0
+        while i<len(statements):
+            if isinstance(statements[i], IfNode) and i+1 < len(statements):
                 if isinstance(statements[i+1], ElseNode):
-                    new_statements.append(hl_ir.IfStatementNode(statement.expr, statement.statements, statements[i+1].statements))
+                    new_statements.append(hl_ir.IfStatementNode(statements[i].expr, statements[i].statements, statements[i+1].statements))
                 else:
-                    new_statements.append(hl_ir.IfStatementNode(statement.expr, statement.statements, []))
+                    new_statements.append(hl_ir.IfStatementNode(statements[i].expr, statements[i].statements, []))
+                i+=2
             else:
-                new_statements.append(statement)
+                new_statements.append(statements[i])
+                i += 1
 
         return new_statements
 
