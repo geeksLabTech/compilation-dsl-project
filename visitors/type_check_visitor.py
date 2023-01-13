@@ -1,4 +1,5 @@
 import hashlib
+import base58
 from parser.tzscript_ast import *
 from visitors.visitor import Visitor
 
@@ -219,32 +220,39 @@ class TypeCheckVisitor(Visitor):
             return None
 
 
-def is_valid_tezos_address(self, address: str) -> bool:
-    # Check if the address is 36 characters long and starts with 'tz1'
-    if len(address) != 36 or not address.startswith('tz1') or not address.startswith('tz2') or not address.startswith('tz3'):
+def base58check_decode(self, encoded):
+    # Decode the encoded string using base58 decoding
+    decoded = base58.b58decode(encoded)
+
+    # Extract the version byte, payload, and checksum
+    version = decoded[0]
+    payload = decoded[1:-4]
+    st = decoded[:-4]
+    checksum = decoded[-4:]
+
+    # Calculate double SHA-256 hash of the version payload
+    first_hash = hashlib.sha256(st).digest()
+    second_hash = hashlib.sha256(first_hash).digest()
+
+    # Take the first 4 bytes of the second hash as the calculated checksum
+    calculated_checksum = second_hash[:4]
+
+    # Verify that the calculated checksum matches the original checksum
+    if calculated_checksum != checksum:
+        raise ValueError("Invalid checksum")
+
+    return version, payload
+
+
+def is_valid_tezos_address(self, address):
+    # Check if address is a valid Base58 encoded string
+    try:
+        version, payload = base58check_decode(self, address)
+    except ValueError:
         return False
 
-    # Decode the base58 address
-    decoded = self.b58decode(address)
-
-    # Check the checksum
-    checksum = decoded[-4:]
-    body = decoded[:-4]
-    expected_checksum = hashlib.sha256(
-        hashlib.sha256(body).digest()).digest()[:4]
-    if checksum != expected_checksum:
+    # Check if version byte corresponds to Tezos address format
+    if version not in [6, 7, 8]:
         return False
 
     return True
-
-
-def b58decode(self, address: str) -> bytes:
-
-    BASE58_ALPHABET = '123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz'
-    # Initialize the result to 0
-    result = 0
-    # Iterate through each character in the encoded string
-    for char in address:
-        # Raise the result to the 58th power and add the numerical value of the current character
-        result = result * 58 + BASE58_ALPHABET.index(char)
-    # The result is n
