@@ -52,11 +52,14 @@ class HLReprVisitor(object):
     #     return f'{ans}\n{expr}'
 
     @visitor.when(IfStatementNode)
-    def visit(self , node , tabs = 0):
+    def visit(self , node: IfStatementNode , tabs = 0):
         ans = '\t' * tabs + 'if <expr> then { <stat> , <stat> , ... , <stat> } else { <stat> , <stat> , ... , <stat> }'
-        expr = self.visit(node.expr , tabs + 1)
-        then = '\n'.join(self.visit(child , tabs + 1) for child in node.then_clause)
-        else_clause = '\n'.join(self.visit(child , tabs + 1) for child in node.else_clause)
+        # print('expresion if', node.expr)
+        expr = '\n'.join(self.visit(child, tabs + 1) for child in node.expr)
+        then = '\n'.join(self.visit(child , tabs + 2) for child in node.then_clause)
+        then = 'then {' + then + ' }'
+        else_clause = '\n'.join(self.visit(child , tabs + 2) for child in node.else_clause)
+        else_clause = 'else {' + else_clause + ' }'
         return f'{ans}\n{expr}\n{then}\n{else_clause}'
     
     @visitor.when(WhileDeclarationNode)
@@ -69,6 +72,7 @@ class HLReprVisitor(object):
     @visitor.when(IfEntryNode)
     def visit(self, node: IfEntryNode, tabs = 0):
         ans = '\t' * tabs + f'\\__IfEntryNode: if {node.entry_id} then '
+        print('mmm', node.statements)
         statements = '\n'.join(self.visit(child, tabs + 1) for child in node.statements)
         return f'{ans}\n{statements}'
 
@@ -79,7 +83,6 @@ class HLReprVisitor(object):
 
     @visitor.when(PushVariableNode)
     def visit(self, node: PushVariableNode, tabs = 0):
-        
         ans = '\t' * tabs + f'\\__PushVariableNode: push {node.type} {node.id}'
         return f'{ans}'
 
@@ -95,6 +98,7 @@ class HLReprVisitor(object):
 
     @visitor.when(OperationNode)
     def visit(self, node: OperationNode, tabs = 0):
+        print('operation node: ', node)
         ans = '\t' * tabs + f'\\__ {node.__class__.__name__}'
         return f'{ans}'
 

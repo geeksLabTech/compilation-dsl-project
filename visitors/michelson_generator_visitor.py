@@ -20,6 +20,8 @@ class MichelsonGenerator(object):
         self.stack: list[StackValue] = []
         self.storage_type = '', ''
         entry = None
+        # Track how many times a variable will be used
+        self.reference_counter: dict[str, int] = {}
 
     @visitor.on('node')
     def visit(self, node):
@@ -76,7 +78,8 @@ class MichelsonGenerator(object):
         #     self.code += ";\n"
         # else:
         #     self.code += "unit;\n"
-
+        
+        
         self.code += "code {\n"
         self.code += "UNPAIR;\n"
         generate_branches_for_entries = True
@@ -112,6 +115,7 @@ class MichelsonGenerator(object):
 
     @visitor.when(IfEntryNode)
     def visit(self, node: IfEntryNode):
+        self.fill_reference_counter(node.statements)
         for s in node.statements:
             self.visit(s)
 
@@ -144,6 +148,8 @@ class MichelsonGenerator(object):
         self.put_value_to_top_in_stack(index_in_stack)
         previous_value = self.stack.pop()
         # self.code += 'DROP;\n'
+        print('current stack, ', self.stack)
+        print('current-code: ', self.code)
         next_value = self.stack.pop()
         self.stack.append(StackValue(next_value.value, next_value.type,
                           previous_value.id, previous_value.belongs_to_storage))
@@ -226,9 +232,36 @@ class MichelsonGenerator(object):
                 self.code += f'DIG {michelson_index};\n'
                 index_in_stack = i
                 break
-            michelson_index += 1
-
+            michelson_index+=1
+        
+        print('estado de counnter', self.reference_counter)
+        self.reference_counter[node.id] -= 1
         self.put_value_to_top_in_stack(index_in_stack)
+
+    @visitor.when(IfStatementNode)
+    def visit(self, node: IfStatementNode):
+        for st in node.expr:
+            self.visit(st)
+        
+        self.code += "IF\n"
+        
+        condition = self.stack.pop()
+        assert condition.type == 'bool'
+        copied_stack = self.stack.copy()
+        
+        self.code += 'then {\n'
+        for st in node.then_clause:
+            self.visit(st)
+        self.code += '}\n'
+
+        self.stack = copied_stack.copy()
+        self.code += 'else {\n'
+        for st in node.else_clause:
+            self.visit(st)
+        self.code += '}\n'
+
+        self.stack = copied_stack.copy()
+
 
     # this is wrong
     @visitor.when(WhileDeclarationNode)
@@ -244,8 +277,49 @@ class MichelsonGenerator(object):
 
     def prepare_for_binary_op(self) -> tuple[StackValue, StackValue]:
         assert len(self.stack) >= 2
+        first_still_needed = False
+        second_still_needed = False
         first = self.stack.pop()
         second = self.stack.pop()
+
+        if first.id in self.reference_counter:
+            first_still_needed = self.reference_counter[first.id] > 0
+        
+        if second_still_needed in self.reference_counter:
+            second_still_needed = self.reference_counter[second.id] > 0
+
+        if first_still_needed:
+            self.stack.append(first)
+            self.code += f'DUP;\n'
+
+            self.put_value_to_top_in_stack(2)
+            self.code += f'DIG 2;\n'
+
+            if second_still_needed:
+                self.stack.append(second)
+                self.code += f'DUP;\n'
+
+                self.stack.insert(-4, second)
+                self.code += f'DUG 3;\n'
+            
+            self.swap_values_in_top_stack()
+            self.code += f'SWAP;\n'
+
+        
+        elif second_still_needed:
+            self.swap_values_in_top_stack()
+            self.code += f'SWAP;\n'
+
+            self.stack.append(second)
+            self.code += f'DUP;\n'
+
+            self.put_value_to_top_in_stack(2)
+            self.code += f'DIG 2;\n'
+
+            self.swap_values_in_top_stack()
+            self.code += f'SWAP;\n'
+        
+        
         assert first.type == second.type
         return first, second
 
@@ -264,3 +338,17 @@ class MichelsonGenerator(object):
             michelson_index += 1
 
         return False, False, False
+
+    def fill_reference_counter (self, statements):
+        for s in statements:
+            if isinstance(s, GetToTopNode):
+                if s.id not in self.reference_counter:
+                    self.reference_counter[s.id] = 1
+                else:
+                    self.reference_counter[s.id] += 1
+
+    def swap_values_in_top_stack(self):
+        temp1 = self.stack.pop()
+        temp2 = self.stack.pop()
+        self.stack.append(temp1)
+        self.stack.append(temp2)
