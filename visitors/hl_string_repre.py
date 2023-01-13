@@ -63,10 +63,10 @@ class HLReprVisitor(object):
         return f'{ans}\n{expr}\n{then}\n{else_clause}'
     
     @visitor.when(WhileDeclarationNode)
-    def visit(self , node , tabs = 0):
+    def visit(self , node: WhileDeclarationNode , tabs = 0):
         ans = '\t' * tabs + 'while <expr> loop { <stat> , <stat> , ... , <stat> }'
-        expr = self.visit(node.expr , tabs + 1)
-        loop = '\n'.join(self.visit(child , tabs + 1) for child in node.body)
+        expr = '\n'.join(self.visit(child , tabs + 1) for child in node.expr)
+        loop = '\n'.join(self.visit(child , tabs + 2) for child in node.body)
         return f'{ans}\n{expr}\n{loop}'
 
     @visitor.when(IfEntryNode)
