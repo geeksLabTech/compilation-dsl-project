@@ -78,8 +78,7 @@ class MichelsonGenerator(object):
         #     self.code += ";\n"
         # else:
         #     self.code += "unit;\n"
-        
-        
+
         self.code += "code {\n"
         self.code += "UNPAIR;\n"
         generate_branches_for_entries = True
@@ -232,8 +231,8 @@ class MichelsonGenerator(object):
                 self.code += f'DIG {michelson_index};\n'
                 index_in_stack = i
                 break
-            michelson_index+=1
-        
+            michelson_index += 1
+
         print('estado de counnter', self.reference_counter)
         self.reference_counter[node.id] -= 1
         self.put_value_to_top_in_stack(index_in_stack)
@@ -242,13 +241,13 @@ class MichelsonGenerator(object):
     def visit(self, node: IfStatementNode):
         for st in node.expr:
             self.visit(st)
-        
+
         self.code += "IF\n"
-        
+
         condition = self.stack.pop()
         assert condition.type == 'bool'
         copied_stack = self.stack.copy()
-        
+
         self.code += 'then {\n'
         for st in node.then_clause:
             self.visit(st)
@@ -262,8 +261,8 @@ class MichelsonGenerator(object):
 
         self.stack = copied_stack.copy()
 
-
     # this is wrong
+
     @visitor.when(WhileDeclarationNode)
     def visit(self, node: WhileDeclarationNode):
         self.code += "LOOP {"
@@ -284,7 +283,7 @@ class MichelsonGenerator(object):
 
         if first.id in self.reference_counter:
             first_still_needed = self.reference_counter[first.id] > 0
-        
+
         if second_still_needed in self.reference_counter:
             second_still_needed = self.reference_counter[second.id] > 0
 
@@ -301,11 +300,10 @@ class MichelsonGenerator(object):
 
                 self.stack.insert(-4, second)
                 self.code += f'DUG 3;\n'
-            
+
             self.swap_values_in_top_stack()
             self.code += f'SWAP;\n'
 
-        
         elif second_still_needed:
             self.swap_values_in_top_stack()
             self.code += f'SWAP;\n'
@@ -318,8 +316,7 @@ class MichelsonGenerator(object):
 
             self.swap_values_in_top_stack()
             self.code += f'SWAP;\n'
-        
-        
+
         assert first.type == second.type
         return first, second
 
@@ -339,7 +336,7 @@ class MichelsonGenerator(object):
 
         return False, False, False
 
-    def fill_reference_counter (self, statements):
+    def fill_reference_counter(self, statements):
         for s in statements:
             if isinstance(s, GetToTopNode):
                 if s.id not in self.reference_counter:

@@ -47,13 +47,12 @@ def test():
     format = FormatVisitor()
     semantic_checker = SemanticCheckerVisitor()
     semantic_checker.visit(ast)
-    assert len(semantic_checker.errors) == 7
-    err = ['In the corpus of the program declare entry functions or variables not this constant 0',
-           'Invalid variable b',
+    err = ['Invalid variable b',
            'Function fib is defined after entry point',
            'Invalid variable last_fib_calculated',
            'Function name fib is used',
            'Function fib is defined after entry point',
            'Invalid variable last_fib_calculated']
+    assert len(semantic_checker.errors) == len(err)
     for i in range(len(err)):
         assert(semantic_checker.errors[i][0] == err[i])

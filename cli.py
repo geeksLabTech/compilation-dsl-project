@@ -9,6 +9,9 @@ from visitors.semantic_check_visitor import SemanticCheckerVisitor
 from visitors.michelson_generator_visitor import MichelsonGenerator
 from visitors.string_rep_visitor import FormatVisitor
 from visitors.index_visitor import IndexVisitor
+from visitors.high_level_ir_generator_visitor import TzScriptToHighLevelIrVisitor
+from visitors.hl_string_repre import HLReprVisitor
+from visitors.michelson_generator_visitor import MichelsonGenerator
 import typer
 
 fibonacci = '''contract get_fib_n(n:int){
@@ -35,7 +38,7 @@ fibonacci = '''contract get_fib_n(n:int){
 app = Typer()
 
 
-def process(script: str):
+def process(script: str, num_steps=6):
     with typer.progressbar(length=6) as progress:
         # Tokenize Script
         print("\nTokenizing Script", end="")
@@ -97,16 +100,6 @@ def process(script: str):
             print("... OK")
         progress.update(1)
 
-        # print("\nPerforming Scope Check", end="")
-        # scope_visitor = ScopeCheckVisitor()
-        # scope_result = scope_visitor.visit_program(ast)
-        # if not scope_result:
-        #     print("Something Went Wrong")
-        #     return
-
-        # print("... OK")
-        # progress.update(1)
-
         print("\nPerforming Semantic Check", end="")
         semantic_visitor = SemanticCheckerVisitor()
         semantic_result = semantic_visitor.visit(ast)
@@ -124,7 +117,13 @@ def process(script: str):
             print("... OK")
         progress.update(1)
 
-        return ast, progress
+        print("Generating Intermediate Representation", end="")
+        high_level_ir = TzScriptToHighLevelIrVisitor()
+        ir = high_level_ir.visit(ast)
+        print("...OK")
+        progress.update(1)
+
+        return ir, progress
 
 
 @app.command()
@@ -135,14 +134,14 @@ def build(file: str = Argument("", help="tzscript file to be parsed"),
     with open(file, "r", encoding='utf-8') as f:
         script = f.read()
 
-    ast, progress = process(script)
+    ast, progress = process(script, 7)
 
     print("\nGenerating Michelson Code", end="")
     # TODO uncomment this when code generation is working OK
-    michelson_generator = MichelsonGenerator()
-    michelson_generator.visit(ast)
+    visit_generator = MichelsonGenerator()
+    visit_generator.visit(ast)
     # michelson_result = michelson_geneator.result
-    michelson_result = michelson_generator.code
+    michelson_result = visit_generator.code
     if out_file is None:
         out_file = file[:file.find(".tzs")]+".tz"
     with open(out_file, "w") as f:
@@ -162,12 +161,22 @@ def represent(file: str = Argument("", help="tzscript file to be parsed"),
 
     ast, progress = process(script)
 
-    print("\nGenerating String representation Code")
+    print("\nGenerating String representation Code for base AST")
     string_repr = FormatVisitor()
     result = string_repr.visit(ast)
     if out_file is None:
         out_file = file[:file.find(".tzs")]+".tzs.rep"
     with open(out_file, "w") as f:
+        f.write(result)
+    progress.update(1)
+
+    print("\nGenerating String representation Code for intermediate AST")
+    hl_repr = HLReprVisitor()
+    result = hl_repr.visit(ast)
+    if out_file is None:
+        out_file = file[:file.find(".tzs")]+".tzs.rep"
+    with open(out_file, "a+") as f:
+        f.write("\n")
         f.write(result)
     progress.update(1)
     print(f"\nGenerated {out_file}")
