@@ -4,6 +4,17 @@ TZscript es un DSL para la creación de contratos inteligentes, tiene como objet
 
 Para saber como luce un contrato inteligente en TZscript,asi como las palabras claves de este lenguaje puede consultar la documentación en la carpeta doc del proyecto.
 
+## Lexing
+Para el lexer de este proyecto se utiliza la biblioteca `sly`
+## Parsing
+Para el parsing se desarrolló un parser SLR desde 0
+## Procesamiento del AST
+El AST generado por el parser es procesado utilizando el patrón Visitor.
+Entre las distintas operaciones que se realizan sobre el AST destacan:
+- Type Check (Realiza un checkeo de tipos sobre el AST)
+- Semantic Check (Realiza un checkeo de semántico sobre el AST)
+- Intermediate Representation (Genera una representación intermedia que se utiliza luego para generar Código Michelson)
+- Michelson Generator (A partir de la representación intermedia genera código Michelson)
 ## CLI:
 Se brinda una interfaz de consola para construir los ficheros `.tz` de michelson o para obtener una representacion de AST.
 

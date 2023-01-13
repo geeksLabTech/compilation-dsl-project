@@ -9,6 +9,9 @@ class DeclarationNode(Node):
 
 class ExpressionNode(Node):
     pass
+
+class OperationNode(Node):
+    pass
     
 class AttrDeclarationNode(DeclarationNode):
     def __init__(self, idx, typex):
@@ -20,6 +23,14 @@ class PushVariableNode(Node):
         self.id = idx
         self.type = typex
 
+class PushValueNode(Node):
+    def __init__(self, value, type) -> None:
+        self.value = value
+        self.type = type
+
+class ReplaceVariableNode(Node):
+    def __init__(self, id) -> None:
+        self.id = id
 
 class StorageDeclarationNode(DeclarationNode):
     def __init__(self, id, typex):
@@ -69,6 +80,7 @@ class RecursiveCallNode(Node):
     def __init__(self, params):
         self.params = params
 
+
 class IfStatementNode(Node):
     def __init__(self, expr, then_clause, else_clause) -> None:
         self.expr = expr
@@ -84,6 +96,10 @@ class VarDeclarationNode(DeclarationNode):
         self.id = idx
         self.type = typex
         self.expr = expr
+
+class GetToTopNode(Node):
+    def __init__(self, id) -> None:
+        self.id = id
 
 class TrueNode(ExpressionNode):
     pass
@@ -110,43 +126,43 @@ class WhileDeclarationNode(DeclarationNode):
 class VariableNode(AtomicNode):
     pass
 
-class PlusNode(AtomicNode):
+class PlusNode(OperationNode):
     def __init__(self):
         pass
 
-class MinusNode(AtomicNode):
+class MinusNode(OperationNode):
     def __init__(self):
         pass
        
 
-class StarNode(AtomicNode):
+class StarNode(OperationNode):
     def __init__(self):
         pass
 
-class DivNode(AtomicNode):
+class DivNode(OperationNode):
     def __init__(self):
         pass
 
-class EqualNode(AtomicNode):
+class EqualNode(OperationNode):
     def __init__(self):
         pass
 
-class IniquelatyNode(AtomicNode):
+class InequalityNode(OperationNode):
     def __init__(self):
         pass
 
-class LessThanNode(AtomicNode):
+class LessThanNode(OperationNode):
    def __init__(self):
         pass
 
-class LessThanEqualNode(AtomicNode):
+class LessThanEqualNode(OperationNode):
     def __init__(self):
         pass
 
-class GreaterThanNode(AtomicNode):
+class GreaterThanNode(OperationNode):
     def __init__(self):
         pass
 
-class GreaterThanEqualNode(AtomicNode):
+class GreaterThanEqualNode(OperationNode):
     def __init__(self):
         pass

@@ -89,7 +89,11 @@ Se usa para representar cuando un valor puede ser de un tipo o None.
 optional[<type>]
 ```
 
+## Features Pendientes:
 
+Debido a restricciones de tiempo no se pudieron desarrollar satisfactoriamente los siguientes features:
 
-
-
+- Soporte a multiples `entry` en un mismo contract.
+- Soporte a `func`
+- Deploy en la blockchain de un contrato (actualmente se prueba en jupyter notebook con el kernel de michelson el codigo generado)
+- Soporte a Bucles `while`

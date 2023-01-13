@@ -3,9 +3,6 @@ from parser.tzscript_ast import *
 import visitors.visitor_d as visitor
 
 
-
-
-
 class FormatVisitor(object):
     @visitor.on('node')
     def visit(self, node, tabs):
@@ -25,6 +22,7 @@ class FormatVisitor(object):
                            for param in node.params)
         statements = '\n'.join(self.visit(child, tabs + 2)
                                for child in node.statements)
+        # print("======>", ans)
         return f'{ans}\n{params}\n{statements}'
 
     # @visitor.when(PrintNode)
@@ -70,8 +68,8 @@ class FormatVisitor(object):
             sparams = sparams.join(string_paramt)
         ans = '\t' * tabs + \
             f'\\__FuncDeclarationNode: def {node.id}({sparams}) : {node.type}'
-        body = self.visit(node.body, tabs + 2)
-        return f'{ans}\n{sparams}\n{body}'
+        body = '\n'.join(self.visit(child, tabs + 2) for child in node.body)
+        return f'{ans}\n{body}'
 
     @visitor.when(EntryDeclarationNode)
     def visit(self, node, tabs=0):
@@ -79,14 +77,13 @@ class FormatVisitor(object):
         for param in node.params:
             string_paramt = param.id+' '+':' + ' ' + param.type
             sparams = sparams.join(string_paramt)
-        # params = ', '.join(str(node.params))
+
         ans = '\t' * tabs + \
             f'\\__EntryDeclarationNode: Entry {node.id}({sparams})'
         params = '\n'.join(self.visit(param, tabs + 1)
                            for param in node.params)
-        # print(node.body, 'body')
+
         body = '\n'.join(self.visit(child, tabs + 2) for child in node.body)
-        # print(self.visit(node.body, tabs + 2), 'body')
 
         return f'{ans}\n{params}\n{body}'
 
@@ -105,9 +102,12 @@ class FormatVisitor(object):
     def visit(self, node, tabs=0):
         return '\t' * tabs + f'\\__ {node.__class__.__name__}: {node.lex}'
 
-    # @visitor.when(ExpressionNode)
-    # def visit(self, node, tabs=0):
-    #     return '\t' * tabs + f'\\__ {node.__class__.__name__}: {node.lex}'
+    @visitor.when(BinaryNode)
+    def visit(self, node, tabs=0):
+        ans = '\t' * tabs + f'\\__ {node.__class__.__name__}'
+        left = self.visit(node.left, tabs + 1)
+        right = self.visit(node.right, tabs + 1)
+        return f'{ans}\n{left}\n{right}'
 
     @visitor.when(CallNode)
     def visit(self, node, tabs=0):
@@ -117,9 +117,16 @@ class FormatVisitor(object):
 
     @visitor.when(VarCallNode)
     def visit(self, node, tabs=0):
-        # print('llega')
+
         ans = '\t' * tabs + f'\\__VarCallNode: {node.id} = <expr>'
         expr = self.visit(node.expr, tabs + 1)
         return f'{ans}\n{expr}'
-    
-   
+
+    @visitor.when(WhileNode)
+    def visit(self, node, tabs=0):
+        ans = '\t' * tabs + \
+            f'\\__WhileNode: while <expr> then [<stat>; ... <stat>;]'
+        expr = self.visit(node.expr, tabs + 1)
+        statements = '\n'.join(self.visit(child, tabs + 1)
+                               for child in node.statements)
+        return f'{ans}\n{expr}\n{statements}'

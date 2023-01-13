@@ -1,27 +1,40 @@
 
 ## Contrato para guardar un valor positivo
-```
+
+```python
 contract store_value(admin: adress){
 
-    var storage: nat = 0;
+    let storage: nat = 0;
 
     entry replace(new_value: nat){
         storage = new_value;
     } 
 
-    entry double_previous_value(){
-        storage = storage * 2;
-    }
 }
 ```
 
-## Contrato que calcula n-esimo termino de fibonacci
+## Contrato para sumar 2 numeros
+```python
+contract sum_2nums(n:int){
+    let x: int = 0;
+
+    entry sum(n:int){
+        
+        let a: int = 2;
+        let b: int = 3;
+        x = a + b;
+    }
+        
+}
 ```
-contract get_fib_n(){
-    let last_fib_calculated = 0;
+
+## Contrato que calcula n-esimo termino de fibonacci (no disponible su generación)
+```python
+contract get_fib_n(x:int){
+    let last_fib_calculated: int = 0;
 
     entry get_fib(n: nat){
-        let result = fib(n);
+        let result: nat = fib(n);
         last_fib_calculated = result;
     }
 

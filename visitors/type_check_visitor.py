@@ -1,5 +1,8 @@
+import hashlib
+import base58
 from parser.tzscript_ast import *
 from visitors.visitor import Visitor
+from utils import is_valid_tezos_address
 
 
 class TypeCheckVisitor(Visitor):
@@ -51,8 +54,11 @@ class TypeCheckVisitor(Visitor):
                     self.errors.append(
                         (f'Undefined Function {node.expr.id}', node))
                 if f_type != '?':
-                    self.errors.append(
-                        (f"Incompatible types in variable declaration: expected {node.type}, got {f_type}", node))
+                    if node.type == 'address':
+                        self.errors.append(("Invalid Tezos Address", node))
+                    else:
+                        self.errors.append(
+                            (f"Incompatible types in variable declaration: expected {node.type}, got {f_type}", node))
 
         if node.type == 'nat':
             if type(node.expr) is MinusNode and type(node.expr.left) is ConstantNumNode and type(node.expr.right) is ConstantNumNode:
@@ -63,8 +69,11 @@ class TypeCheckVisitor(Visitor):
         elif 'type' in node.expr.__dict__:
             # print("there")
             if self.it == 1 and not self.is_compatible_type(node, node.expr):
-                self.errors.append(
-                    (f"Incompatible types in variable declaration: expected {node.type}, got {node.expr.type}", node))
+                if node.type == 'address':
+                    self.errors.append(("Invalid Tezos Address", node))
+                else:
+                    self.errors.append(
+                        (f"Incompatible types in variable declaration: expected {node.type}, got {node.expr.type}", node))
         node.expr.accept(self)
         self.symbol_table[node.id] = node.type
 
@@ -75,8 +84,11 @@ class TypeCheckVisitor(Visitor):
             raise NameError((f"Variable {node.id} not defined", node))
         # check that the type of the expression is compatible with the variable's type
         if not self.is_compatible_type(node, node.expr):
-            self.errors.append(
-                (f"Incompatible types in assignment: expected {self.symbol_table[node.id]}, got {node.expr.type}", node))
+            if "type" in node.__dict__ and node.type == 'address':
+                self.errors.append(("Invalid Tezos Address", node))
+            else:
+                self.errors.append(
+                    (f"Incompatible types in assignment: expected {self.symbol_table[node.id]}, got {node.expr.type}", node))
 
     def visit_func_declaration_node(self, node: FuncDeclarationNode):
         # check types for function declaration node
@@ -132,8 +144,11 @@ class TypeCheckVisitor(Visitor):
         right = self.get_type(node.rigt)
 
         if not self.is_compatible_type(left, right):
-            self.errors.append(
-                (f"Incompatible types in binary operation: {left} and {right}", node))
+            if "type" in node.__dict__ and node.type == 'address':
+                self.errors.append(("Invalid Tezos Address", node))
+            else:
+                self.errors.append(
+                    (f"Incompatible types in binary operation: {left} and {right}", node))
 
     def is_boolean_type(self, node: Node):
 
@@ -147,6 +162,11 @@ class TypeCheckVisitor(Visitor):
 
             return True
 
+    def visit_address_node(self, node: ConstantStringNode):
+        if node.type == 'address' and type(node.lex) is str:
+            if not is_valid_tezos_address(node.lex[1:-1]):
+                self.errors.append(("Invalid tezos address", node))
+
     def visit_variable_node(self, node: VariableNode):
         pass
 
@@ -157,7 +177,7 @@ class TypeCheckVisitor(Visitor):
                     (f"Invalid return type for function call {self.func[-1]} expected {self.symbol_table[self.func[-1]]['return']}, got {node.expr.type}", node))
 
     def visit_while_node(self, node: WhileNode):
-        node.exp.accept(self)
+        node.expr.accept(self)
         for st in node.statements:
             st.accept(self)
 

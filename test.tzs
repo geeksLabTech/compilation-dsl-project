@@ -1,17 +1,16 @@
-contract get_fib_n(n:int){
-        let last_fib_calculated: int = 1 ;
+contract get_fib_n(n : int){
 
-        entry get_fib(n: int){
-            let result: int = fib(n);
-            last_fib_calculated = result;
+    let x: int = 0;
+
+    entry sum(n: int){
+        let a: int = 2;
+        let b: int = 3;
+        if (a > b) {
+            x = a + b;
+        }
+        else {
+            x = a - b;
         }
 
-        func fib(n: int) : int{
-            else {
-                let a: nat = 0 - 1;
-                let b: int = n - 2;
-                return fib(a) + fib(b);
-            }
-        }
-        
     }
+}
