@@ -105,12 +105,7 @@ class SemanticCheckerVisitor(object):
         new_parent = Parent(LevelRepresentatives.EntryPoint, node.id)
         scope.is_entry_in_scope = True
         scope.define_function(node.id, len(node.params))
-        scope_copied = Scope()
-
-        for f in scope.local_funcs:
-            scope_copied.local_funcs.append(f)
-        for v in scope.local_vars:
-            scope_copied.local_vars.append(v)
+        scope_copied = self.copy_scope(scope)
 
         for arg in node.params:
             # print(arg.id, 'arg id')
@@ -174,6 +169,8 @@ class SemanticCheckerVisitor(object):
     def visit(self, node: IfNode, scope: Scope, parent):
         print(parent == LevelRepresentatives.Function)
         # new_scope = scope.create_child_scope()
+        scope_copied = self.copy_scope(scope)
+
         if scope.main_level and self.iterations == 1:
             self.errors.append(
                 (f'If statement is not allowed in main level', node))
@@ -181,13 +178,13 @@ class SemanticCheckerVisitor(object):
             self.errors.append(
                 (f'In the corpus of the program declare entry functions or variables not this statament if', node))
         scope.is_if_in_scope = True
-        self.visit(node.expr, scope, parent)
+        self.visit(node.expr, scope_copied, parent)
         for child in node.statements:
-            self.visit(child, scope, parent)
+            self.visit(child, scope_copied, parent)
 
     @visitor.when(ElseNode)
     def visit(self, node: ElseNode, scope: Scope, parent):
-        # new_scope = scope.create_child_scope()
+        scope_copied = self.copy_scope(scope)
         if not scope.is_if_in_scope and self.iterations == 1:
             self.errors.append(
                 (f'Else statement is not allowed without if statement',node))
@@ -197,7 +194,7 @@ class SemanticCheckerVisitor(object):
             self.errors.append(
                 (f'In the corpus of the program declare entry functions or variables not this else',node))
         for child in node.statements:
-            self.visit(child, scope, parent)
+            self.visit(child, scope_copied, parent)
 
     @visitor.when(VarCallNode)
     def visit(self, node: VarCallNode, scope: Scope, parent):
@@ -226,12 +223,25 @@ class SemanticCheckerVisitor(object):
 
     @visitor.when(WhileNode)
     def visit(self, node: WhileNode, scope: Scope, parent):
+        scope_copied = self.copy_scope(scope)
         if parent.level == LevelRepresentatives.Program and self.iterations == 1:
             self.errors.append(
                 (f'In the corpus of the program declare entry functions or variables not this while',node))
         if scope.main_level and self.iterations == 1:
             self.errors.append(
                 (f'While statement is not allowed in main level',node))
-        self.visit(node.expr, scope, parent)
+        self.visit(node.expr, scope_copied, parent)
         for child in node.statements:
-            self.visit(child, scope, parent)
+            self.visit(child, scope_copied, parent)
+
+
+
+    def copy_scope(self, scope: Scope):
+        scope_copied = Scope()
+
+        for f in scope.local_funcs:
+            scope_copied.local_funcs.append(f)
+        for v in scope.local_vars:
+            scope_copied.local_vars.append(v)
+        
+        return scope_copied
