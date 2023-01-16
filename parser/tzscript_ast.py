@@ -66,7 +66,14 @@ class VarDeclarationNode(ExpressionNode):
     def accept(self, visitor):
         return visitor.visit_var_declaration_node(self)
 
+class DeclarationStorageNode(ExpressionNode):
+    def __init__(self, idx, typex):
+        self.id = idx
+        self.type = typex
 
+
+    def accept(self, visitor):
+        return visitor.visit_declaration_storage_node(self)
 class AssignNode(ExpressionNode):
     def __init__(self, idx, expr):
         self.id = idx
