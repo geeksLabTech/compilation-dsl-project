@@ -31,6 +31,11 @@ class FormatVisitor(object):
     #     expr = self.visit(node.expr, tabs + 1)
     #     return f'{ans}\n{expr}'
 
+    @visitor.when(DeclarationStorageNode)
+    def visit(self,node,tabs = 0):
+        ans = '\t' * tabs + f'\\__DeclarationStorageNode: {node.id} : {node.type}'
+        return f'{ans}'
+        
     @visitor.when(VarDeclarationNode)
     def visit(self, node, tabs=0):
         ans = '\t' * tabs + \
