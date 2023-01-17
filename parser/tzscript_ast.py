@@ -25,10 +25,11 @@ class ExpressionNode(Node):
 
 
 class IfNode(Node):
-    def __init__(self, expr, statements) -> None:
+    def __init__(self, expr, then_statements,else_statements) -> None:
         self.expr = expr
-        self.statements = statements
-
+        self.then_statements = then_statements
+        self.else_statements = else_statements
+        
     def accept(self, visitor):
         return visitor.visit_if_node(self)
 

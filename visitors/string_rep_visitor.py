@@ -47,11 +47,11 @@ class FormatVisitor(object):
 
     @visitor.when(IfNode)
     def visit(self, node, tabs=0):
-        ans = '\t' * tabs + f'\\__IfNode: if <expr> then [<stat>; ... <stat>;]'
+        ans = '\t' * tabs + f'\\__IfNode: if <expr> then [<stat>; ... <stat>;] else [<stat>; ... <stat>;]'
         expr = self.visit(node.expr, tabs + 1)
-        statements = '\n'.join(self.visit(child, tabs + 1)
-                               for child in node.statements)
-        return f'{ans}\n{expr}\n{statements}'
+        then_statements = '\n'.join(self.visit(child, tabs + 1) for child in node.then_statements)
+        else_statements = '\n'.join(self.visit(child,tabs + 1) for child in node.else_statements)
+        return f'{ans}\n{expr}\n then\n{then_statements}\n else\n{else_statements}'
 
     @visitor.when(ElseNode)
     def visit(self, node, tabs=0):
@@ -74,9 +74,10 @@ class FormatVisitor(object):
             string_paramt = param.id+' '+':' + ' ' + param.type
             sparams = sparams.join(string_paramt)
         ans = '\t' * tabs + \
-            f'\\__FuncDeclarationNode: def {node.id}({sparams}) : {node.type}'
-        body = '\n'.join(self.visit(child, tabs + 2) for child in node.body)
-        return f'{ans}\n{body}'
+            f'\\__FuncDeclarationNode: func {node.id} (param,...,param)[<stat>; ... <stat>;]'
+        param = '\n'.join(self.visit(child,tabs+1) for child in node.params)
+        body = '\n'.join(self.visit(child, tabs + 1) for child in node.body)
+        return f'{ans}\n{param}\n{body}'
 
     @visitor.when(EntryDeclarationNode)
     def visit(self, node, tabs=0):
