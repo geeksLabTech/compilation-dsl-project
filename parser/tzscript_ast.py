@@ -25,10 +25,11 @@ class ExpressionNode(Node):
 
 
 class IfNode(Node):
-    def __init__(self, expr, statements) -> None:
+    def __init__(self, expr, then_statements,else_statements) -> None:
         self.expr = expr
-        self.statements = statements
-
+        self.then_statements = then_statements
+        self.else_statements = else_statements
+        
     def accept(self, visitor):
         return visitor.visit_if_node(self)
 
@@ -66,7 +67,14 @@ class VarDeclarationNode(ExpressionNode):
     def accept(self, visitor):
         return visitor.visit_var_declaration_node(self)
 
+class DeclarationStorageNode(ExpressionNode):
+    def __init__(self, idx, typex):
+        self.id = idx
+        self.type = typex
 
+
+    def accept(self, visitor):
+        return visitor.visit_declaration_storage_node(self)
 class AssignNode(ExpressionNode):
     def __init__(self, idx, expr):
         self.id = idx
@@ -211,12 +219,12 @@ class GreaterThanEqualNode(ComparisonNode):
         return visitor.visit_arith_node(self, ">=")
 
 
-class TrueNode(BinaryNode):
+class TrueNode(AtomicNode):
     def accept(self, visitor):
         return visitor.visit_true_node(self)
 
 
-class FalseNode(BinaryNode):
+class FalseNode(AtomicNode):
     def accept(self, visitor):
         return visitor.visit_false_node(self)
 
