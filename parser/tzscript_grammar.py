@@ -48,11 +48,11 @@ stat %= let_var, lambda h, s: s[1], None
 storage %= let + idx + colon + typex + semi , lambda h,s :DeclarationStorageNode(s[2], s[4]), None, None, None,None,None
 
 while_stat %= whilex + opar +oper + cpar + ocur + stat_list + ccur, lambda h, s: WhileNode(
-        s[3], s[6]), None, None, None, None, None, None, None
+        s[1], s[3], s[6]), None, None, None, None, None, None, None
 if_stat %= ifx + opar + oper +  cpar + ocur + then + ocur + stat_list + ccur + op_else, lambda h, s: IfNode(
-        s[3], s[8],s[10]), None, None, None, None, None, None, None,None,None,None
+        s[1], s[6], s[3], s[8],s[10]), None, None, None, None, None, None, None,None,None,None
 else_stat %= elsex + ocur + stat_list + ccur, lambda h, s: s[3], None, None, None, None
-return_stat %= returnx + oper + semi, lambda h, s: ReturnStatementNode(s[2]), None, None, None
+return_stat %= returnx + oper + semi, lambda h, s: ReturnStatementNode(s[1], s[2]), None, None, None
 
 def_func %= func + idx + opar + param_list + cpar + colon + typex + ocur + stat_list+ccur, lambda h, s: FuncDeclarationNode(
         s[2], s[4], s[7], s[9]), None, None, None, None, None, None, None, None, None,None
@@ -73,27 +73,27 @@ param_list %= param_list + comma +param, lambda h, s: s[1] + [s[3]], None, None,
 param %= idx + colon + typex, lambda h, s: AttrDeclarationNode(s[1], s[3]), None, None, None
 
 
-oper %= expr + equalequal + term, lambda h, s: EqualNode(s[1], s[3]), None, None, None
-oper %= expr + lessthanequal + term, lambda h, s: LessThanEqualNode(s[1], s[3]), None, None, None
-oper %= expr + greaterthanequal + term, lambda h, s: GreaterThanEqualNode(s[1], s[3]), None, None, None
-oper %= expr + iniquelaty + term, lambda h, s: InequalityNode(s[1], s[3]), None, None, None
-oper %= expr + lessthan + term, lambda h, s: LessThanNode(s[1], s[3]), None, None, None
-oper %= expr + greaterthan + term, lambda h, s: GreaterThanNode(s[1], s[3]), None, None, None
+oper %= expr + equalequal + term, lambda h, s: EqualNode(s[2], s[1], s[3]), None, None, None
+oper %= expr + lessthanequal + term, lambda h, s: LessThanEqualNode(s[2], s[1], s[3]), None, None, None
+oper %= expr + greaterthanequal + term, lambda h, s: GreaterThanEqualNode(s[2], s[1], s[3]), None, None, None
+oper %= expr + iniquelaty + term, lambda h, s: InequalityNode(s[2], s[1], s[3]), None, None, None
+oper %= expr + lessthan + term, lambda h, s: LessThanNode(s[2], s[1], s[3]), None, None, None
+oper %= expr + greaterthan + term, lambda h, s: GreaterThanNode(s[2], s[1], s[3]), None, None, None
 oper %= expr,lambda h,s:s[1]
 
 expr_list %= expr, lambda h, s: [s[1]], None
 expr_list %= expr + comma + expr_list, lambda h, s: [s[1]] + s[3], None, None, None
 
-expr %= expr + plus + term, lambda h, s: PlusNode(s[1], s[3]), None, None, None
-expr %= expr + minus + term, lambda h, s: MinusNode(s[1], s[3]), None, None, None
+expr %= expr + plus + term, lambda h, s: PlusNode(s[2], s[1], s[3]), None, None, None
+expr %= expr + minus + term, lambda h, s: MinusNode(s[2], s[1], s[3]), None, None, None
 expr %= term,lambda h, s: s[1], None
 
 factor %= atom, lambda h, s: s[1], None
 factor %= func_call, lambda h, s: s[1], None
 factor %= opar + expr + cpar, lambda h, s: s[2], None, None, None
 
-term %= term + star + factor, lambda h, s: StarNode(s[1], s[3]), None, None, None
-term %= term + div + factor, lambda h, s: DivNode(s[1], s[3]), None, None, None
+term %= term + star + factor, lambda h, s: StarNode(s[2], s[1], s[3]), None, None, None
+term %= term + div + factor, lambda h, s: DivNode(s[2], s[1], s[3]), None, None, None
 term %= factor, lambda h, s: s[1], None  # MMM
 
 atom %= num, lambda h, s: ConstantNumNode(s[1]), None
