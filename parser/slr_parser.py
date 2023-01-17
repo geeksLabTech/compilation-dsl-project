@@ -32,10 +32,10 @@ class ShiftReduceParser:
 
                 for (state1, i) in self.action.keys():
                     if i.IsTerminal and state1 == state:
-                        excepted_char += str(i)
-                parseado = ' '.join([str(m)
+                        excepted_char += str(i) + ' '
+                parsed = ' '.join([str(m)
                                     for m in stack if not str(m).isnumeric()])
-                message_error = f'It was expected "{excepted_char}" received "{lookahead}" after {parseado}'
+                message_error = f'It was expected "{excepted_char}" received "{lookahead}" after {parsed}'
                 print("\nError. Aborting...")
                 print('')
                 print("\n", message_error)
@@ -183,7 +183,7 @@ def build_slr_ast(right_parse, operations, tokens):
     for operation in operations:
         if operation == ShiftReduceParser.SHIFT:
             token = next(tokens)
-            stack.append(token.lex)
+            stack.append(token)
         elif operation == ShiftReduceParser.REDUCE:
             production = next(right_parse)
             head, body = production
