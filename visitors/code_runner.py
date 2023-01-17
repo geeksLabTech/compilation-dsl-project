@@ -32,11 +32,13 @@ class CodeRunnerVisitor(object):
         for st in node.statements:
             # print(self.scopes)
             self.visit(st)
+            if self.break_test(st):
+                break
 
-        if len(self.scopes[0].entry) == 1:
-            self.scopes[0].variables['n'] = {'type': 'nat', 'value': 5}
-            self.visit(
-                CallNode(list(self.scopes[0].entry.keys())[0], [ConstantNumNode(5)]))
+        # if len(self.scopes[0].entry) == 1:
+        #     self.scopes[0].variables['n'] = {'type': 'nat', 'value': 5}
+        #     self.visit(
+        #         CallNode(list(self.scopes[0].entry.keys())[0], [ConstantNumNode(5)]))
 
         self.scopes.pop()
 
@@ -44,32 +46,50 @@ class CodeRunnerVisitor(object):
     def visit(self, node: IfNode):
         print('if Node')
         self.go_else = False
+        r = ''
         if self.visit(node.expr):
             self.current_scope += 1
             self.scopes.append(ScopeContext())
 
             for st in node.statements:
-                self.visit(st)
+                t = self.visit(st)
+
+                if t is not None:
+                    r = t
+
+                if self.break_test(st):
+                    break
 
             self.scopes.pop()
             self.current_scope -= 1
         else:
             self.go_else = True
+        return r
 
     @visitor.when(ElseNode)
     def visit(self, node: ElseNode):
         print("else Node")
+
+        r = None
+
         if self.go_else is True:
             self.go_else = False
 
             self.current_scope += 1
             self.scopes.append(ScopeContext())
-
             for st in node.statements:
-                self.visit(st)
+                t = self.visit(st)
+
+                if t is not None:
+                    r = t
+
+                if self.break_test(st):
+                    break
 
             self.scopes.pop()
             self.current_scope -= 1
+
+        return r
 
     @visitor.when(ReturnStatementNode)
     def visit(self, node: ReturnStatementNode):
@@ -117,15 +137,20 @@ class CodeRunnerVisitor(object):
         self.current_scope += 1
 
         cond = self.visit(node.expr)
-
+        r = ''
         while(cond):
             for st in node.statements:
-                self.visit(st)
+                r = self.visit(st)
+
+                if self.break_test(st):
+                    break
 
             cond = self.visit(node.expr)
 
         self.current_scope -= 1
         self.scopes.pop()
+
+        return r
 
     @visitor.when(AttrDeclarationNode)
     def visit(self, node: AttrDeclarationNode):
@@ -252,7 +277,7 @@ class CodeRunnerVisitor(object):
     @visitor.when(CallNode)
     def visit(self, node: CallNode):
         print(f"Calling {node.id} {node.args}")
-
+        r = ''
         self.scopes.append(ScopeContext())
         self.current_scope += 1
 
@@ -272,21 +297,24 @@ class CodeRunnerVisitor(object):
             self.scopes[self.current_scope].variables[i.id] = pa_n
 
         print(self.scopes[-1].variables)
-        # idx = 0
-        # if len(node.args) > 0:
-        #     for p in self.scopes[self.current_scope].variables:
-        #         print("pppp", node.args[idx], self.visit(
-        #             node.args[idx]))
-        #         # self.scope_bound = True
-        #         print(self.scopes[self.current_scope].variables[p])
-        #         self.scopes[self.current_scope].variables[p]['value'] = self.visit(
-        #             node.args[idx])
-        #         print(self.scopes[self.current_scope].variables[p])
-        #         # self.scope_bound = False
-        #         idx += 1
 
         for st in fun_node.body:
-            self.visit(st)
+            print(st)
+            t = self.visit(st)
+            if t is not None:
+                r = t
+            if self.break_test(st):
+                break
+
+            print(">", r)
 
         self.scopes.pop()
         self.current_scope -= 1
+
+        return r
+
+    def break_test(self, node):
+        if type(node) is ReturnStatementNode:
+            return True
+        else:
+            return False
