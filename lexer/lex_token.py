@@ -1,5 +1,6 @@
 
 from grammar import Terminal
+from parser.tzscript_types import TzScriptType
 
 
 class Token:
@@ -14,11 +15,12 @@ class Token:
         Token's type.
     """
 
-    def __init__(self, lex: str, token_type: Terminal, line_no: int = 0, col_no: int = 0):
+    def __init__(self, lex: str, token_type: Terminal, tzscript_type: TzScriptType, line_no: int = 0, col_no: int = 0):
         self.lex = lex
         self.token_type = token_type
         self.line_no = line_no
         self.col_no = col_no
+        self.tzscript_type = tzscript_type
 
     def __str__(self):
         return f'{self.token_type}: {self.lex}'
@@ -33,10 +35,10 @@ class Token:
 
 class UnknownToken(Token):
     def __init__(self, lex):
-        Token.__init__(self, lex, None)
+        Token.__init__(self, lex, None, None)
 
     def transform_to(self, token_type):
-        return Token(self.lex, token_type)
+        return Token(self.lex, token_type, None)
 
     @property
     def is_valid(self):

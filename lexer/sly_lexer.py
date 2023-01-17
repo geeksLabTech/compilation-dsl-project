@@ -4,6 +4,7 @@ from grammar import Grammar
 
 from parser.tzscript_grammar import TZSCRIPT_GRAMMAR, idx, num, typex, contract, ifx, elsex, equal, plus, returnx, minus, star, div, semi, colon, comma, dot, opar, cpar, ocur, ccur, let, func, entry, equalequal, lessthan, greaterthan, lessthanequal, greaterthanequal, dquoutes, stringx, whilex,then
 from lexer.lex_token import Token
+from parser.tzscript_types import TzScriptIntOrNat, TzScriptType, types_dict_creator
 
 
 class TzScriptLexer(Lexer):
@@ -206,16 +207,20 @@ def process_lexer_tokens(lexer_tokens) -> list[Token]:
     for i in range(len(lexer_tokens)):
         # print(lexer_tokens[i])
         ttype = lexer_tokens[i].type
+        value = lexer_tokens[i].value
+        tzscript_type = types_dict_creator[value] if value in types_dict_creator else None
+        if ttype == 'INTEGER':
+            tzscript_type = TzScriptIntOrNat()
         if ttype == 'STRINGTEXT':
             tokens.append(
                 Token('"', dquoutes, lexer_tokens[i].lineno, lexer_tokens[i-1].index))
             tokens.append(
-                Token(lexer_tokens[i].value, TZSCRIPT_GRAMMAR[terminals_names[i]], lexer_tokens[i].lineno, lexer_tokens[i].index))
+                Token(value, TZSCRIPT_GRAMMAR[terminals_names[i]], tzscript_type, lexer_tokens[i].lineno, lexer_tokens[i].index))
             tokens.append(
-                Token('"', dquoutes, lexer_tokens[i].lineno, lexer_tokens[i].index-1))
+                Token('"', dquoutes, tzscript_type, lexer_tokens[i].lineno, lexer_tokens[i].index-1))
         else:
             tokens.append(
-                Token(lexer_tokens[i].value, TZSCRIPT_GRAMMAR[terminals_names[i]], lexer_tokens[i].lineno, lexer_tokens[i].index))
-    tokens.append(Token('EOF', TZSCRIPT_GRAMMAR.EOF, -1, -1))
+                Token(value, TZSCRIPT_GRAMMAR[terminals_names[i]], tzscript_type, lexer_tokens[i].lineno, lexer_tokens[i].index))
+    tokens.append(Token('EOF', TZSCRIPT_GRAMMAR.EOF, tzscript_type, -1, -1))
     # print(tokens)
     return tokens
