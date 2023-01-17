@@ -15,6 +15,7 @@ class CodeRunnerVisitor(object):
         self.scopes = []
         self.current_scope = 0
         self.go_else = False
+        self.scope_bound = False
 
     @visitor.on('node')
     def visit(self, node):
@@ -35,7 +36,7 @@ class CodeRunnerVisitor(object):
         if len(self.scopes[0].entry) == 1:
             self.scopes[0].variables['n'] = {'type': 'nat', 'value': 5}
             self.visit(
-                CallNode(list(self.scopes[0].entry.keys())[0], [VariableNode('n')]))
+                CallNode(list(self.scopes[0].entry.keys())[0], [ConstantNumNode(5)]))
 
         self.scopes.pop()
 
@@ -87,6 +88,7 @@ class CodeRunnerVisitor(object):
         print("declare var")
         self.scopes[self.current_scope].variables[node.id] = {
             'type': node.type, 'value': self.type_cast(self.visit(node.expr), node.type)}
+        self.scopes[self.current_scope].variables[node.id]
 
     # TODO look for the var bottom up
     @visitor.when(AssignNode)
@@ -130,14 +132,21 @@ class CodeRunnerVisitor(object):
         print("Attr")
         self.scopes[self.current_scope].variables[node.id] = {
             'type': node.type, 'value': None}
+        return self.scopes[self.current_scope].variables[node.id]
 
     @visitor.when(VariableNode)
-    def visit(self, node: VariableNode):
+    def visit(self, node: VariableNode, val=True):
         print("var")
-        for i in range(0, self.current_scope):
+        sc = self.current_scope
+        if self.scope_bound:
+            sc -= 1
+        for i in range(0, self.current_scope+1):
+            print(self.scopes[self.current_scope-i].variables)
             if node.lex in self.scopes[self.current_scope-i].variables:
-                print(self.scopes[self.current_scope-i].variables)
-                return self.scopes[self.current_scope-i].variables[node.lex]
+                if not val:
+                    return self.scopes[self.current_scope-i].variables[node.lex]
+                else:
+                    return self.scopes[self.current_scope-i].variables[node.lex]['value']
 
     @visitor.when(AtomicNode)
     def visit(self, node: AtomicNode):
@@ -159,7 +168,7 @@ class CodeRunnerVisitor(object):
         print("plus")
         l = self.visit(node.left)
         r = self.visit(node.right)
-        print(f'{l} op {r}')
+        print(f'{l} + {r}')
         return l+r
 
     @visitor.when(MinusNode)
@@ -167,7 +176,7 @@ class CodeRunnerVisitor(object):
         l = self.visit(node.left)
         r = self.visit(node.right)
 
-        print(f'{l} op {r}')
+        print(f'{l} - {r}')
 
         return l-r
 
@@ -176,7 +185,7 @@ class CodeRunnerVisitor(object):
         l = self.visit(node.left)
         r = self.visit(node.right)
 
-        print(f'{l} op {r}')
+        print(f'{l} // {r}')
 
         return l/r
 
@@ -185,7 +194,7 @@ class CodeRunnerVisitor(object):
         l = self.visit(node.left)
         r = self.visit(node.right)
 
-        print(f'{l} op {r}')
+        print(f'{l} * {r}')
 
         return l*r
 
@@ -194,7 +203,7 @@ class CodeRunnerVisitor(object):
         l = self.visit(node.left)
         r = self.visit(node.right)
 
-        print(f'{l} op {r}')
+        print(f'{l} == {r}')
 
         return l == r
 
@@ -203,7 +212,7 @@ class CodeRunnerVisitor(object):
         l = self.visit(node.left)
         r = self.visit(node.right)
 
-        print(f'{l} op {r}')
+        print(f'{l} != {r}')
 
         return l != r
 
@@ -212,7 +221,7 @@ class CodeRunnerVisitor(object):
         l = self.visit(node.left)
         r = self.visit(node.right)
 
-        print(f'{l} op {r}')
+        print(f'{l} >= {r}')
 
         return l >= r
 
@@ -220,7 +229,7 @@ class CodeRunnerVisitor(object):
     def visit(self, node: GreaterThanNode):
         l = self.visit(node.left)
         r = self.visit(node.right)
-        print(f'{l} op {r}')
+        print(f'{l} > {r}')
 
         return l > r
 
@@ -228,7 +237,7 @@ class CodeRunnerVisitor(object):
     def visit(self, node: LessThanEqualNode):
         l = self.visit(node.left)
         r = self.visit(node.right)
-        print(f'{l} op {r}')
+        print(f'{l} <= {r}')
 
         return l <= r
 
@@ -236,13 +245,14 @@ class CodeRunnerVisitor(object):
     def visit(self, node: LessThanNode):
         l = self.visit(node.left)
         r = self.visit(node.right)
-        print(f'{l} op {r}')
+        print(f'{l} < {r}')
 
         return l < r
 
     @visitor.when(CallNode)
     def visit(self, node: CallNode):
-        print(f"Calling {node.id}")
+        print(f"Calling {node.id} {node.args}")
+
         self.scopes.append(ScopeContext())
         self.current_scope += 1
 
@@ -253,18 +263,27 @@ class CodeRunnerVisitor(object):
         except:
             fun_node: FuncDeclarationNode = self.scopes[0].entry[fun]['func']
 
-        print(fun_node)
+        for p, i in enumerate(fun_node.params):
+            at = self.visit(node.args[p])
+            pa_n = self.visit(i)
+            print(i.id, pa_n)
+            print(at)
+            pa_n['value'] = at
+            self.scopes[self.current_scope].variables[i.id] = pa_n
 
-        for p in fun_node.params:
-            self.visit(p)
-        print(self.scopes[-1])
-        idx = 0
-        if len(node.args) > 0:
-            for p in self.scopes[self.current_scope].variables:
-                print('args:', node.args)
-                self.scopes[self.current_scope].variables[p] = self.visit(node.args[idx])[
-                    'value']
-                idx += 1
+        print(self.scopes[-1].variables)
+        # idx = 0
+        # if len(node.args) > 0:
+        #     for p in self.scopes[self.current_scope].variables:
+        #         print("pppp", node.args[idx], self.visit(
+        #             node.args[idx]))
+        #         # self.scope_bound = True
+        #         print(self.scopes[self.current_scope].variables[p])
+        #         self.scopes[self.current_scope].variables[p]['value'] = self.visit(
+        #             node.args[idx])
+        #         print(self.scopes[self.current_scope].variables[p])
+        #         # self.scope_bound = False
+        #         idx += 1
 
         for st in fun_node.body:
             self.visit(st)
