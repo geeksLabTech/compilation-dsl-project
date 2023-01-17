@@ -10,7 +10,7 @@ TZSCRIPT_GRAMMAR = Grammar()
 program = TZSCRIPT_GRAMMAR.NonTerminal('<program>', startSymbol=True)
 stat_list, stat,stat_program_list,stat_program,storage,storage_list = TZSCRIPT_GRAMMAR.NonTerminals('<stat_list> <stat> <stat_program_list> <stat_program> <storage> <storage_list>')
 let_var, def_func, if_stat, else_stat, def_entry, while_stat = TZSCRIPT_GRAMMAR.NonTerminals('<let-var>> <def-func> <if-stat> <else-stat> <def-entry> <while-stat>')
-param_list, param, expr_list = TZSCRIPT_GRAMMAR.NonTerminals('<param-list> <param> <expr-list>')
+param_list, param, expr_list, op_param_list = TZSCRIPT_GRAMMAR.NonTerminals('<param-list> <param> <expr-list> <op-param-list')
 expr, arith, term, factor, atom ,oper = TZSCRIPT_GRAMMAR.NonTerminals('<expr> <arith> <term> <factor> <atom> <oper>')
 func_call, arg_list, var_call, return_stat = TZSCRIPT_GRAMMAR.NonTerminals('<func-call> <arg-list> <var-call> <return-stat>')
 
@@ -23,8 +23,8 @@ idx, num, typex, contract, ifx, elsex, truex, falsex, returnx, stringx, dquoutes
     'id num type contract if else true false return string_text " while')
 
 # productions
-program %= contract + idx + opar + param_list + cpar + ocur +stat_program_list+ccur, lambda h, s: ProgramNode(
-        s[2], s[4], s[7]), None, None, None, None, None, None, None, None
+program %= contract + idx + opar + op_param_list + ocur + stat_program_list + ccur, lambda h, s: ProgramNode(
+        s[2], s[4], s[6]), None, None, None, None, None, None, None
 
 
 stat_program_list %= stat_program_list + stat_program, lambda h, s: s[1] + [s[2]], None, None
@@ -45,10 +45,7 @@ stat %= var_call, lambda h, s: s[1], None
 stat %= let_var, lambda h, s: s[1], None
 
 
-
-
 storage %= let + idx + colon + typex + semi , lambda h,s :DeclarationStorageNode(s[2], s[4]), None, None, None,None,None
-
 
 while_stat %= whilex + opar +oper + cpar + ocur + stat_list + ccur, lambda h, s: WhileNode(
         s[3], s[6]), None, None, None, None, None, None, None
@@ -57,14 +54,17 @@ if_stat %= ifx + opar + oper +  cpar + ocur + stat_list + ccur, lambda h, s: IfN
 else_stat %= elsex + ocur + stat_list + ccur, lambda h, s: ElseNode(s[3]), None, None, None, None
 return_stat %= returnx + oper + semi, lambda h, s: ReturnStatementNode(s[2]), None, None, None
 
-def_func %= func + idx + opar + param_list + cpar + colon + typex + ocur + stat_list+ccur, lambda h, s: FuncDeclarationNode(
-        s[2], s[4], s[7], s[9]), None, None, None, None, None, None, None, None, None, None
+def_func %= func + idx + opar + param_list + colon + typex + ocur + stat_list+ccur, lambda h, s: FuncDeclarationNode(
+        s[2], s[4], s[6], s[8]), None, None, None, None, None, None, None, None, None
 
-def_entry %= entry + idx + opar + param_list + cpar + ocur + stat_list +ccur, lambda h, s: EntryDeclarationNode(
-        s[2], s[4], s[7]), None, None, None, None, None, None, None, None
+def_entry %= entry + idx + opar + op_param_list + ocur + stat_list +ccur, lambda h, s: EntryDeclarationNode(
+        s[2], s[4], s[6]), None, None, None, None, None, None, None
 
-param_list %= param, lambda h, s: [s[1]], None
-param_list %= param + comma +param_list, lambda h, s: [s[1]] + s[3], None, None, None
+op_param_list %= param_list , lambda h,s: s[1], None
+op_param_list %= cpar, lambda h,s: [], None
+
+param_list %= param + cpar, lambda h, s: [s[1]], None, None
+param_list %= param_list + comma +param, lambda h, s: [s[1]] + s[3], None, None, None
 # param_list %= TZSCRIPT_GRAMMAR.Epsilon, lambda h,s: s[1],None
 
 param %= idx + colon + typex, lambda h, s: AttrDeclarationNode(s[1], s[3]), None, None, None
@@ -96,8 +96,8 @@ term %= factor, lambda h, s: s[1], None  # MMM
 atom %= num, lambda h, s: ConstantNumNode(s[1]), None
 atom %= idx, lambda h, s: VariableNode(s[1]), None
 atom %= dquoutes + stringx + dquoutes, lambda h, s: ConstantStringNode(s[2]), None, None, None
-atom %= truex, lambda h, s: TrueNode(), None
-atom %= falsex, lambda h, s: FalseNode(), None
+atom %= truex, lambda h, s: TrueNode(s[1]), None
+atom %= falsex, lambda h, s: FalseNode(s[1]), None
 
 func_call %= idx + opar + arg_list + cpar, lambda h, s: CallNode(s[1], s[3]), None, None, None, None
 

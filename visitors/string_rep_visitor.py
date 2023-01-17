@@ -14,6 +14,8 @@ class FormatVisitor(object):
         # print(node.params)
         sparams = ''
         for param in node.params:
+            print(type(param))
+            print(param)
             string_paramt = param.id+' '+':' + ' ' + param.type
             sparams = sparams.join(string_paramt)
         ans = '\t' * tabs + \

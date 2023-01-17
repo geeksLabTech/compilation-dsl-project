@@ -212,12 +212,12 @@ class GreaterThanEqualNode(BinaryNode):
         return visitor.visit_arith_node(self, ">=")
 
 
-class TrueNode(BinaryNode):
+class TrueNode(AtomicNode):
     def accept(self, visitor):
         return visitor.visit_true_node(self)
 
 
-class FalseNode(BinaryNode):
+class FalseNode(AtomicNode):
     def accept(self, visitor):
         return visitor.visit_false_node(self)
 
