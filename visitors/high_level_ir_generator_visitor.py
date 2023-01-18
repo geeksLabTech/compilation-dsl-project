@@ -229,20 +229,18 @@ class TzScriptToHighLevelIrVisitor:
         statements = []
 
         expr = self.visit(node.expr, parent)
-        
-        for s in node.statements:
-            statements.extend(self.visit(s, parent))
-        statements = self.merge_if_else_nodes(statements)
-        return [IfNode(expr, statements)]
+        then_statements = self.visit(node.then_statements, parent)
+        else_statements = self.visit(node.else_statements, parent)
+        self.code.append(hl_ir.IfStatementNode(expr, then_statements, else_statements))
 
-    @visitor.when(ElseNode)
-    def visit(self, node: ElseNode, parent: Parent):
-        statements = []
-        for child in node.statements:
-            statements.extend(self.visit(child, parent))
+    # @visitor.when(ElseNode)
+    # def visit(self, node: ElseNode, parent: Parent):
+    #     statements = []
+    #     for child in node.statements:
+    #         statements.extend(self.visit(child, parent))
 
-        statements = self.merge_if_else_nodes(statements)
-        return [ElseNode(statements)]
+    #     statements = self.merge_if_else_nodes(statements)
+    #     return [ElseNode(statements)]
 
     @visitor.when(WhileNode)
     def visit(self, node: WhileNode, parent: Parent):
