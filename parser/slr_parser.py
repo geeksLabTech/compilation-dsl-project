@@ -32,7 +32,7 @@ class ShiftReduceParser:
 
                 for (state1, i) in self.action.keys():
                     if i.IsTerminal and state1 == state:
-                        excepted_char += str(i) + ' '
+                        excepted_char += str(i) + ', '
                 parsed = ' '.join([str(m)
                                     for m in stack if not str(m).isnumeric()])
                 message_error = f'It was expected "{excepted_char}" received "{lookahead}" after {parsed}'
