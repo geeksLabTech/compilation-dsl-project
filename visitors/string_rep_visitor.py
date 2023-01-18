@@ -100,3 +100,7 @@ class FormatVisitor(object):
         statements = '\n'.join(self.visit(child, tabs + 1)
                                for child in node.statements)
         return f'{ans}\n{expr}\n{statements}'
+
+    @visitor.when(VariableNode)
+    def visit(self, node: VariableNode, tabs=0):
+        return '\t' * tabs + f'\\__VariableNode: {node.lex}'
