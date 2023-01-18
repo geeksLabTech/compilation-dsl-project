@@ -15,7 +15,7 @@ class Token:
         Token's type.
     """
 
-    def __init__(self, lex: str, token_type: Terminal, tzscript_type: TzScriptType, line_no: int = 0, col_no: int = 0):
+    def __init__(self, lex: str, token_type: Terminal, tzscript_type: TzScriptType|None = None, line_no: int = 0, col_no: int = 0):
         self.lex = lex
         self.token_type = token_type
         self.line_no = line_no
