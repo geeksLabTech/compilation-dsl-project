@@ -1,8 +1,6 @@
-from lib2to3.pgen2 import token
-from operator import le
-from time import sleep
+
 from lexer.lex_token import Token
-from utils import is_valid_tezos_address
+
 
 
 class Node:
