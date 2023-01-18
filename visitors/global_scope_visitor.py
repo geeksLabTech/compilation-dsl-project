@@ -21,17 +21,18 @@ class GlobalScopeVisitor:
 
     @visitor.when(EntryDeclarationNode)
     def visit(self, node: EntryDeclarationNode):
-        if self.scope.is_entry_defined(node.id, len(node.params)):
+        if self.scope.is_entry_defined(node.id):
             self.errors.append(f'Entry point {node.id} is already defined, error in line {node.id_line}')
         else:
             self.scope.define_entry(node.id, node.params)
 
     @visitor.when(FuncDeclarationNode)
     def visit(self, node: FuncDeclarationNode):
-        if self.scope.is_func_defined(node.id, len(node.params)):
+        if self.scope.is_func_defined(node.id):
             self.errors.append(f'Function {node.id} is already defined, error in line {node.id_line}')
         else:
-            self.scope.define_function(node.id, node.params, node.type)
+            param_types = [self.visit(param) for param in node.params]
+            self.scope.define_function(node.id, param_types, node.type)
 
     @visitor.when(DeclarationStorageNode)
     def visit(self, node: DeclarationStorageNode):
@@ -39,3 +40,7 @@ class GlobalScopeVisitor:
             self.errors.append(f'Variable {node.id} is already defined, error in line {node.id_line}')
         else:
             self.scope.define_variable(node.id, node.type)
+
+    @visitor.when(AttrDeclarationNode)
+    def visit(self, node: AttrDeclarationNode):
+        return node.type
