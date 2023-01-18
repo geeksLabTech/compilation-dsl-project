@@ -26,15 +26,7 @@ class Scope:
         self.children: list[Self] = []
         self.var_index_at_parent = 0 if parent is None else len(parent.local_vars)
         self.func_index_at_parent = 0 if parent is None else len(parent.local_funcs)
-        self.main_level = False
-        self.is_if_in_scope = False
-        self.is_entry_in_scope = False
-
-    # def main_scope(self):
-    #     self.main_level = True
-    
-    # def is_if_in_scope(self):
-    #     self.is_if_in_scope = True
+        
     
     def create_child_scope(self):
         child_scope = Scope(self)
@@ -56,11 +48,11 @@ class Scope:
     def define_variable(self, vname: str, type: TzScriptType):
         self.local_vars.append(VariableInfo(vname, type))
     
-    def define_function(self, fname, params, return_type: TzScriptType):
+    def define_function(self, fname: str, params: list[TzScriptType], return_type: TzScriptType):
         self.local_funcs.append(FunctionInfo(fname, params, return_type))
 
-    def define_entry(self, fname: str, params):
-        self.entries.append(EntryInfo(fname, params))
+    def define_entry(self, entry_name: str, params: list[TzScriptType]):
+        self.entries.append(EntryInfo(entry_name, params))
 
     def is_var_defined(self, vname):
         for var in self.local_vars:
@@ -73,31 +65,31 @@ class Scope:
         return self.parent.is_var_defined(vname)
     
     
-    def is_func_defined(self, fname: str, n: int):
+    def is_func_defined(self, fname: str):
         for f in self.local_funcs:
-            if f.name == fname and f.params_types == n:
+            if f.name == fname:
                 return True
         
         if self.parent is None:
             return False
 
-        return self.parent.is_func_defined(fname, n)
+        return self.parent.is_func_defined(fname)
 
-    def is_entry_defined(self, fname: str, n: int):
+    def is_entry_defined(self, fname: str):
         for e in self.entries:
-            if e.name == fname and e.params_types == n:
+            if e.name == fname:
                 return True
         
         if self.parent is None:
             return False
 
-        return self.parent.is_entry_defined(fname, n)
+        return self.parent.is_entry_defined(fname)
 
     def is_local_var(self, vname: str):
         return self.get_local_variable_info(vname) is not None
     
-    def is_local_func(self, fname: str, n: int):
-        return self.get_local_function_info(fname, n) is not None
+    def is_local_func(self, fname: str):
+        return self.get_function_info(fname) is not None
 
     def get_local_variable_info(self, vname: str):
         var_info = None 
@@ -106,14 +98,18 @@ class Scope:
                 var_info = var 
                 break
         
+    
         return var_info
     
-    def get_local_function_info(self, fname: str, n: int):
+    def get_function_info(self, fname: str):
         func_info = None 
         for func in self.local_funcs:
-            if func.name == fname and func.params_types:
+            if func.name == fname:
                 func_info = func 
                 break
         
+        if func_info is None and self.parent is not None:
+            func_info = self.parent.get_function_info(fname)
+
         return func_info
 
