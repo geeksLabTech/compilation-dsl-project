@@ -1,7 +1,6 @@
 
-from cProfile import label
 from grammar import Grammar
-from parser.tzscript_ast import *
+from parser.tzscript_ast import ProgramNode, EntryDeclarationNode, FuncDeclarationNode, DeclarationStorageNode, AttrDeclarationNode, WhileNode, IfNode, ReturnStatementNode, EqualNode, LessThanEqualNode, PlusNode, CallNode, ConstantNumNode, DivNode, ConstantStringNode, FalseNode, TrueNode, GreaterThanNode, InequalityNode, MinusNode, VariableNode, VarCallNode, VarDeclarationNode, StarNode, GreaterThanEqualNode, LessThanNode
 
 # grammar
 TZSCRIPT_GRAMMAR = Grammar()
@@ -68,7 +67,6 @@ op_param_list %= cpar, lambda h,s: [], None
 
 param_list %= param , lambda h, s: [s[1]], None
 param_list %= param_list + comma +param, lambda h, s: s[1] + [s[3]], None, None, None
-# param_list %= TZSCRIPT_GRAMMAR.Epsilon, lambda h,s: s[1],None
 
 param %= idx + colon + typex, lambda h, s: AttrDeclarationNode(s[1], s[3]), None, None, None
 
@@ -109,7 +107,7 @@ var_call %= idx + equal + expr + semi, lambda h, s: VarCallNode(s[1], s[3]), Non
 let_var %= let + idx + colon + typex + equal + expr + semi , lambda h, s: VarDeclarationNode(s[2], s[4], s[6]), None, None, None, None, None, None, None
 
 arg_list %= idx, lambda h, s: [VariableNode(s[1])], None
-arg_list %= idx + comma + arg_list, lambda h, s: [s[1]] + s[3], None, None, None
+arg_list %= idx + comma + arg_list, lambda h, s: [VariableNode(s[1])] + s[3], None, None, None
 # <arith>        ???
 
 
