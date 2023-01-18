@@ -83,7 +83,6 @@ class SemanticCheckerVisitor(object):
     @visitor.when(EntryDeclarationNode)
     def visit(self, node: EntryDeclarationNode, scope: Scope, parent):
         new_parent = Parent(LevelRepresentatives.EntryPoint, node.id)
-        scope.is_entry_in_scope = True
         scope_copied = scope.create_child_scope_with_parent_info()
 
         for arg in node.params:
@@ -118,19 +117,26 @@ class SemanticCheckerVisitor(object):
 
     @visitor.when(CallNode)
     def visit(self, node: CallNode, scope: Scope, parent):
-        if not scope.is_func_defined(node.id, len(node.args)):
-            self.errors.append(f'Function {node.id} is not defined', node)
+        if not scope.is_func_defined(node.id):
+            self.errors.append(f'Function {node.id} is not defined at line {node.id_line}')
+            return None
 
-        func_info = scope.get_local_function_info(node.id, len(node.args))
+        func_info = scope.get_function_info(node.id)
+        assert func_info is not None
+
+        if len(node.args) != len(func_info.params_types):
+            self.errors.append(f'Invalid number of arguments for function {node.id} at line {node.id_line}')
+            return None
+            
         for i, child in enumerate(node.args):
             arg_type = self.visit(child, scope, parent)
             if arg_type is None:
                 return None
             if arg_type != func_info.params_types[i]:
                 self.errors.append(
-                    (f'Invalid argument type {arg_type.name.value} for function {node.id} at line {node.id_line}, expected {func_info.params_types[i].name}', node))
+                    f'Invalid argument type {arg_type.name.value} for function {node.id} at line {node.id_line}, expected {func_info.params_types[i].name}')
                 return None
-        
+
         return func_info.return_type
           
         
@@ -155,16 +161,16 @@ class SemanticCheckerVisitor(object):
         if left_type == TzScriptNat() and right_type == TzScriptInt():
             return TzScriptInt()
 
-        if left_type == TzScriptIntOrNat:
+        if left_type == TzScriptIntOrNat():
             return right_type
         
-        if right_type == TzScriptIntOrNat:
+        if right_type == TzScriptIntOrNat():
             return left_type
 
-        if right_type == TzScriptInt and left_type == TzScriptNat:
+        if right_type == TzScriptInt() and left_type == TzScriptNat():
             return TzScriptInt()
 
-        if right_type == TzScriptNat and left_type == TzScriptInt:
+        if right_type == TzScriptNat() and left_type == TzScriptInt():
             return TzScriptInt()
 
     @visitor.when(ComparisonNode)
@@ -220,8 +226,7 @@ class SemanticCheckerVisitor(object):
 
     @visitor.when(ReturnStatementNode)
     def visit(self, node: ReturnStatementNode, scope: Scope, parent):
-        func_info = scope.get_local_function_info(parent.id, parent.params)
-
+        func_info = scope.get_function_info(parent.id)
         type = self.visit(node.expr, scope, parent)
         if type is None:
             return None
@@ -232,7 +237,9 @@ class SemanticCheckerVisitor(object):
 
     @visitor.when(AttrDeclarationNode)
     def visit(self, node: AttrDeclarationNode, scope: Scope, parent):
-
+        if scope.is_local_var(node.id):
+            self.errors.append(f'Attribute {node.id} for {parent.id} is already defined, error at line {node.id_line}')
+            return None
         scope.define_variable(node.id, node.type)
         return scope
 
