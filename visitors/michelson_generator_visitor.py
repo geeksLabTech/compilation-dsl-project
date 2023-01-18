@@ -1,10 +1,7 @@
 # from parser.tzscript_ast import *
-from inspect import stack
-from math import fabs
 from intermediate_ast.high_level_ir_ast import *
-from visitor import when
 from visitors.reference_counter_visitor import ReferenceCounterVisitor
-import visitors.visitor_d as visitor
+import visitors.visitor as visitor
 
 
 class StackValue:
