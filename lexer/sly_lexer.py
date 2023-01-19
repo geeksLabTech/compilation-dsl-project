@@ -71,7 +71,7 @@ class TzScriptLexer(Lexer):
         STRINGTEXT,
         WHILE,
         THEN,
-        CALL
+        # CALL
     }
 
     tokens.add(t for t in R_W)
@@ -139,7 +139,7 @@ class TzScriptLexer(Lexer):
     ID['return'] = RETURN
     ID['calledBy'] = CALLEDBY
     ID['then'] = THEN
-    ID['call'] = CALL
+    # ID['call'] = CALL
 
     # Define a rule so we can track line numbers
     @_(r'\n+')
@@ -196,7 +196,7 @@ class TzScriptLexer(Lexer):
 
 
 map_to_terminals_names = {'CONTRACT': contract.Name, 'ID': idx.Name, 'COLON': colon.Name, 'SEMICOLON': semi.Name, 'COMMA': comma.Name, 'INTEGER': num.Name, 'LPAREN': opar.Name, 'RPAREN': cpar.Name, 'LBRACE': ocur.Name, 'RBRACE': ccur.Name, 'LBRACKET': opar.Name, 'RBRACKET': cpar.Name, 'PLUS': plus.Name, 'STAR': star.Name, 'ENTRY': entry.Name, 'FUNC': func.Name, 'LET': let.Name, 'IF': ifx.Name, 'ELSE': elsex.Name, 'TYPE': typex.Name, 'STRING': typex.Name,
-                          'NAT': typex.Name, 'INT': typex.Name, 'OPTIONAL': typex.Name, 'BOOL': typex.Name, 'EQUALEQUAL': equalequal.Name, 'LESSTHAN': lessthan.Name, 'GREATERTHAN': greaterthan.Name, 'LESSTHANEQUAL': lessthanequal.Name, 'GREATERTHANEQUAL': greaterthanequal.Name, 'EQUAL': equal.Name, 'MINUS': minus.Name, 'DIV': div.Name, 'RETURN': returnx.Name, 'ADDRESS': typex.Name, 'DOUBLEQUOTES': dquoutes.Name, 'STRINGTEXT': stringx.Name, 'WHILE': whilex.Name ,'THEN':then.Name, 'CALL': call.Name}
+                          'NAT': typex.Name, 'INT': typex.Name, 'OPTIONAL': typex.Name, 'BOOL': typex.Name, 'EQUALEQUAL': equalequal.Name, 'LESSTHAN': lessthan.Name, 'GREATERTHAN': greaterthan.Name, 'LESSTHANEQUAL': lessthanequal.Name, 'GREATERTHANEQUAL': greaterthanequal.Name, 'EQUAL': equal.Name, 'MINUS': minus.Name, 'DIV': div.Name, 'RETURN': returnx.Name, 'ADDRESS': typex.Name, 'DOUBLEQUOTES': dquoutes.Name, 'STRINGTEXT': stringx.Name, 'WHILE': whilex.Name ,'THEN':then.Name}
 
 
 def process_lexer_tokens(lexer_tokens) -> list[Token]:
@@ -213,14 +213,7 @@ def process_lexer_tokens(lexer_tokens) -> list[Token]:
         tzscript_type = types_dict_creator[value] if value in types_dict_creator else None
         if ttype == 'INTEGER':
             tzscript_type = TzScriptIntOrNat()
-        # if ttype == 'STRINGTEXT':
-        #     tokens.append(
-        #         Token('"', dquoutes, lexer_tokens[i].lineno, lexer_tokens[i-1].index))
-        #     tokens.append(
-        #         Token(value, TZSCRIPT_GRAMMAR[terminals_names[i]], tzscript_type, lexer_tokens[i].lineno, lexer_tokens[i].index))
-        #     tokens.append(
-        #         Token('"', dquoutes, tzscript_type, lexer_tokens[i].lineno, lexer_tokens[i].index-1))
-        # else:
+        
         tokens.append(
             Token(value, TZSCRIPT_GRAMMAR[terminals_names[i]], tzscript_type, lexer_tokens[i].lineno, lexer_tokens[i].index))
     tokens.append(Token('EOF', TZSCRIPT_GRAMMAR.EOF, tzscript_type, -1, -1))

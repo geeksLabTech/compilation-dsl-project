@@ -150,7 +150,7 @@ primary %= falsex, lambda h, s: FalseNode(s[1]), None
 # atom %= truex, lambda h, s: TrueNode(s[1]), None
 # atom %= falsex, lambda h, s: FalseNode(s[1]), None
 
-func_call %= call + idx + opar + arg_list + cpar, lambda h, s: CallNode(s[2], s[4]), None, None, None, None, None
+func_call %= idx + opar + arg_list + cpar, lambda h, s: CallNode(s[1], s[3]), None, None, None, None
 
 var_call %= idx + equal + expr + semi, lambda h, s: VarCallNode(s[1], s[3]), None, None, None, None
 
