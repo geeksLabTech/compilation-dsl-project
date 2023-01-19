@@ -8,6 +8,7 @@ from parser.lr_parser import LR1Parser
 from grammar import EOF, Epsilon, Grammar, Production, Sentence, Symbol
 import hashlib
 import base58
+PARSER = LR1Parser(TZSCRIPT_GRAMMAR, verbose=True)
 
 def run_tscript_sly_lexer_pipeline(script: str):
     lexer = TzScriptLexer()
@@ -28,10 +29,8 @@ def run_tzscript_slr_parser_pipeline(script: str):
 
 def run_tzscript_lr_parser_pipeline(script: str):
     tokens = run_tscript_sly_lexer_pipeline(script)
-    parser = LR1Parser(TZSCRIPT_GRAMMAR, verbose=True)
-
     terminals = [token.token_type for token in tokens]
-    derivation = parser(terminals, True)
+    derivation = PARSER(terminals, True)
     assert derivation is not None 
     productions, operations = derivation
     return productions, operations, tokens
