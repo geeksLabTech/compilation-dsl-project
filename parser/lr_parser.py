@@ -44,7 +44,7 @@ def closure_lr1(items, firsts):
         
         new_items = ContainerSet()
         
-        for x in items:
+        for x in closure:
             expanded=expand(x, firsts)
             new_items.update(ContainerSet(*expanded))
                     
@@ -108,10 +108,11 @@ class LR1Parser(ShiftReduceParser):
         
         for node in automaton:
             idx = node.idx
-            for item in node.state:                
+            for item in node.state: 
                 if  item.NextSymbol and item.NextSymbol.IsTerminal:
-                    self._register(self.action, (idx, item.NextSymbol), (self.SHIFT,node.get(item.NextSymbol.Name).idx))
-
+                    if node.has_transition(item.NextSymbol.Name):
+                        self._register(self.action, (idx, item.NextSymbol), (self.SHIFT,node.get(item.NextSymbol.Name).idx))
+                    
                 elif item.IsReduceItem and item.production.Left == G.startSymbol and not item.NextSymbol:
                     self._register(self.action, (idx, G.EOF), self.OK)
 
@@ -119,8 +120,9 @@ class LR1Parser(ShiftReduceParser):
                     for lookahead in item.lookaheads:
                         self._register(self.action, (idx, lookahead), (self.REDUCE, item.production))
                 
-                else: # item.NextSymbol and item.NextSymbol.IsNonTerminal:
-                    self._register(self.goto, (idx, item.NextSymbol), node.get(item.NextSymbol.Name).idx)
+                elif item.NextSymbol and item.NextSymbol.IsNonTerminal:
+                    if node.has_transition(item.NextSymbol.Name):
+                        self._register(self.goto, (idx, item.NextSymbol), node.get(item.NextSymbol.Name).idx)
                     
         # print('action', self.action)
         # print('goto', self.goto)
