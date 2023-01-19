@@ -46,7 +46,7 @@ def test_global_scope():
                 
                 let a: int = n - 1;
                 let b: int = n - 2;
-                return fib(a) + fib(b);
+                return call fib(a) + call fib(b);
             }
         }
     }
@@ -54,7 +54,7 @@ def test_global_scope():
     let last_fib_calculated : int ;
 
     entry get_fib(n: int){
-        let result: int = fib(n);
+        let result: int = call fib(n);
         last_fib_calculated = result;
         let a : int = b;
         let c : int = first;
@@ -82,7 +82,7 @@ def test_scope_with_if_and_while():
     }
 
     entry get_fib(n: int){
-        let result: int = if_test(n);
+        let result: int = call if_test(n);
         last_fib_calculated = result;
         let a : int = b;
         let c : int = first;
@@ -184,17 +184,17 @@ def test_calls_to_functions():
 
         entry test_entry(x: int){
             let b: int = 0;
-            let c: int = sum(a, b);
-            let z: int = sum(a, b, c);
+            let c: int = call sum(a, b);
+            let z: int = call sum(a, b, c);
         }
         entry test_entry2(x: int){
             let b: int = 0;
-            let c: int = test_entry(x);
+            let c: int = call test_entry(x);
         }
 
         func sum(x: int, y: int): int{
             let l: int = 0;
-            let m: int = test_func(x, y, l);
+            let m: int = call test_func(x, y, l);
             return x + y;
         }
 
