@@ -1,0 +1,24 @@
+contract hanoi (n: int) {
+
+    func move_source_dest_aux (n: int, s: int, d: int, a: int) : int {
+        if (n == 1) {
+            then{
+                s = 0;
+                d = 1;
+                return 0;
+            }
+            else{
+                let new_n: int = n - 1; 
+                move_source_dest_aux (new_n, s, a, d);
+
+                move_source_dest_aux (new_n, a, d, s);
+                return 0;
+            }
+        }
+    }
+
+    entry hanoi_ (n: int, s: int, d: int, a: int) {
+        move_source_dest_aux (n, s, d, a);
+    }
+
+}

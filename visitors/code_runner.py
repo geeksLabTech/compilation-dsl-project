@@ -194,7 +194,7 @@ class CodeRunnerVisitor(object):
         l = self.visit(node.left)
         r = self.visit(node.right)
         print(f'{l} + {r}')
-        return l+r
+        return int(l+r)
 
     @visitor.when(MinusNode)
     def visit(self, node: MinusNode):
@@ -203,7 +203,7 @@ class CodeRunnerVisitor(object):
 
         print(f'{l} - {r}')
 
-        return l-r
+        return int(l-r)
 
     @visitor.when(DivNode)
     def visit(self, node: DivNode):
@@ -212,7 +212,7 @@ class CodeRunnerVisitor(object):
 
         print(f'{l} // {r}')
 
-        return l/r
+        return int(l/r)
 
     @visitor.when(StarNode)
     def visit(self, node: StarNode):
@@ -221,7 +221,7 @@ class CodeRunnerVisitor(object):
 
         print(f'{l} * {r}')
 
-        return l*r
+        return int(l*r)
 
     @visitor.when(EqualNode)
     def visit(self, node: EqualNode):
