@@ -1,6 +1,10 @@
 contract prime_num(x: int){
     
-    func abs(x:int){
+    entry prime(x:int){
+        let res:int = is_prime(x);
+    }
+
+    func abs(x:int):int{
         if (x < 0){
             then{
                 let n_x = x * (0 - 1);
@@ -12,7 +16,7 @@ contract prime_num(x: int){
         }
     }
 
-    func sqrt(x:nat){
+    func sqrt(x:nat):int{
         if (x == 0){
             then {
                 return 0;
@@ -22,8 +26,7 @@ contract prime_num(x: int){
                 while( x == x ){
                     let next:int = (current + (x / current)) / 2;
                     let cond:int = abs(next - current);
-                    let eps: int = 0.0000000009;
-                    if ( cond < eps){
+                    if ( cond == 0){
                         then{
                             return next;
                         }
@@ -34,7 +37,7 @@ contract prime_num(x: int){
         }
     }
 
-    func is_prime(x:nat){
+    func is_prime(x:nat):int{
         let n = sqrt(x);
         while( n != 1){
 
@@ -42,9 +45,11 @@ contract prime_num(x: int){
             let temp = y*n;
             
             if (x == temp){
-                return False;
+                return 0;
             }
         }
-        return True;
+        return 1;
     }
+
+    let p:int = is_prime(5);
 }
