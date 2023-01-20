@@ -1,6 +1,6 @@
 # from parser.tzscript_ast import *
 from intermediate_ast.high_level_ir_ast import *
-from visitors.reference_counter_visitor import ReferenceCounterVisitor
+from visitors.reference_counter_visitor import ReferenceCounterVisitor, References
 import visitors.visitor as visitor
 
 
@@ -19,7 +19,7 @@ class MichelsonGenerator(object):
         self.storage_type = '', ''
         entry = None
         # Track how many times a variable will be used
-        self.reference_counter: dict[str, int] = {}
+        self.reference_counter: dict[str, References] = {}
 
     @visitor.on('node')
     def visit(self, node):
@@ -246,7 +246,8 @@ class MichelsonGenerator(object):
     def visit(self, node: GetToTopNode):
         # print('estado de counnter', self.reference_counter)
         self.generate_instructions_to_find_and_put_to_top(node.id)
-        self.reference_counter[node.id] -= 1
+        
+        self.reference_counter[node.id].normal_references_count -= 1
        
 
     @visitor.when(IfStatementNode)
