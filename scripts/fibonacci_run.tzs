@@ -1,9 +1,5 @@
 contract get_fib_n(n:int){
-    let last_fib_calculated : int ;
-
-    entry get_fib(n: int){
-        let temp:int = fib(n);
-    }
+    let last_fib_calculated : int;
 
     func fib(n: int) : int{
         if (n <= 1) {
@@ -19,8 +15,10 @@ contract get_fib_n(n:int){
         }
     }
     
-    entry exec(){
+    entry main(){
         let a: int = 5;
-        let t: int = fib(a);
+        last_fib_calculated = 5;
+        let t: int = fib(last_fib_calculated);
+        last_fib_calculated = t;
     }
 }

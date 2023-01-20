@@ -28,14 +28,17 @@ class CodeRunnerVisitor(object):
 
         # for p in node.params:
         #     self.scopes[self.current_scope].variables[str(p.idx)] = {'type':p.typex, 'value': None}
+        if len(list(self.scopes[0].entry.keys())) > 1:
+            raise SyntaxError('More than one Entrypoint defined.')
 
         for st in node.statements:
             # print(self.scopes)
             self.visit(st)
             if self.break_test(st):
                 break
-
-            # self.scopes[0].variables['n'] = {'type': 'nat', 'value': 5}
+        if list(self.scopes[0].entry.keys())[-1] != 'main':
+            raise TypeError("Entrypoint 'main' missing.")
+        # self.scopes[0].variables['n'] = {'type': 'nat', 'value': 5}
         self.visit(CallNode(list(self.scopes[0].entry.keys())[-1], []))
 
         self.scopes.pop()
@@ -99,6 +102,18 @@ class CodeRunnerVisitor(object):
             'type': node.type, 'value': None}
         self.scopes[self.current_scope].variables[node.id]
 
+    @visitor.when(VarCallNode)
+    def visit(self, node: VarCallNode):
+        print(f"Modifiying {node.id}")
+        sc = self.current_scope
+        if self.scope_bound:
+            sc -= 1
+        for i in range(0, self.current_scope+1):
+            # print(self.scopes[self.current_scope-i].variables)
+            if node.id in self.scopes[self.current_scope-i].variables:
+                self.scopes[self.current_scope -
+                            i].variables[node.id]['value'] = self.visit(node.expr)
+
     @visitor.when(VarDeclarationNode)
     def visit(self, node: VarDeclarationNode):
         # print("declare var")
@@ -148,7 +163,7 @@ class CodeRunnerVisitor(object):
         return self.scopes[self.current_scope].variables[node.id]
 
     @visitor.when(VariableNode)
-    def visit(self, node: VariableNode, val=True):
+    def visit(self, node: VariableNode):
         # print("var")
         sc = self.current_scope
         if self.scope_bound:
@@ -156,10 +171,7 @@ class CodeRunnerVisitor(object):
         for i in range(0, self.current_scope+1):
             # print(self.scopes[self.current_scope-i].variables)
             if node.lex in self.scopes[self.current_scope-i].variables:
-                if not val:
-                    return self.scopes[self.current_scope-i].variables[node.lex]
-                else:
-                    return self.scopes[self.current_scope-i].variables[node.lex]['value']
+                return self.scopes[self.current_scope-i].variables[node.lex]['value']
 
     @visitor.when(AtomicNode)
     def visit(self, node: AtomicNode):
