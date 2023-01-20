@@ -80,7 +80,7 @@ class MichelsonGenerator(object):
         ref_visitor = ReferenceCounterVisitor()
         ref_visitor.visit(node.code)
         self.reference_counter = ref_visitor.reference_counter
-        print('reference counter: ', self.reference_counter)
+        # print('reference counter: ', self.reference_counter)
 
         self.code += "code {\n"
         self.code += "UNPAIR;\n"
@@ -103,18 +103,18 @@ class MichelsonGenerator(object):
             self.stack.pop()
             remains, stack_idx, michelson_idx = self.remains_non_storage_var()
 
-        for v in self.stack:
-            print('node in stack: value, type, id', v.value, v.type, v.id, v.belongs_to_storage)
-        print('current code: ', self.code)
-        print()
+        # for v in self.stack:
+        #     print('node in stack: value, type, id', v.value, v.type, v.id, v.belongs_to_storage)
+        # print('current code: ', self.code)
+        # print()
+        print('final code: ')
+        print(self.code)
         assert len(self.stack) == 1
 
         self.code += 'NIL operation;\n'
         self.code += 'PAIR;\n'
 
         self.code += "}\n"
-        print('final code: ')
-        print(self.code)
         # self.code += "}\n"
 
     @visitor.when(IfEntryNode)
@@ -124,7 +124,7 @@ class MichelsonGenerator(object):
 
     @visitor.when(PushValueNode)
     def visit(self, node: PushValueNode):
-        print('push value node: ', type(node.value), type(node.type))
+        # print('push value node: ', type(node.value), type(node.type))
         if str(node.type) == 'num':
             node.value = int(node.value)
             if node.value > 0:
@@ -146,8 +146,8 @@ class MichelsonGenerator(object):
         self.generate_instructions_to_find_and_put_to_top(node.id)
         previous_value = self.stack.pop()
         self.code += 'DROP;\n'
-        print('current stack, ', self.stack)
-        print('current-code: ', self.code)
+        # print('current stack, ', self.stack)
+        # print('current-code: ', self.code)
         next_value = self.stack.pop()
         self.reference_counter[node.id] -= 1
         self.stack.append(StackValue(next_value.value, next_value.type,
@@ -332,9 +332,9 @@ class MichelsonGenerator(object):
             self.swap_values_in_top_stack()
             self.code += f'SWAP;\n'
         
-        print('code', self.code)
-        print('first', first.value, first.type)
-        print('second', second.value, second.type)
+        # print('code', self.code)
+        # print('first', first.value, first.type)
+        # print('second', second.value, second.type)
         # assert first.type == second.type
         return first, second
 
