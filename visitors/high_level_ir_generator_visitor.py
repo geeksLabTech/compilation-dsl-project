@@ -1,6 +1,6 @@
 from enum import Enum
 from importlib.metadata import EntryPoint
-import visitor
+import visitors.visitor as visitor
 from intermediate_ast import high_level_ir_ast as hl_ir
 from parser.tzscript_ast import *
 from visitors.scope import Scope
@@ -51,10 +51,6 @@ class TzScriptToHighLevelIrVisitor:
     def __init__(self) -> None:
         self.entrypoints_declarations: list[hl_ir.EntryPointDeclarationNode] = []
         self.storage: list[hl_ir.StorageDeclarationNode] = []
-        self.code: list[hl_ir.Node] = []
-        self.statements_per_entrypoint_id: dict[str, list[hl_ir.Node]] = {}
-        # self.utility_functions: dict[str, hl_ir.UtilityFunctionDefinition] = {}
-
         # The key is the id assigned for the corresponding entry or function
         self.id_for_new_registed_variables: dict[str, int] = {}
         self.else_node = []
@@ -67,15 +63,9 @@ class TzScriptToHighLevelIrVisitor:
     def visit(self, node: ProgramNode, parent=None) -> hl_ir.ContractNode:
 
         parent = Parent(LevelRepresentatives.Program, 'Program')
-
         statements = []
-
-        for s in node.statements:
-            print('mirame')
-            
+        for s in node.statements:  
             statements.extend(self.visit(s, parent))
-
-        
 
         # entrepoints = hl_ir.Entrpoints(self.entrypoints_declarations)
 
@@ -106,37 +96,36 @@ class TzScriptToHighLevelIrVisitor:
 
     @visitor.when(EntryDeclarationNode)
     def visit(self, node: EntryDeclarationNode, parent: Parent):
-        # entrypoint = hl_ir.EntryPointDeclarationNode(
-        #     node.id, [hl_ir.AttrDeclarationNode(param.id, param.type) for param in node.params])
-        # self.entrypoints_declarations.append(entrypoint)
-        # self.statements_per_entrypoint_id[node.id] = []
-        self.entrypoints_declarations.append(hl_ir.EntryPointDeclarationNode(node.id, node.params))
+        params = []
+        for x in node.params:
+            params.extend(self.visit(x, parent))
+        self.entrypoints_declarations.append(hl_ir.EntryPointDeclarationNode(node.id,params))
         new_parent = Parent(LevelRepresentatives.EntryPoint, node.id)
 
         statements = []
         for s in node.body:
-            print('statements in entry: ', s)
+            
             statements.extend(self.visit(s, new_parent))
 
-        statements = self.merge_if_else_nodes(statements)
+        # statements = self.merge_if_else_nodes(statements)
         return [hl_ir.IfEntryNode(node.id, statements)]
+
+    @visitor.when(AttrDeclarationNode)
+    def visit(self, node: AttrDeclarationNode, parent: Parent):
+        return [hl_ir.AttrDeclarationNode(node.id, node.type)]
+    
+    @visitor.when(DeclarationStorageNode)
+    def visit(self, node: DeclarationStorageNode, parent: Parent):
+        self.storage.append(hl_ir.StorageDeclarationNode(node.id, node.type))
+        return []
+        
+
 
     @visitor.when(VarDeclarationNode)
     def visit(self, node: VarDeclarationNode, parent: Parent):
-        # TODO: handle node.expr
-       
-        if parent.level == LevelRepresentatives.Program:
-            self.storage.append(hl_ir.StorageDeclarationNode(node.id, node.type))
-            return []
-        elif parent.level == LevelRepresentatives.EntryPoint:
-            expr = self.visit(node.expr, parent)
-            # self.statements_per_entrypoint_id[parent.id].append(hl_ir.VarDeclarationNode(node.id, node.type, node.expr))
-            return expr + [hl_ir.PushVariableNode(node.id, node.type)]
-
-        # elif parent.level == LevelRepresentatives.Function:
-        #     self.visit(node.expr,parent)
-        #     self.utility_functions[parent.id].body.append(hl_ir.PushVariableNode(node.id, node.type))
-
+        expr = self.visit(node.expr, parent)
+        return expr + [hl_ir.PushVariableNode(node.id, node.type)]
+        
     # @visitor.when(FuncDeclarationNode)
     # def visit(self, node: FuncDeclarationNode, parent: Parent):
     #     parent = Parent(LevelRepresentatives.Function, node.id)
@@ -161,7 +150,7 @@ class TzScriptToHighLevelIrVisitor:
 
     @visitor.when(BinaryNode)
     def visit(self, node: BinaryNode, parent: Parent):
-        print('here')
+        
         nodes = []
         nodes.extend(self.visit(node.left, parent))
         nodes.extend(self.visit(node.right, parent))
@@ -187,7 +176,6 @@ class TzScriptToHighLevelIrVisitor:
             #     self.utility_functions[parent.id].body.append(hl_ir.LessThanEqualNode())
         elif isinstance(node, GreaterThanNode):
             if parent.level == LevelRepresentatives.EntryPoint:
-                print('lo creeeeee')
                 nodes.append(hl_ir.GreaterThanNode())
             # else:
             #     self.utility_functions[parent.id].body.append(hl_ir.GreaterThanNode())
@@ -218,11 +206,9 @@ class TzScriptToHighLevelIrVisitor:
                 nodes.append(hl_ir.DivNode())
             # else:
             #     self.utility_functions[parent.id].body.append(hl_ir.DivNode())
-        print('nodos donde suma')
+
         return nodes
-    # @visitor.when(ReturnStatementNode)
-    # def visit(self, node: ReturnStatementNode, parent: Parent):
-    #     self.visit(node.expr, parent)
+
 
     @visitor.when(IfNode)
     def visit(self, node: IfNode, parent: Parent):
@@ -231,31 +217,24 @@ class TzScriptToHighLevelIrVisitor:
         expr = self.visit(node.expr, parent)
         then_statements = self.visit(node.then_statements, parent)
         else_statements = self.visit(node.else_statements, parent)
-        self.code.append(hl_ir.IfStatementNode(expr, then_statements, else_statements))
+        return [hl_ir.IfStatementNode(expr, then_statements, else_statements)]
 
-    # @visitor.when(ElseNode)
-    # def visit(self, node: ElseNode, parent: Parent):
-    #     statements = []
-    #     for child in node.statements:
-    #         statements.extend(self.visit(child, parent))
-
-    #     statements = self.merge_if_else_nodes(statements)
-    #     return [ElseNode(statements)]
+   
 
     @visitor.when(WhileNode)
     def visit(self, node: WhileNode, parent: Parent):
         statements = []
-        print('statement in while')
         expr = self.visit(node.expr, parent)
         
         for s in node.statements:
             statements.extend(self.visit(s, parent))
 
-        statements = self.merge_if_else_nodes(statements)
+        # statements = self.merge_if_else_nodes(statements)
         return [hl_ir.WhileDeclarationNode(expr, statements)]
     
     @visitor.when(ConstantNumNode)
     def visit(self, node: ConstantNumNode, parent: Parent):
+        print(node.type)
         return [hl_ir.PushValueNode(node.lex, node.type)]
 
     @visitor.when(ConstantStringNode)
@@ -293,34 +272,22 @@ class TzScriptToHighLevelIrVisitor:
     #     self.utility_functions[function.id].body = statements
     #     return statements
 
-    def create_name_for_new_variable(self, parent: Parent):
-        if parent.level == LevelRepresentatives.Function:
-            id = f'function_{parent.id}'
-        else:
-            id = f'entry_{parent.id}'
+    
+    # def merge_if_else_nodes(self, statements):
+    #     new_statements = []
+    #     i = 0
+    #     while i<len(statements):
+    #         if isinstance(statements[i], IfNode) and i+1 < len(statements):
+    #             if isinstance(statements[i+1], ElseNode):
+    #                 new_statements.append(hl_ir.IfStatementNode(statements[i].expr, statements[i].statements, statements[i+1].statements))
+    #             else:
+    #                 new_statements.append(hl_ir.IfStatementNode(statements[i].expr, statements[i].statements, []))
+    #             i+=2
+    #         else:
+    #             new_statements.append(statements[i])
+    #             i += 1
 
-        if not id in self.id_for_new_registed_variables:
-            self.id_for_new_registed_variables[id] = 0
-        else:
-            self.id_for_new_registed_variables[id] += 1
-
-        return f'_generated_var_{id}_{self.id_for_new_registed_variables[id]}'
-
-    def merge_if_else_nodes(self, statements):
-        new_statements = []
-        i = 0
-        while i<len(statements):
-            if isinstance(statements[i], IfNode) and i+1 < len(statements):
-                if isinstance(statements[i+1], ElseNode):
-                    new_statements.append(hl_ir.IfStatementNode(statements[i].expr, statements[i].statements, statements[i+1].statements))
-                else:
-                    new_statements.append(hl_ir.IfStatementNode(statements[i].expr, statements[i].statements, []))
-                i+=2
-            else:
-                new_statements.append(statements[i])
-                i += 1
-
-        return new_statements
+    #     return new_statements
 
     # def replace_variable_name(self, node, old_name, new_name):
     #     for x in node.body:
