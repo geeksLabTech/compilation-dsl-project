@@ -220,6 +220,7 @@ class FalseNode(AtomicNode):
 
 class ConstantStringNode(AtomicNode):
     def __init__(self, token: Token):
+        token.lex = token.lex[1:-1]
         super().__init__(token)
         self.type = token.tzscript_type
 
