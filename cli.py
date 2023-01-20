@@ -91,27 +91,27 @@ def represent(file: str = Argument("", help="tzscript file to be parsed"),
         script = f.read()
 
     ast, ir, progress = process(script, 4)
+    if ast is not None:
+        print("\nGenerating String representation Code for base AST")
+        string_repr = FormatVisitor()
+        result = str(string_repr.visit(ast))
+        if out_file is None:
+            out_file = file[:file.find(".tzs")]+".tzs.rep"
+        with open(out_file, "w") as f:
 
-    print("\nGenerating String representation Code for base AST")
-    string_repr = FormatVisitor()
-    result = str(string_repr.visit(ast))
-    if out_file is None:
-        out_file = file[:file.find(".tzs")]+".tzs.rep"
-    with open(out_file, "w") as f:
+            f.write(result)
+        progress.update(1)
 
-        f.write(result)
-    progress.update(1)
-
-    print("\nGenerating String representation Code for intermediate AST")
-    hl_repr = HLReprVisitor()
-    result = hl_repr.visit(ir)
-    if out_file is None:
-        out_file = file[:file.find(".tzs")]+".tzs.rep"
-    with open(out_file, "a+") as f:
-        f.write("\n\n")
-        f.write(str(result))
-    progress.update(1)
-    print(f"\nGenerated {out_file}")
+        print("\nGenerating String representation Code for intermediate AST")
+        hl_repr = HLReprVisitor()
+        result = hl_repr.visit(ir)
+        if out_file is None:
+            out_file = file[:file.find(".tzs")]+".tzs.rep"
+        with open(out_file, "a+") as f:
+            f.write("\n\n")
+            f.write(str(result))
+        progress.update(1)
+        print(f"\nGenerated {out_file}")
 
 
 if __name__ == "__main__":

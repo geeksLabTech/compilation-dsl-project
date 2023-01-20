@@ -1,7 +1,7 @@
 contract prime_num(x: int){
     
     entry main(){
-        let n: int = 16;
+        let n: int = 111;
         let res:int = is_prime(n);
     }
 
@@ -27,7 +27,7 @@ contract prime_num(x: int){
                     while( True ){
                         let next:int = (current + (x / current)) / 2;
                         let val:int = next - current;
-                        let cond:int = val;
+                        let cond:int = abs(val);
                         if ( cond == 0){
                         then{
                             return next;
@@ -40,7 +40,8 @@ contract prime_num(x: int){
     }
 
     func is_prime(x:int):int{
-        let n:int = x/2;
+
+        let n:int = sqrt(x)+1;
         while(n > 1){
             let y:int = x/n;
             let temp:int = y*n;
