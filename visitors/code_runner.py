@@ -16,6 +16,7 @@ class CodeRunnerVisitor(object):
         self.current_scope = 0
         self.go_else = False
         self.scope_bound = False
+        self.break_exec = False
 
     @visitor.on('node')
     def visit(self, node):
@@ -34,7 +35,7 @@ class CodeRunnerVisitor(object):
         for st in node.statements:
             # print(self.scopes)
             self.visit(st)
-            if self.break_test(st):
+            if self.break_exec:
                 break
         if list(self.scopes[0].entry.keys())[-1] != 'main':
             raise TypeError("Entrypoint 'main' missing.")
@@ -58,7 +59,7 @@ class CodeRunnerVisitor(object):
                 if t is not None:
                     r = t
 
-                if self.break_test(st):
+                if self.break_exec:
                     break
 
         else:
@@ -70,7 +71,7 @@ class CodeRunnerVisitor(object):
                 if t is not None:
                     r = t
 
-                if self.break_test(st):
+                if self.break_exec:
                     break
 
         self.scopes.pop()
@@ -82,6 +83,7 @@ class CodeRunnerVisitor(object):
     def visit(self, node: ReturnStatementNode):
         st = self.visit(node.expr)
         print(f">> {st}")
+        self.break_exec = True
         return st
 
     def type_cast(self, var, type):
@@ -104,7 +106,7 @@ class CodeRunnerVisitor(object):
 
     @visitor.when(VarCallNode)
     def visit(self, node: VarCallNode):
-        print(f"Modifiying {node.id}")
+        # print(f"Modifiying {node.id}")
         sc = self.current_scope
         if self.scope_bound:
             sc -= 1
@@ -144,8 +146,10 @@ class CodeRunnerVisitor(object):
         while(cond):
             for st in node.statements:
                 r = self.visit(st)
-
-                if self.break_test(st):
+                
+                if self.break_exec:
+                    break
+            if self.break_exec:
                     break
 
             cond = self.visit(node.expr)
@@ -276,7 +280,9 @@ class CodeRunnerVisitor(object):
 
     @visitor.when(CallNode)
     def visit(self, node: CallNode):
-        print(f"Calling {node.id} {node.args}")
+        n_a = node.args
+        n_a = [self.visit(arg) for arg in n_a]
+        print(f"Calling {node.id} {n_a}")
         r = None
         self.scopes.append(ScopeContext())
         self.current_scope += 1
@@ -301,16 +307,11 @@ class CodeRunnerVisitor(object):
             t = self.visit(st)
             if t is not None:
                 r = t
-            if self.break_test(st):
+            if self.break_exec:
                 break
-
+            
+        self.break_exec = False
         self.scopes.pop()
         self.current_scope -= 1
 
         return r
-
-    def break_test(self, node):
-        if type(node) is ReturnStatementNode:
-            return True
-        else:
-            return False
