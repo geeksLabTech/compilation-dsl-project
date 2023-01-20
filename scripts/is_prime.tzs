@@ -6,33 +6,29 @@ contract prime_num(x: int){
 
     func abs(x:int):int{
         if (x < 0){
-            then{
-                let n_x = x * (0 - 1);
-                return n_x;
-            }
-            else{
-                return x;
-            }
+            let n_x = x * (0 - 1);
+            return n_x;
+        }
+        else{
+            return x;
         }
     }
 
     func sqrt(x:nat):int{
         if (x == 0){
-            then {
                 return 0;
-            }
-            else{
+        }
+        else{
                 let current = x / 2;
                 while( x == x ){
                     let next:int = (current + (x / current)) / 2;
                     let cond:int = abs(next - current);
                     if ( cond == 0){
-                        then{
-                            return next;
-                        }
+                    then{
+                        return next;
                     }
-                    current = next;
                 }
+                current = next;
             }
         }
     }

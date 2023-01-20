@@ -1,0 +1,65 @@
+### n - fib to be calculated
+PUSH int 5;
+###
+
+DUP 1;
+PUSH int 1;
+SWAP;
+SUB;
+LE;
+IF {
+    PUSH int 1;
+}
+{
+
+PUSH int 1;
+SWAP;
+SUB;
+
+PUSH int 1;
+PUSH int 1;
+
+
+PUSH int 1;
+# DIG 3;
+DUP 3;
+SUB;
+GE;
+
+LOOP
+{
+    DIG 1;
+    DUP 2;
+    ADD;
+    
+
+    DIG 2;
+
+    PUSH int 1;
+    SWAP;
+    SUB;
+
+    DUP 1;
+    
+    GT;
+    
+
+#     DIG 2;
+#     PUSH int 1;
+#     SWAP;
+#     SUB;
+#     
+
+    DIG 3;
+    DIG 3;
+    
+
+    DIG 2;
+
+#     PUSH bool False;
+#
+# 
+};
+
+};
+
