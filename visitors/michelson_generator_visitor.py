@@ -184,6 +184,7 @@ class MichelsonGenerator(object):
     @visitor.when(EqualNode)
     def visit(self, node: EqualNode):
         first, second = self.prepare_for_binary_op()
+        self.code +="SWAP;\n"
         self.code +="SUB;\n"
         self.stack.append(StackValue(first.value - second.value,first.type, None))
         self.code += "EQ;\n"
@@ -193,6 +194,7 @@ class MichelsonGenerator(object):
     @visitor.when(InequalityNode)
     def visit(self, node: InequalityNode):
         first, second = self.prepare_for_binary_op()
+        self.code +="SWAP;\n"
         self.code +="SUB;\n"
         self.stack.append(StackValue(first.value - second.value,first.type, None))
         self.code += "NEQ;\n"
@@ -203,6 +205,7 @@ class MichelsonGenerator(object):
     @visitor.when(GreaterThanNode)
     def visit(self, node: GreaterThanNode):
         first, second = self.prepare_for_binary_op()
+        self.code +="SWAP;\n"
         self.code +="SUB;\n"
         self.stack.append(StackValue(first.value - second.value,first.type, None))
         self.code += "GT;\n"
@@ -212,6 +215,7 @@ class MichelsonGenerator(object):
     @visitor.when(GreaterThanEqualNode)
     def visit(self, node: GreaterThanEqualNode):
         first, second = self.prepare_for_binary_op()
+        self.code +="SWAP;\n"
         self.code +="SUB;\n"
         self.stack.append(StackValue(first.value - second.value,first.type, None))
         self.code += "GE;\n"
@@ -221,6 +225,7 @@ class MichelsonGenerator(object):
     @visitor.when(LessThanNode)
     def visit(self, node: LessThanNode):
         first, second = self.prepare_for_binary_op()
+        self.code +="SWAP;\n"
         self.code +="SUB;\n"
         self.stack.append(StackValue(first.value - second.value,first.type, None))
         self.code += "LT;\n"
@@ -230,6 +235,7 @@ class MichelsonGenerator(object):
     @visitor.when(LessThanEqualNode)
     def visit(self, node: LessThanEqualNode):
         first, second = self.prepare_for_binary_op()
+        self.code +="SWAP;\n"
         self.code +="SUB;\n"
         self.stack.append(StackValue(first.value - second.value,first.type, None))
         self.code += "LE;\n"
