@@ -2,7 +2,6 @@
 from lexer.lex_token import Token
 
 
-
 class Node:
     def accept(self, visitor):
         pass
@@ -28,14 +27,14 @@ class ExpressionNode(Node):
 
 
 class IfNode(Node):
-    def __init__(self, if_keyword: Token, then_keyword: Token, expr, then_statements,else_statements) -> None:
+    def __init__(self, if_keyword: Token, then_keyword: Token, expr, then_statements, else_statements) -> None:
         self.if_line = if_keyword.line_no
         self.then_line = then_keyword.line_no
         # self.else_line = else_keyword.line_no
         self.expr = expr
         self.then_statements = then_statements
         self.else_statements = else_statements
-        
+
     def accept(self, visitor):
         return visitor.visit_if_node(self)
 
@@ -59,12 +58,12 @@ class VarDeclarationNode(ExpressionNode):
     def accept(self, visitor):
         return visitor.visit_var_declaration_node(self)
 
+
 class DeclarationStorageNode(ExpressionNode):
     def __init__(self, idx: Token, typex: Token):
         self.id_line = idx.line_no
         self.id = idx.lex
         self.type = typex.tzscript_type
-
 
     def accept(self, visitor):
         return visitor.visit_declaration_storage_node(self)
@@ -131,9 +130,11 @@ class BinaryNode(ExpressionNode):
     def accept(self, visitor):
         return visitor.visit_binary_node(self)
 
+
 class ComparisonNode(BinaryNode):
     def __init__(self, keyword: Token, left, right):
         super().__init__(keyword, left, right)
+
 
 class ArithmeticNode(BinaryNode):
     pass
@@ -141,9 +142,14 @@ class ArithmeticNode(BinaryNode):
 
 class CallNode(ExpressionNode):
     def __init__(self, idx: Token, args):
-        self.id_line = idx.line_no
-        self.id = idx.lex
-        self.args = args
+        try:
+            self.id_line = idx.line_no
+            self.id = idx.lex
+            self.args = args
+        except:
+            self.id_line = -1
+            self.id = idx
+            self.args = args
 
     def accept(self, visitor):
         return visitor.visit_call_node(self)
