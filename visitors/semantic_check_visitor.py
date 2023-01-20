@@ -3,7 +3,7 @@ from visitors.scope import Scope
 import visitors.visitor as visitor
 from visitors.global_scope_visitor import GlobalScopeVisitor
 from parser.tzscript_types import *
-
+from encoding import is_address
 from enum import Enum
 
 
@@ -58,7 +58,8 @@ class SemanticCheckerVisitor(object):
         type = self.visit(node.expr, scope, parent)
         if type is None:
             return None 
-        if not node.type.is_compatible(type):
+        assert isinstance(type, TzScriptType)
+        if not type.is_assignable(node.type):
             self.errors.append(f'Variable type {node.type.name.value} of {node.id} is not compatible with {type.name.value} at line {node.id_line}')
             return None
         return scope
@@ -102,7 +103,17 @@ class SemanticCheckerVisitor(object):
 
     @visitor.when(ConstantStringNode)
     def visit(self, node: ConstantStringNode, scope: Scope, parent):
+        if is_address(node.lex):
+            return TzScriptAddress()
         return TzScriptString()
+
+    @visitor.when(TrueNode)
+    def visit(self, node: TrueNode, scope: Scope, parent):
+        return TzScriptBoolean()
+    
+    @visitor.when(FalseNode)
+    def visit(self, node: FalseNode, scope: Scope, parent):
+        return TzScriptBoolean()
 
     @visitor.when(VariableNode)
     def visit(self, node: VariableNode, scope: Scope, parent):
@@ -134,45 +145,58 @@ class SemanticCheckerVisitor(object):
                 return None
             if arg_type != func_info.params_types[i]:
                 self.errors.append(
-                    f'Invalid argument type {arg_type.name.value} for function {node.id} at line {node.id_line}, expected {func_info.params_types[i].name}')
+                    f'Invalid argument type {arg_type.name.value} for function {node.id} at line {node.id_line}, expected {func_info.params_types[i].name.value}')
                 return None
 
         return func_info.return_type
           
-        
-    @visitor.when(ArithmeticNode)
-    def visit(self, node: BinaryNode, scope: Scope, parent):
-        left_type = self.visit(node.left, scope, parent)
-        right_type = self.visit(node.right, scope, parent)
+    
 
-        if left_type is None or right_type is None:
+    @visitor.when(PlusNode)
+    def visit(self, node: PlusNode, scope: Scope, parent):
+        result = self.get_types_of_binary_expr(node, scope, parent)
+        if result is None:
             return None
         
-        if not left_type.is_compatible(TzScriptIntOrNat()) or not right_type.is_compatible(TzScriptIntOrNat()):
-            self.errors.append((f'Invalid types {left_type.name.value} and {right_type.name.value} for arithmetic operation at line {node.keyword_line}', node.__class__.__name__))
-            return None
-
+        left_type, right_type = result
         if left_type == right_type:
             return left_type
 
-        if left_type == TzScriptInt() and right_type == TzScriptNat():
-            return TzScriptInt()
+        return TzScriptInt()
 
-        if left_type == TzScriptNat() and right_type == TzScriptInt():
-            return TzScriptInt()
+    @visitor.when(MinusNode)
+    def visit(self, node: MinusNode, scope: Scope, parent):
+        result = self.get_types_of_binary_expr(node, scope, parent)
+        if result is None:
+            return None
 
-        if left_type == TzScriptIntOrNat():
-            return right_type
-        
-        if right_type == TzScriptIntOrNat():
+        return TzScriptInt()
+
+    @visitor.when(StarNode)
+    def visit(self, node: StarNode, scope: Scope, parent):
+        result = self.get_types_of_binary_expr(node, scope, parent)
+        if result is None:
+            return None
+
+        left_type, right_type = result
+        if left_type == right_type:
             return left_type
 
-        if right_type == TzScriptInt() and left_type == TzScriptNat():
-            return TzScriptInt()
+        return TzScriptInt()
 
-        if right_type == TzScriptNat() and left_type == TzScriptInt():
-            return TzScriptInt()
+    @visitor.when(DivNode)
+    def visit(self, node: DivNode, scope: Scope, parent):
+        result = self.get_types_of_binary_expr(node, scope, parent)
+        if result is None:
+            return None
 
+        left_type, right_type = result
+        if left_type == right_type:
+            return left_type
+
+        return TzScriptInt()
+
+        
     @visitor.when(ComparisonNode)
     def visit(self, node: BinaryNode, scope: Scope, parent):
         left_type = self.visit(node.left, scope, parent)
@@ -181,8 +205,9 @@ class SemanticCheckerVisitor(object):
         if left_type is None or right_type is None:
             return None
 
-        if not left_type.is_compatible(right_type):
-            self.errors.append((f'Invalid types {left_type} and {right_type} for comparison operation at line {node.keyword_line}', node.__class__.__name__))
+        assert isinstance(right_type, TzScriptType)
+        if not left_type.is_operation_compatible(right_type):
+            self.errors.append((f'Invalid types {left_type.name.value} and {right_type.name.value} for comparison operation at line {node.keyword_line}', node.__class__.__name__))
             return None
 
         return TzScriptBoolean()
@@ -194,7 +219,7 @@ class SemanticCheckerVisitor(object):
         type = self.visit(node.expr, scope, parent)
         if type is None:
             return None
-        if not type.is_compatible(TzScriptBoolean()):
+        if not type.is_operation_compatible(TzScriptBoolean()):
             self.errors.append(f'if expression must be boolean at line {node.if_line}')
             return None
             
@@ -215,11 +240,12 @@ class SemanticCheckerVisitor(object):
         
         var_info = scope.get_local_variable_info(node.id)
         
-       
-        type = self.visit(node.expr, scope, parent)
+        type: TzScriptType|None = self.visit(node.expr, scope, parent)
         if type is None:
             return None
-        if not var_info.type.is_compatible(type):
+    
+        assert isinstance(type, TzScriptType), f'type is {type(type)}'
+        if not type.is_assignable(var_info.type):
             self.errors.append(f'Invalid type {type.name.value} for variable {node.id} at line {node.id_line}')
         
         return None
@@ -227,10 +253,11 @@ class SemanticCheckerVisitor(object):
     @visitor.when(ReturnStatementNode)
     def visit(self, node: ReturnStatementNode, scope: Scope, parent):
         func_info = scope.get_function_info(parent.id)
-        type = self.visit(node.expr, scope, parent)
+        type: TzScriptType|None = self.visit(node.expr, scope, parent)
         if type is None:
             return None
-        if not func_info.return_type.is_compatible(type):
+        assert isinstance(type, TzScriptType)
+        if not type == func_info.return_type:
             self.errors.append(f'Invalid return type {type.name.value} for function {parent.id}')
 
         return None
@@ -248,7 +275,7 @@ class SemanticCheckerVisitor(object):
         type = self.visit(node.expr, scope, parent)
         if type is None:
             return None
-        if not type.is_compatible(TzScriptBoolean()):
+        if not type.is_operation_compatible(TzScriptBoolean()):
             self.errors.append(f'while expression must be boolean, line {node.while_line}')
 
         scope_copied = scope.create_child_scope_with_parent_info()
@@ -257,3 +284,13 @@ class SemanticCheckerVisitor(object):
             self.visit(child, scope_copied, parent)
 
 
+    def get_types_of_binary_expr(self, node: BinaryNode, scope: Scope, parent):
+        left_type = self.visit(node.left, scope, parent)
+        right_type = self.visit(node.right, scope, parent)
+        if left_type is None or right_type is None:
+            return None
+        
+        if not left_type.is_operation_compatible(TzScriptIntOrNat()) or not right_type.is_operation_compatible(TzScriptIntOrNat()):
+            self.errors.append((f'Invalid types {left_type.name.value} and {right_type.name.value} for arithmetic operation at line {node.keyword_line}', node.__class__.__name__))
+            return None
+        return (left_type, right_type)
