@@ -142,47 +142,51 @@ class MichelsonGenerator(object):
         self.stack.append(StackValue(value.value, value.type, node.id))
 
     @visitor.when(ReplaceVariableNode)
-    def visit(self, node: ReplaceVariableNode):
+    def visit(self, node: ReplaceVariableNode,inside_loop=False,check_in_loop=False):
         self.generate_instructions_to_find_and_put_to_top(node.id)
         previous_value = self.stack.pop()
         self.code += 'DROP;\n'
         # print('current stack, ', self.stack)
         # print('current-code: ', self.code)
         next_value = self.stack.pop()
-        self.reference_counter[node.id] -= 1
+        if inside_loop:
+            if not check_in_loop:
+                self.reference_counter[node.id].references_in_cycles_count -=1
+        else:
+            self.reference_counter[node.id].normal_references_count -= 1
         self.stack.append(StackValue(next_value.value, next_value.type,
                           previous_value.id, previous_value.belongs_to_storage))
 
     @visitor.when(PlusNode)
-    def visit(self, node: PlusNode):
+    def visit(self, node: PlusNode, inside_loop=False,check_in_loop=False):
         first, second = self.prepare_for_binary_op()
         self.code += "ADD;\n"
         self.stack.append(StackValue(
             first.value + second.value, first.type, None))
 
-    @visitor.when(StarNode)
-    def visit(self, node: StarNode):
+    @visitor.when(StarNode )
+    def visit(self, node: StarNode,inside_loop=False,check_in_loop=False):
         first, second = self.prepare_for_binary_op()
         self.code += "MUL;\n"
         self.stack.append(StackValue(
             first.value * second.value, first.type, None))
 
     @visitor.when(MinusNode)
-    def visit(self, node: MinusNode):
+    def visit(self, node: MinusNode,inside_loop=False,check_in_loop=False):
         first, second = self.prepare_for_binary_op()
         self.code += "SUB;\n"
         self.stack.append(StackValue(
             first.value - second.value, first.type, None))
 
     @visitor.when(DivNode)
-    def visit(self, node: DivNode):
+    def visit(self, node: DivNode,inside_loop=False,check_in_loop=False):
         first, second = self.prepare_for_binary_op()
         self.code += "EDIV;\n"
         self.stack.append(StackValue(
             first.value / second.value, first.type, None))
 
     @visitor.when(EqualNode)
-    def visit(self, node: EqualNode):
+    def visit(self, node: EqualNode,inside_loop=False,check_in_loop=False):
         first, second = self.prepare_for_binary_op()
         self.code +="SWAP;\n"
         self.code +="SUB;\n"
@@ -192,7 +196,7 @@ class MichelsonGenerator(object):
         self.stack.append(StackValue(new_first.value == 0, 'bool', None))
 
     @visitor.when(InequalityNode)
-    def visit(self, node: InequalityNode):
+    def visit(self, node: InequalityNode,inside_loop=False,check_in_loop=False):
         first, second = self.prepare_for_binary_op()
         self.code +="SWAP;\n"
         self.code +="SUB;\n"
@@ -203,7 +207,7 @@ class MichelsonGenerator(object):
             new_first.value != 0, 'bool', None))
 
     @visitor.when(GreaterThanNode)
-    def visit(self, node: GreaterThanNode):
+    def visit(self, node: GreaterThanNode,inside_loop=False,check_in_loop=False):
         first, second = self.prepare_for_binary_op()
         self.code +="SWAP;\n"
         self.code +="SUB;\n"
@@ -213,7 +217,7 @@ class MichelsonGenerator(object):
         self.stack.append(StackValue(new_first.value > 0, 'bool', None))
 
     @visitor.when(GreaterThanEqualNode)
-    def visit(self, node: GreaterThanEqualNode):
+    def visit(self, node: GreaterThanEqualNode,inside_loop=False,check_in_loop=False):
         first, second = self.prepare_for_binary_op()
         self.code +="SWAP;\n"
         self.code +="SUB;\n"
@@ -223,7 +227,7 @@ class MichelsonGenerator(object):
         self.stack.append(StackValue(new_first.value  >= 0, 'bool', None))
 
     @visitor.when(LessThanNode)
-    def visit(self, node: LessThanNode):
+    def visit(self, node: LessThanNode,inside_loop=False,check_in_loop=False):
         first, second = self.prepare_for_binary_op()
         self.code +="SWAP;\n"
         self.code +="SUB;\n"
@@ -233,7 +237,7 @@ class MichelsonGenerator(object):
         self.stack.append(StackValue(new_first.value < 0, 'bool', None))
 
     @visitor.when(LessThanEqualNode)
-    def visit(self, node: LessThanEqualNode):
+    def visit(self, node: LessThanEqualNode,inside_loop=False,check_in_loop=False):
         first, second = self.prepare_for_binary_op()
         self.code +="SWAP;\n"
         self.code +="SUB;\n"
@@ -243,15 +247,15 @@ class MichelsonGenerator(object):
         self.stack.append(StackValue(new_first.value <= 0, 'bool', None))
 
     @visitor.when(GetToTopNode)
-    def visit(self, node: GetToTopNode):
+    def visit(self, node: GetToTopNode,inside_loop=False,check_in_loop=False):
         # print('estado de counnter', self.reference_counter)
         self.generate_instructions_to_find_and_put_to_top(node.id)
-        
-        self.reference_counter[node.id].normal_references_count -= 1
+        if not inside_loop:
+            self.reference_counter[node.id].normal_references_count -= 1
        
 
     @visitor.when(IfStatementNode)
-    def visit(self, node: IfStatementNode):
+    def visit(self, node: IfStatementNode,inside_loop=False,check_in_loop=False):
         for st in node.expr:
             self.visit(st)
 
@@ -277,17 +281,17 @@ class MichelsonGenerator(object):
     # this is wrong
 
     @visitor.when(WhileDeclarationNode)
-    def visit(self, node: WhileDeclarationNode):
+    def visit(self, node: WhileDeclarationNode,inside_loop=False,check_in_loop=False):
         for st in node.expr:
-            self.visit(st)
+            self.visit(st,True,False)
         
         copied_stack = self.stack.copy()
         self.code += "LOOP {"
         for st in node.body:
-            self.visit(st)
+            self.visit(st,True,False)
         
         for st in node.expr:
-            self.visit(st)
+            self.visit(st,True,False)
         self.code += "IF\n"
         self.code += '{ PUSH False; }\n'
         self.code += '{ PUSH True; }\n'
@@ -304,10 +308,10 @@ class MichelsonGenerator(object):
         second = self.stack.pop()
 
         if first.id in self.reference_counter:
-            first_still_needed = self.reference_counter[first.id] > 0
+            first_still_needed = self.reference_counter[first.id].normal_references_count > 0 and self.reference_counter[first.id].references_in_cycles_count > 0
 
         if second_still_needed in self.reference_counter:
-            second_still_needed = self.reference_counter[second.id] > 0
+            second_still_needed = self.reference_counter[second.id].normal_references_count > 0 and self.reference_counter[second.id].references_in_cycles_count > 0
 
         if first_still_needed:
             self.stack.append(first)
