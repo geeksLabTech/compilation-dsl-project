@@ -1,6 +1,6 @@
-from visitors.visitor import Visitor
+
 from intermediate_ast.high_level_ir_ast import *
-import visitors.visitor_d as visitor
+import visitors.visitor as visitor
 
 
 class ReferenceCounterVisitor(object):

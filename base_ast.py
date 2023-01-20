@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 
-import visitor
+
 
 class Node:
     def evaluate(self):

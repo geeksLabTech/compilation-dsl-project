@@ -1,10 +1,7 @@
 # from parser.tzscript_ast import *
-from inspect import stack
-from math import fabs
 from intermediate_ast.high_level_ir_ast import *
-from visitor import when
 from visitors.reference_counter_visitor import ReferenceCounterVisitor
-import visitors.visitor_d as visitor
+import visitors.visitor as visitor
 
 
 class StackValue:
@@ -196,42 +193,57 @@ class MichelsonGenerator(object):
     @visitor.when(EqualNode)
     def visit(self, node: EqualNode):
         first, second = self.prepare_for_binary_op()
+        self.code +="SUB;\n"
+        self.stack.append(StackValue(first.value - second.value,first.type, None))
         self.code += "EQ;\n"
-        self.stack.append(StackValue(
-            first.value == second.value, 'bool', None))
+        new_first = self.stack.pop()
+        self.stack.append(StackValue(new_first.value == 0, 'bool', None))
 
     @visitor.when(InequalityNode)
     def visit(self, node: InequalityNode):
         first, second = self.prepare_for_binary_op()
+        self.code +="SUB;\n"
+        self.stack.append(StackValue(first.value - second.value,first.type, None))
         self.code += "NEQ;\n"
+        new_first = self.stack.pop()
         self.stack.append(StackValue(
-            first.value != second.value, 'bool', None))
+            new_first.value != 0, 'bool', None))
 
     @visitor.when(GreaterThanNode)
     def visit(self, node: GreaterThanNode):
         first, second = self.prepare_for_binary_op()
+        self.code +="SUB;\n"
+        self.stack.append(StackValue(first.value - second.value,first.type, None))
         self.code += "GT;\n"
-        self.stack.append(StackValue(first.value > second.value, 'bool', None))
+        new_first = self.stack.pop()
+        self.stack.append(StackValue(new_first.value > 0, 'bool', None))
 
     @visitor.when(GreaterThanEqualNode)
     def visit(self, node: GreaterThanEqualNode):
         first, second = self.prepare_for_binary_op()
+        self.code +="SUB;\n"
+        self.stack.append(StackValue(first.value - second.value,first.type, None))
         self.code += "GE;\n"
-        self.stack.append(StackValue(
-            first.value >= second.value, 'bool', None))
+        new_first = self.stack.pop()
+        self.stack.append(StackValue(new_first.value  >= 0, 'bool', None))
 
     @visitor.when(LessThanNode)
     def visit(self, node: LessThanNode):
         first, second = self.prepare_for_binary_op()
+        self.code +="SUB;\n"
+        self.stack.append(StackValue(first.value - second.value,first.type, None))
         self.code += "LT;\n"
-        self.stack.append(StackValue(first.value < second.value, 'bool', None))
+        new_first = self.stack.pop()
+        self.stack.append(StackValue(new_first.value < 0, 'bool', None))
 
     @visitor.when(LessThanEqualNode)
     def visit(self, node: LessThanEqualNode):
         first, second = self.prepare_for_binary_op()
+        self.code +="SUB;\n"
+        self.stack.append(StackValue(first.value - second.value,first.type, None))
         self.code += "LE;\n"
-        self.stack.append(StackValue(
-            first.value <= second.value, 'bool', None))
+        new_first = self.stack.pop()
+        self.stack.append(StackValue(new_first.value <= 0, 'bool', None))
 
     @visitor.when(GetToTopNode)
     def visit(self, node: GetToTopNode):

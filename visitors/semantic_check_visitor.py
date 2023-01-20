@@ -1,6 +1,9 @@
 from parser.tzscript_ast import *
 from visitors.scope import Scope
-import visitors.visitor_d as visitor
+import visitors.visitor as visitor
+from visitors.global_scope_visitor import GlobalScopeVisitor
+from parser.tzscript_types import *
+from encoding import is_address
 from enum import Enum
 
 
@@ -28,91 +31,66 @@ class SemanticCheckerVisitor(object):
         pass
 
     @visitor.when(ProgramNode)
-    def visit(self, node, scope=None, parent=None):
-        if scope is None:
-            scope = Scope()
-        else:
-            scope = Scope(parent=scope)
+    def visit(self, node: ProgramNode, scope=None, parent=None):
 
-        self.iterations = 1
-        scope.main_level = True
         parent = Parent(LevelRepresentatives.Program, node.idx)
 
-        for child in node.statements:
-            new_scope = self.visit(child, scope, parent)
-            if new_scope is not None:
-                scope = new_scope
-
-        self.iterations += 1
+        global_scope, errors = GlobalScopeVisitor().visit(node)
+        if len(errors) > 0:
+            return errors
 
         for child in node.statements:
-            new_scope = self.visit(child, scope, parent)
-            if new_scope is not None:
-                scope = new_scope
-
+            self.visit(child, global_scope, parent)
+            
         return self.errors
+
 
     @visitor.when(VarDeclarationNode)
     def visit(self, node: VarDeclarationNode, scope: Scope, parent):
-        if self.iterations == 1:
-            if scope.is_local_var(node.id) and self.iterations == 1:
-                self.errors.append((f'Variable  is used', node))
+        if parent == LevelRepresentatives.Program:
+            return
+        
+        if scope.is_local_var(node.id):
+            self.errors.append(f'Variable {node.id} is used, error in line {node.id_line}')
 
-        scope.define_variable(node.id)
-        self.visit(node.expr, scope, parent)
+        scope.define_variable(node.id, node.type)
+
+        type = self.visit(node.expr, scope, parent)
+        if type is None:
+            return None 
+        assert isinstance(type, TzScriptType)
+        if not type.is_assignable(node.type):
+            self.errors.append(f'Variable type {node.type.name.value} of {node.id} is not compatible with {type.name.value} at line {node.id_line}')
+            return None
         return scope
 
     @visitor.when(FuncDeclarationNode)
     def visit(self, node: FuncDeclarationNode, scope: Scope, parent):
-
-        if scope.is_func_defined(node.id, len(node.params)):
-            if self.iterations == 1:
-                self.errors.append((f'Function name {node.id} is used', node))
-        if scope.is_entry_in_scope and self.iterations == 1:
-            self.errors.append(
-                (f'Function {node.id} is defined after entry point', node))
-        scope.define_function(node.id, len(node.params))
         new_scope = scope.create_child_scope()
         new_parent = Parent(LevelRepresentatives.Function, node.id)
 
         for arg in node.params:
-            # print(arg.id, 'arg id')
             scope_update = self.visit(arg, new_scope, new_parent)
             if scope_update is not None:
                 new_scope = scope_update
-        # print(new_scope.local_vars,'var')
+        
         for body in node.body:
             scope_update = self.visit(body, new_scope, new_parent)
             if scope_update is not None:
                 new_scope = scope_update
-        for idx, s in enumerate(node.body):
-            if idx + 1 >= len(node.body):
-                break
-            if type(node.body[idx]) is not IfNode and type(node.body[idx+1]) is ElseNode:
-                self.errors.append(
-                    (f'Before else there can only be one if', node))
-
+        
         return scope
 
     @visitor.when(EntryDeclarationNode)
     def visit(self, node: EntryDeclarationNode, scope: Scope, parent):
-        if scope.is_func_defined(node.id, node.params) and self.iterations == 1:
-            self.errors.append((f'Entry name  is used', node))
-
-        if parent.level == LevelRepresentatives.EntryPoint and self.iterations == 1:
-            self.errors.append(
-                (f'Entry  statament is not allowed inside entry statament', node))
         new_parent = Parent(LevelRepresentatives.EntryPoint, node.id)
-        scope.is_entry_in_scope = True
-        scope.define_function(node.id, len(node.params))
-        scope_copied = self.copy_scope(scope)
+        scope_copied = scope.create_child_scope_with_parent_info()
 
         for arg in node.params:
-            # print(arg.id, 'arg id')
             new_scope = self.visit(arg, scope_copied, new_parent)
             if new_scope is not None:
                 scope_copied = new_scope
-        # new_scope = scope.create_child_scope()
+        
         for child in node.body:
             self.visit(child, scope_copied, new_parent)
 
@@ -120,128 +98,199 @@ class SemanticCheckerVisitor(object):
 
     @visitor.when(ConstantNumNode)
     def visit(self, node: ConstantNumNode, scope: Scope, parent):
-        if not node.lex.isnumeric() and self.iterations == 1:
-            self.errors.append((f'Value is not Numeric', node))
-        # if parent.level == LevelRepresentatives.Program and self.iterations == 1:
-        #     self.errors.append(
-        #         (f'In the corpus of the program declare entry functions or variables not this constant {node.lex}', node))
-
-        return None
+        assert node.lex.isnumeric()
+        return TzScriptIntOrNat()
 
     @visitor.when(ConstantStringNode)
     def visit(self, node: ConstantStringNode, scope: Scope, parent):
-        pass
+        if is_address(node.lex):
+            return TzScriptAddress()
+        return TzScriptString()
+
+    @visitor.when(TrueNode)
+    def visit(self, node: TrueNode, scope: Scope, parent):
+        return TzScriptBoolean()
+    
+    @visitor.when(FalseNode)
+    def visit(self, node: FalseNode, scope: Scope, parent):
+        return TzScriptBoolean()
 
     @visitor.when(VariableNode)
     def visit(self, node: VariableNode, scope: Scope, parent):
-        if not scope.is_local_var(node.lex) and self.iterations == 1:
-            self.errors.append((f'Invalid variable {node.lex}',node))
-        # if parent.level == LevelRepresentatives.Program and self.iterations == 1:
-        #     self.errors.append(
-        #         (f'In the corpus of the program declare entry functions or variables not this constant ',node))
+        if not scope.is_local_var(node.lex):
+            self.errors.append((f'Variable {node.lex} at line {node.line} is not defined'))
+            return None
+        
+        var_info = scope.get_local_variable_info(node.lex)
+
+        return var_info.type
+        
 
     @visitor.when(CallNode)
     def visit(self, node: CallNode, scope: Scope, parent):
-        if not scope.is_func_defined(node.id, len(node.args)):
+        if not scope.is_func_defined(node.id):
+            self.errors.append(f'Function {node.id} is not defined at line {node.id_line}')
+            return None
 
-            if self.iterations == 2:
+        func_info = scope.get_function_info(node.id)
+        assert func_info is not None
+
+        if len(node.args) != len(func_info.params_types):
+            self.errors.append(f'Invalid number of arguments for function {node.id} at line {node.id_line}')
+            return None
+            
+        for i, child in enumerate(node.args):
+            arg_type = self.visit(child, scope, parent)
+            if arg_type is None:
+                return None
+            if arg_type != func_info.params_types[i]:
                 self.errors.append(
-                    (f'Function {node.id} is not defined', node))
-        if parent.level == LevelRepresentatives.Program and self.iterations == 1:
-            self.errors.append(
-                (f'In the corpus of the program declare entry functions or variables not this call ', node))
+                    f'Invalid argument type {arg_type.name.value} for function {node.id} at line {node.id_line}, expected {func_info.params_types[i].name.value}')
+                return None
 
-        for child in node.args:
-            new_scope = self.visit(child, scope, parent)
+        return func_info.return_type
+          
+    
 
-            if new_scope is not None:
-                scope = new_scope
+    @visitor.when(PlusNode)
+    def visit(self, node: PlusNode, scope: Scope, parent):
+        result = self.get_types_of_binary_expr(node, scope, parent)
+        if result is None:
+            return None
+        
+        left_type, right_type = result
+        if left_type == right_type:
+            return left_type
 
-    @visitor.when(BinaryNode)
+        return TzScriptInt()
+
+    @visitor.when(MinusNode)
+    def visit(self, node: MinusNode, scope: Scope, parent):
+        result = self.get_types_of_binary_expr(node, scope, parent)
+        if result is None:
+            return None
+
+        return TzScriptInt()
+
+    @visitor.when(StarNode)
+    def visit(self, node: StarNode, scope: Scope, parent):
+        result = self.get_types_of_binary_expr(node, scope, parent)
+        if result is None:
+            return None
+
+        left_type, right_type = result
+        if left_type == right_type:
+            return left_type
+
+        return TzScriptInt()
+
+    @visitor.when(DivNode)
+    def visit(self, node: DivNode, scope: Scope, parent):
+        result = self.get_types_of_binary_expr(node, scope, parent)
+        if result is None:
+            return None
+
+        left_type, right_type = result
+        if left_type == right_type:
+            return left_type
+
+        return TzScriptInt()
+
+        
+    @visitor.when(ComparisonNode)
     def visit(self, node: BinaryNode, scope: Scope, parent):
-        self.visit(node.left, scope, parent)
-        self.visit(node.right, scope, parent)
-        if parent.level == LevelRepresentatives.Program and self.iterations == 1:
-            self.errors.append(
-                (f'In the corpus of the program declare entry functions or variables not this operation', node))
+        left_type = self.visit(node.left, scope, parent)
+        right_type = self.visit(node.right, scope, parent)
 
+        if left_type is None or right_type is None:
+            return None
+
+        assert isinstance(right_type, TzScriptType)
+        if not left_type.is_operation_compatible(right_type):
+            self.errors.append((f'Invalid types {left_type.name.value} and {right_type.name.value} for comparison operation at line {node.keyword_line}', node.__class__.__name__))
+            return None
+
+        return TzScriptBoolean()
+        
+        
     @visitor.when(IfNode)
     def visit(self, node: IfNode, scope: Scope, parent):
-        print(parent == LevelRepresentatives.Function)
-        # new_scope = scope.create_child_scope()
-        scope_copied = self.copy_scope(scope)
+        
+        type = self.visit(node.expr, scope, parent)
+        if type is None:
+            return None
+        if not type.is_operation_compatible(TzScriptBoolean()):
+            self.errors.append(f'if expression must be boolean at line {node.if_line}')
+            return None
+            
+        scope_copied_for_then = scope.create_child_scope_with_parent_info()
+        scope_copied_for_else = scope.create_child_scope_with_parent_info()
 
-        if scope.main_level and self.iterations == 1:
-            self.errors.append(
-                (f'If statement is not allowed in main level', node))
-        if parent.level == LevelRepresentatives.Program and self.iterations == 1:
-            self.errors.append(
-                (f'In the corpus of the program declare entry functions or variables not this statament if', node))
-        scope.is_if_in_scope = True
-        self.visit(node.expr, scope_copied, parent)
-        for child in node.statements:
-            self.visit(child, scope_copied, parent)
+        for child in node.then_statements:
+            self.visit(child, scope_copied_for_then, parent)
 
-    @visitor.when(ElseNode)
-    def visit(self, node: ElseNode, scope: Scope, parent):
-        scope_copied = self.copy_scope(scope)
-        if not scope.is_if_in_scope and self.iterations == 1:
-            self.errors.append(
-                (f'Else statement is not allowed without if statement',node))
-        else:
-            scope.is_if_in_scope = False
-        if parent.level == LevelRepresentatives.Program and self.iterations == 1:
-            self.errors.append(
-                (f'In the corpus of the program declare entry functions or variables not this else',node))
-        for child in node.statements:
-            self.visit(child, scope_copied, parent)
+        for child in node.else_statements:
+            self.visit(child, scope_copied_for_else, parent)
 
     @visitor.when(VarCallNode)
     def visit(self, node: VarCallNode, scope: Scope, parent):
-        # print('estoy en', node.id, scope.local_vars)
-        self.visit(node.expr, scope, parent)
-        if not scope.is_local_var(node.id) and self.iterations == 1:
-            self.errors.append((f'Variable  is not defined',node))
+        if not scope.is_local_var(node.id):
+            self.errors.append(f'Variable {node.id} in line {node.id_line} is not defined')
+            return None
+        
+        var_info = scope.get_local_variable_info(node.id)
+        
+        type: TzScriptType|None = self.visit(node.expr, scope, parent)
+        if type is None:
+            return None
+    
+        assert isinstance(type, TzScriptType), f'type is {type(type)}'
+        if not type.is_assignable(var_info.type):
+            self.errors.append(f'Invalid type {type.name.value} for variable {node.id} at line {node.id_line}')
+        
+        return None
 
     @visitor.when(ReturnStatementNode)
     def visit(self, node: ReturnStatementNode, scope: Scope, parent):
-        if parent.level == LevelRepresentatives.Program and self.iterations == 1:
-            self.errors.append(
-                (f'In the corpus of the program declare entry functions or variables not this return ',node))
-        if not parent.level == LevelRepresentatives.Function and self.iterations == 1:
-            # print('entre')
-            print(parent)
-            self.errors.append(
-                (f'Return statement is only allowed in a funcion',node))
-        self.visit(node.expr, scope, parent)
+        func_info = scope.get_function_info(parent.id)
+        type: TzScriptType|None = self.visit(node.expr, scope, parent)
+        if type is None:
+            return None
+        assert isinstance(type, TzScriptType)
+        if not type == func_info.return_type:
+            self.errors.append(f'Invalid return type {type.name.value} for function {parent.id}')
+
+        return None
 
     @visitor.when(AttrDeclarationNode)
     def visit(self, node: AttrDeclarationNode, scope: Scope, parent):
-
-        scope.define_variable(node.id)
+        if scope.is_local_var(node.id):
+            self.errors.append(f'Attribute {node.id} for {parent.id} is already defined, error at line {node.id_line}')
+            return None
+        scope.define_variable(node.id, node.type)
         return scope
 
     @visitor.when(WhileNode)
     def visit(self, node: WhileNode, scope: Scope, parent):
-        scope_copied = self.copy_scope(scope)
-        if parent.level == LevelRepresentatives.Program and self.iterations == 1:
-            self.errors.append(
-                (f'In the corpus of the program declare entry functions or variables not this while',node))
-        if scope.main_level and self.iterations == 1:
-            self.errors.append(
-                (f'While statement is not allowed in main level',node))
-        self.visit(node.expr, scope_copied, parent)
+        type = self.visit(node.expr, scope, parent)
+        if type is None:
+            return None
+        if not type.is_operation_compatible(TzScriptBoolean()):
+            self.errors.append(f'while expression must be boolean, line {node.while_line}')
+
+        scope_copied = scope.create_child_scope_with_parent_info()
+        
         for child in node.statements:
             self.visit(child, scope_copied, parent)
 
 
-
-    def copy_scope(self, scope: Scope):
-        scope_copied = Scope()
-
-        for f in scope.local_funcs:
-            scope_copied.local_funcs.append(f)
-        for v in scope.local_vars:
-            scope_copied.local_vars.append(v)
+    def get_types_of_binary_expr(self, node: BinaryNode, scope: Scope, parent):
+        left_type = self.visit(node.left, scope, parent)
+        right_type = self.visit(node.right, scope, parent)
+        if left_type is None or right_type is None:
+            return None
         
-        return scope_copied
+        if not left_type.is_operation_compatible(TzScriptIntOrNat()) or not right_type.is_operation_compatible(TzScriptIntOrNat()):
+            self.errors.append((f'Invalid types {left_type.name.value} and {right_type.name.value} for arithmetic operation at line {node.keyword_line}', node.__class__.__name__))
+            return None
+        return (left_type, right_type)
