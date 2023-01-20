@@ -257,7 +257,7 @@ class SemanticCheckerVisitor(object):
         if type is None:
             return None
         assert isinstance(type, TzScriptType)
-        if not type == func_info.return_type:
+        if not type.is_assignable(func_info.return_type):
             self.errors.append(f'Invalid return type {type.name.value} for function {parent.id}')
 
         return None
