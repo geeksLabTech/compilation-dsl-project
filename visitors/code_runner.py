@@ -1,6 +1,6 @@
 from parser.tzscript_ast import *
-from visitor import when
-import visitors.visitor_d as visitor
+from visitors.visitor import when
+from visitors import visitor
 
 
 class ScopeContext:
@@ -35,23 +35,21 @@ class CodeRunnerVisitor(object):
             if self.break_test(st):
                 break
 
-        # if len(self.scopes[0].entry) == 1:
-        #     self.scopes[0].variables['n'] = {'type': 'nat', 'value': 5}
-        #     self.visit(
-        #         CallNode(list(self.scopes[0].entry.keys())[0], [ConstantNumNode(5)]))
+            # self.scopes[0].variables['n'] = {'type': 'nat', 'value': 5}
+        self.visit(CallNode(list(self.scopes[0].entry.keys())[-1], []))
 
         self.scopes.pop()
 
     @visitor.when(IfNode)
     def visit(self, node: IfNode):
-        print('if Node')
+        # print('if Node')
         self.go_else = False
         r = ''
         if self.visit(node.expr):
             self.current_scope += 1
             self.scopes.append(ScopeContext())
 
-            for st in node.statements:
+            for st in node.then_statements:
                 t = self.visit(st)
 
                 if t is not None:
@@ -60,24 +58,10 @@ class CodeRunnerVisitor(object):
                 if self.break_test(st):
                     break
 
-            self.scopes.pop()
-            self.current_scope -= 1
         else:
-            self.go_else = True
-        return r
-
-    @visitor.when(ElseNode)
-    def visit(self, node: ElseNode):
-        print("else Node")
-
-        r = None
-
-        if self.go_else is True:
-            self.go_else = False
-
             self.current_scope += 1
             self.scopes.append(ScopeContext())
-            for st in node.statements:
+            for st in node.else_statements:
                 t = self.visit(st)
 
                 if t is not None:
@@ -86,8 +70,8 @@ class CodeRunnerVisitor(object):
                 if self.break_test(st):
                     break
 
-            self.scopes.pop()
-            self.current_scope -= 1
+        self.scopes.pop()
+        self.current_scope -= 1
 
         return r
 
@@ -98,41 +82,45 @@ class CodeRunnerVisitor(object):
         return st
 
     def type_cast(self, var, type):
-        if type in ['int', 'nat', 'num']:
-            return int(var)
+        # print("Casting", var, type.name._value_)
+        if type.name._value_ in ['int', 'nat', 'num']:
+            # print("True")
+            try:
+                return int(var)
+            except:
+                return var
         else:
             return var
 
-    @visitor.when(VarDeclarationNode)
-    def visit(self, node: VarDeclarationNode):
-        print("declare var")
+    @visitor.when(DeclarationStorageNode)
+    def visit(self, node: DeclarationStorageNode):
+        # print("declare var in storage")
         self.scopes[self.current_scope].variables[node.id] = {
-            'type': node.type, 'value': self.type_cast(self.visit(node.expr), node.type)}
+            'type': node.type, 'value': None}
         self.scopes[self.current_scope].variables[node.id]
 
-    # TODO look for the var bottom up
-    @visitor.when(AssignNode)
-    def visit(self, node: AssignNode):
-        print("Assign var")
-        for i in range(0, self.current_scope):
-            if node.id in self.scopes[self.current_scope-i].variables:
-                self.scopes[self.current_scope-i].variables[node.id]['value'] = self.visit(
-                    node.expr)
-                break
+    @visitor.when(VarDeclarationNode)
+    def visit(self, node: VarDeclarationNode):
+        # print("declare var")
+        # print(node.expr)
+        val = self.visit(node.expr)
+        self.scopes[self.current_scope].variables[node.id] = {
+            'type': node.type, 'value': self.type_cast(val, node.type)}
+        self.scopes[self.current_scope].variables[node.id]
 
     @visitor.when(FuncDeclarationNode)
     def visit(self, node: FuncDeclarationNode):
-        print("Func declaration node")
+        # print("Func declaration node")
         self.scopes[0].functions[node.id] = {"func": node, "type": node.type}
 
     @visitor.when(EntryDeclarationNode)
     def visit(self, node: EntryDeclarationNode):
-        print("Entry dec Node")
+        # print("Entry dec Node")
         self.scopes[0].entry[node.id] = {"func": node, "type": None}
 
     @visitor.when(WhileNode)
     def visit(self, node: WhileNode):
-        print("While Node")
+        # print("While Node")
         self.scopes.append(ScopeContext())
         self.current_scope += 1
 
@@ -154,19 +142,19 @@ class CodeRunnerVisitor(object):
 
     @visitor.when(AttrDeclarationNode)
     def visit(self, node: AttrDeclarationNode):
-        print("Attr")
+        # print("Attr")
         self.scopes[self.current_scope].variables[node.id] = {
             'type': node.type, 'value': None}
         return self.scopes[self.current_scope].variables[node.id]
 
     @visitor.when(VariableNode)
     def visit(self, node: VariableNode, val=True):
-        print("var")
+        # print("var")
         sc = self.current_scope
         if self.scope_bound:
             sc -= 1
         for i in range(0, self.current_scope+1):
-            print(self.scopes[self.current_scope-i].variables)
+            # print(self.scopes[self.current_scope-i].variables)
             if node.lex in self.scopes[self.current_scope-i].variables:
                 if not val:
                     return self.scopes[self.current_scope-i].variables[node.lex]
@@ -175,25 +163,25 @@ class CodeRunnerVisitor(object):
 
     @visitor.when(AtomicNode)
     def visit(self, node: AtomicNode):
-        print("atomic", node)
+        # print("atomic", node)
         return node.lex
 
     @visitor.when(ConstantStringNode)
     def visit(self, node: ConstantStringNode):
-        print("string")
+        # print("string")
         return node.lex
 
     @visitor.when(ConstantNumNode)
     def visit(self, node: AtomicNode):
-        print('num')
+        # print('num', node.lex)
         return int(node.lex)
 
     @visitor.when(PlusNode)
     def visit(self, node: PlusNode):
-        print("plus")
+        # print("plus")
         l = self.visit(node.left)
         r = self.visit(node.right)
-        print(f'{l} + {r}')
+        # print(f'{l} + {r}')
         return int(l+r)
 
     @visitor.when(MinusNode)
@@ -201,7 +189,7 @@ class CodeRunnerVisitor(object):
         l = self.visit(node.left)
         r = self.visit(node.right)
 
-        print(f'{l} - {r}')
+        # print(f'{l} - {r}')
 
         return int(l-r)
 
@@ -210,7 +198,7 @@ class CodeRunnerVisitor(object):
         l = self.visit(node.left)
         r = self.visit(node.right)
 
-        print(f'{l} // {r}')
+        # print(f'{l} // {r}')
 
         return int(l/r)
 
@@ -219,7 +207,7 @@ class CodeRunnerVisitor(object):
         l = self.visit(node.left)
         r = self.visit(node.right)
 
-        print(f'{l} * {r}')
+        # print(f'{l} * {r}')
 
         return int(l*r)
 
@@ -228,7 +216,7 @@ class CodeRunnerVisitor(object):
         l = self.visit(node.left)
         r = self.visit(node.right)
 
-        print(f'{l} == {r}')
+        # print(f'{l} == {r}')
 
         return l == r
 
@@ -237,7 +225,7 @@ class CodeRunnerVisitor(object):
         l = self.visit(node.left)
         r = self.visit(node.right)
 
-        print(f'{l} != {r}')
+        # print(f'{l} != {r}')
 
         return l != r
 
@@ -246,7 +234,7 @@ class CodeRunnerVisitor(object):
         l = self.visit(node.left)
         r = self.visit(node.right)
 
-        print(f'{l} >= {r}')
+        # print(f'{l} >= {r}')
 
         return l >= r
 
@@ -254,7 +242,7 @@ class CodeRunnerVisitor(object):
     def visit(self, node: GreaterThanNode):
         l = self.visit(node.left)
         r = self.visit(node.right)
-        print(f'{l} > {r}')
+        # print(f'{l} > {r}')
 
         return l > r
 
@@ -262,7 +250,7 @@ class CodeRunnerVisitor(object):
     def visit(self, node: LessThanEqualNode):
         l = self.visit(node.left)
         r = self.visit(node.right)
-        print(f'{l} <= {r}')
+        # print(f'{l} <= {r}')
 
         return l <= r
 
@@ -270,14 +258,14 @@ class CodeRunnerVisitor(object):
     def visit(self, node: LessThanNode):
         l = self.visit(node.left)
         r = self.visit(node.right)
-        print(f'{l} < {r}')
+        # print(f'{l} < {r}')
 
         return l < r
 
     @visitor.when(CallNode)
     def visit(self, node: CallNode):
         print(f"Calling {node.id} {node.args}")
-        r = ''
+        r = None
         self.scopes.append(ScopeContext())
         self.current_scope += 1
 
@@ -287,26 +275,22 @@ class CodeRunnerVisitor(object):
             fun_node: FuncDeclarationNode = self.scopes[0].functions[fun]['func']
         except:
             fun_node: FuncDeclarationNode = self.scopes[0].entry[fun]['func']
-
         for p, i in enumerate(fun_node.params):
             at = self.visit(node.args[p])
             pa_n = self.visit(i)
-            print(i.id, pa_n)
-            print(at)
+            # print(i.id, pa_n)
+            # print(at)
             pa_n['value'] = at
             self.scopes[self.current_scope].variables[i.id] = pa_n
 
-        print(self.scopes[-1].variables)
+        # print("scope", self.scopes[-1].variables)
 
         for st in fun_node.body:
-            print(st)
             t = self.visit(st)
             if t is not None:
                 r = t
             if self.break_test(st):
                 break
-
-            print(">", r)
 
         self.scopes.pop()
         self.current_scope -= 1

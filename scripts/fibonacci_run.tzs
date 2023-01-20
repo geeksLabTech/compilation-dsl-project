@@ -1,0 +1,26 @@
+contract get_fib_n(n:int){
+    let last_fib_calculated : int ;
+
+    entry get_fib(n: int){
+        let temp:int = fib(n);
+    }
+
+    func fib(n: int) : int{
+        if (n <= 1) {
+            then{
+                return 1;
+            }
+            else {
+                
+                let a: int = n - 1;
+                let b: int = n - 2;
+                return fib(a) + fib(b);
+            }
+        }
+    }
+    
+    entry exec(){
+        let a: int = 5;
+        let t: int = fib(a);
+    }
+}
