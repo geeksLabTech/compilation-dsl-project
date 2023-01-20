@@ -18,25 +18,28 @@ def process(script: str, num_steps=3):
         # Tokenize Script
         print("\nBuilding TZScript AST", end="")
         ast = run_tzscript_ast_building_pipeline(script)
-
+        failed = False
         print("\nPerforming Semantic Check", end="")
         semantic_checker = SemanticCheckerVisitor()
         semantic_result = semantic_checker.visit(ast)
         if len(semantic_result) > 0:
+            failed = True
             print("\nSomething Went Wrong")
             for err in semantic_result:
                 print(err)
         else:
             print("... OK")
-        progress.update(1)
+        if not failed:
+            progress.update(1)
 
-        print("\nGenerating Intermediate Representation", end="")
-        high_level_ir = TzScriptToHighLevelIrVisitor()
-        ir = high_level_ir.visit(ast)
-        print("...OK")
-        progress.update(1)
+            print("\nGenerating Intermediate Representation", end="")
+            high_level_ir = TzScriptToHighLevelIrVisitor()
+            ir = high_level_ir.visit(ast)
+            print("...OK")
+            progress.update(1)
 
-        return ast, ir, progress
+            return ast, ir, progress
+        return None, None, None
 
 
 @app.command()
@@ -71,11 +74,11 @@ def run(file: str = Argument("", help="tzscript file to be parsed")):
         script = f.read()
 
     ast, ir, progress = process(script, 2)
+    if ast is not None:
+        print("\nRunning Code\n", end="")
 
-    print("\nRunning Code\n", end="")
-
-    runner = CodeRunnerVisitor()
-    runner.visit(ast)
+        runner = CodeRunnerVisitor()
+        runner.visit(ast)
 
 
 @app.command()
