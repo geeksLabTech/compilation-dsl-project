@@ -143,16 +143,7 @@ class MichelsonGenerator(object):
 
     @visitor.when(ReplaceVariableNode)
     def visit(self, node: ReplaceVariableNode):
-        michelson_index = 0
-        index_in_stack = 0
-        for i in range(len(self.stack)-1, -1, -1):
-            if self.stack[i].id == node.id:
-                self.code += f'DIG {michelson_index};\n'
-                index_in_stack = i
-                break
-            michelson_index += 1
-
-        self.put_value_to_top_in_stack(index_in_stack)
+        self.generate_instructions_to_find_and_put_to_top(node.id)
         previous_value = self.stack.pop()
         self.code += 'DROP;\n'
         print('current stack, ', self.stack)
@@ -247,19 +238,10 @@ class MichelsonGenerator(object):
 
     @visitor.when(GetToTopNode)
     def visit(self, node: GetToTopNode):
-        michelson_index = 0
-        index_in_stack = 0
-        # Loop in reverse in self.stack
-        for i in range(len(self.stack)-1, -1, -1):
-            if self.stack[i].id == node.id:
-                self.code += f'DIG {michelson_index};\n'
-                index_in_stack = i
-                break
-            michelson_index += 1
-
-        print('estado de counnter', self.reference_counter)
+        # print('estado de counnter', self.reference_counter)
+        self.generate_instructions_to_find_and_put_to_top(node.id)
         self.reference_counter[node.id] -= 1
-        self.put_value_to_top_in_stack(index_in_stack)
+       
 
     @visitor.when(IfStatementNode)
     def visit(self, node: IfStatementNode):
@@ -377,3 +359,25 @@ class MichelsonGenerator(object):
         temp2 = self.stack.pop()
         self.stack.append(temp1)
         self.stack.append(temp2)
+
+    def generate_instructions_to_find_and_put_to_top(self, id):
+        michelson_index = 0
+        index_in_stack = 0
+        # Loop in reverse in self.stack
+        for i in range(len(self.stack)-1, -1, -1):
+            if self.stack[i].id == id:     
+                index_in_stack = i
+                break
+            michelson_index += 1
+
+        self.put_value_to_top_in_stack(index_in_stack)
+
+        if michelson_index == 0:
+            return
+        
+        if michelson_index == 1:
+            self.code += f'SWAP;\n'
+
+        else:
+            self.code += f'DIG {michelson_index};\n'
+
