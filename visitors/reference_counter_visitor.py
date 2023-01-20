@@ -17,7 +17,7 @@ class ReferenceCounterVisitor(object):
           pass
 
     @visitor.when(CodeNode)
-    def visit(self , node: CodeNode , is_inside_cycle = False = 0, checked_vars = None):
+    def visit(self , node: CodeNode , is_inside_cycle = False, checked_vars = None):
         for s in node.statements:
             self.visit(s)
     
