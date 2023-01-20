@@ -1,6 +1,6 @@
-from visitors.visitor import Visitor
+
 from intermediate_ast.high_level_ir_ast import *
-import visitors.visitor_d as visitor
+import visitors.visitor as visitor
 
 
 class HLReprVisitor(object):
@@ -24,8 +24,10 @@ class HLReprVisitor(object):
 
     @visitor.when(EntryPointDeclarationNode)
     def visit(self , node , tabs = 0):
-        ans = '\t' * tabs + f'\\__EntryPointDeclarationNode: {node.id} ({node.params})'
-        return f'{ans}'
+        ans = '\t' * tabs + f'\\__EntryPointDeclarationNode: {node.id} (<param> ... <param>)'    
+        params = '\n'.join(self.visit(child , tabs + 1)  for child in node.params)
+        
+        return f'{ans}\n{params}'
     
     @visitor.when(StoragesNode)
     def visit(self , node , tabs = 0):
@@ -33,15 +35,19 @@ class HLReprVisitor(object):
         storages = '\n'.join(self.visit(child , tabs + 1) for child in node.storage_list)
         return f'{ans}\n{storages}'
 
+    @visitor.when(AttrDeclarationNode)
+    def visit(self , node , tabs = 0):
+        ans = '\t' * tabs + f'\\__AttrDeclarationNode: {node.id} : {node.type.name.value}'
+        return f'{ans}'
+
     @visitor.when(StorageDeclarationNode)
     def visit(self , node , tabs = 0):
-        ans = '\t' * tabs + f'\\__StorageDeclarationNode: {node.id} : {node.type}'
+        ans = '\t' * tabs + f'\\__StorageDeclarationNode: {node.id} : {node.type.name.value}'
         return f'{ans}'
 
     @visitor.when(CodeNode)
     def visit(self , node: CodeNode , tabs = 0):
         ans = '\t' * tabs + 'code { <stat> , <stat> , ... , <stat> }'
-        print('los: ', node.statements)
         code = '\n'.join(self.visit(child , tabs + 1) for child in node.statements)
         return f'{ans}\n{code}'
     
@@ -54,7 +60,7 @@ class HLReprVisitor(object):
     @visitor.when(IfStatementNode)
     def visit(self , node: IfStatementNode , tabs = 0):
         ans = '\t' * tabs + 'if <expr> then { <stat> , <stat> , ... , <stat> } else { <stat> , <stat> , ... , <stat> }'
-        # print('expresion if', node.expr)
+       
         expr = '\n'.join(self.visit(child, tabs + 1) for child in node.expr)
         then = '\n'.join(self.visit(child , tabs + 2) for child in node.then_clause)
         then = 'then {' + then + ' }'
@@ -72,18 +78,18 @@ class HLReprVisitor(object):
     @visitor.when(IfEntryNode)
     def visit(self, node: IfEntryNode, tabs = 0):
         ans = '\t' * tabs + f'\\__IfEntryNode: if {node.entry_id} then '
-        print('mmm', node.statements)
+        
         statements = '\n'.join(self.visit(child, tabs + 1) for child in node.statements)
         return f'{ans}\n{statements}'
 
     @visitor.when(PushValueNode)
     def visit(self, node: PushValueNode, tabs = 0):
-        ans = '\t' * tabs + f'\\__PushValueNode: push {node.type} {node.value}'
+        ans = '\t' * tabs + f'\\__PushValueNode: push {node.value} {node.type}'
         return f'{ans}'
 
     @visitor.when(PushVariableNode)
     def visit(self, node: PushVariableNode, tabs = 0):
-        ans = '\t' * tabs + f'\\__PushVariableNode: push {node.type} {node.id}'
+        ans = '\t' * tabs + f'\\__PushVariableNode: push {node.id} {node.type.name.value}'
         return f'{ans}'
 
     @visitor.when(ReplaceVariableNode)
@@ -98,7 +104,7 @@ class HLReprVisitor(object):
 
     @visitor.when(OperationNode)
     def visit(self, node: OperationNode, tabs = 0):
-        print('operation node: ', node)
+        
         ans = '\t' * tabs + f'\\__ {node.__class__.__name__}'
         return f'{ans}'
 

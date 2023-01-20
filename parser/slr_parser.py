@@ -1,6 +1,7 @@
 from parser.utils import compute_firsts, compute_follows, compute_local_first
 from grammar import Grammar, Sentence, Symbol, Item, EOF
 from automata import State
+from pandas import DataFrame
 
 
 class ShiftReduceParser:
@@ -28,15 +29,22 @@ class ShiftReduceParser:
             lookahead = w[cursor]
 
             if(state, lookahead) not in self.action:
+                print('last state:', state)
+                print('last lookahead', lookahead)
+                print('last stack', stack)
                 excepted_char = ''
 
                 for (state1, i) in self.action.keys():
                     if i.IsTerminal and state1 == state:
-                        excepted_char += str(i)
-                parseado = ' '.join([str(m)
+                        excepted_char += str(i) + ', '
+                parsed = ' '.join([str(m)
                                     for m in stack if not str(m).isnumeric()])
-                message_error = f'It was expected "{excepted_char}" received "{lookahead}" after {parseado}'
+                message_error = f'It was expected "{excepted_char}" received "{lookahead}" after {parsed}'
                 print("\nError. Aborting...")
+                print('ACTION')
+                print(table_to_dataframe(self.action))
+                print('GOTO')
+                print(table_to_dataframe(self.goto))
                 print('')
                 print("\n", message_error)
                 # print(w[cursor-1])
@@ -95,24 +103,28 @@ class SLR1Parser(ShiftReduceParser):
                 if len(item.production.Right) == item.pos:
                     # print('elif')
                     if item.production.Left == G.startSymbol:
-                        self.action[node.idx, G.EOF] = self.OK
+                        self._register(self.action, (node.idx, G.EOF), self.OK)
+                        # self.action[node.idx, G.EOF] = self.OK
                     else:
                         for terminal_follow in follows[item.production.Left]:
                             tag = None
                             for production in G.Productions:
                                 if production == item.production:
                                     tag = production
-                            self.action[node.idx,
-                                        terminal_follow] = self.REDUCE, tag
+                            self._register(self.action, (node.idx, terminal_follow), (self.REDUCE, tag))
+                            # self.action[node.idx,
+                            #             terminal_follow] = self.REDUCE, tag
 
                 elif item.production.Right[item.pos].IsTerminal:
                     next_node = node.get(item.NextSymbol.Name)
-                    self.action[node.idx,
-                                item.NextSymbol] = self.SHIFT, next_node.idx
+                    self._register(self.action, (node.idx, item.NextSymbol), (self.SHIFT, next_node.idx))
+                    # self.action[node.idx,
+                    #             item.NextSymbol] = self.SHIFT, next_node.idx
 
                 else:
                     next_node = node.get(item.NextSymbol.Name)
-                    self.goto[node.idx, item.NextSymbol] = next_node.idx
+                    self._register(self.goto, (node.idx, item.NextSymbol), next_node.idx)
+                    # self.goto[node.idx, item.NextSymbol] = next_node.idx
 
     def _build_LR0_automaton(self, G):
         assert len(G.startSymbol.productions) == 1, 'Grammar must be augmented'
@@ -169,7 +181,7 @@ class SLR1Parser(ShiftReduceParser):
 
     @staticmethod
     def _register(table, key, value):
-        assert key not in table or table[key] == value, 'Shift-Reduce or Reduce-Reduce conflict!!!'
+        assert key not in table or table[key] == value, f'Shift-Reduce or Reduce-Reduce conflict!!!, key: {key}, value {value}'
         table[key] = value
 
 
@@ -183,7 +195,7 @@ def build_slr_ast(right_parse, operations, tokens):
     for operation in operations:
         if operation == ShiftReduceParser.SHIFT:
             token = next(tokens)
-            stack.append(token.lex)
+            stack.append(token)
         elif operation == ShiftReduceParser.REDUCE:
             production = next(right_parse)
             head, body = production
@@ -207,3 +219,33 @@ def build_slr_ast(right_parse, operations, tokens):
     # print(next(last_token))
     assert isinstance(last_token.token_type, EOF)
     return stack[0]
+
+
+
+
+def encode_value(value):
+    try:
+        action, tag = value
+        if action == ShiftReduceParser.SHIFT:
+            return 'S' + str(tag)
+        elif action == ShiftReduceParser.REDUCE:
+            return repr(tag)
+        elif action ==  ShiftReduceParser.OK:
+            return action
+        else:
+            return value
+    except TypeError:
+        return value
+
+def table_to_dataframe(table):
+    d = {}
+    for (state, symbol), value in table.items():
+        value = encode_value(value)
+        try:
+            if symbol in d[state]:
+                assert d[state][symbol] == value, 'Shift-Reduce or Reduce-Reduce conflict!!!'
+            d[state][symbol] = value
+        except KeyError:
+            d[state] = { symbol: value }
+
+    return DataFrame.from_dict(d, orient='index', dtype=str)

@@ -1,9 +1,46 @@
 
+from lexer.sly_lexer import TzScriptLexer, process_lexer_tokens 
+from parser.tzscript_grammar import TZSCRIPT_GRAMMAR
+from parser.slr_parser import SLR1Parser, build_slr_ast
+from parser.lr_parser import LR1Parser
 
 # from typing import Self
 from grammar import EOF, Epsilon, Grammar, Production, Sentence, Symbol
 import hashlib
 import base58
+PARSER = LR1Parser(TZSCRIPT_GRAMMAR, verbose=True)
+
+def run_tscript_sly_lexer_pipeline(script: str):
+    lexer = TzScriptLexer()
+    lexer_tokens = list(lexer.tokenize(script))
+    tokens = process_lexer_tokens(lexer_tokens)
+    return tokens
+
+def run_tzscript_slr_parser_pipeline(script: str):
+    tokens = run_tscript_sly_lexer_pipeline(script)
+
+    parser = SLR1Parser(TZSCRIPT_GRAMMAR, verbose=True)
+
+    terminals = [token.token_type for token in tokens]
+    derivation = parser(terminals, True)
+    assert derivation is not None 
+    productions, operations = derivation
+    return productions, operations, tokens
+
+def run_tzscript_lr_parser_pipeline(script: str):
+    tokens = run_tscript_sly_lexer_pipeline(script)
+    terminals = [token.token_type for token in tokens]
+    derivation = PARSER(terminals, True)
+    assert derivation is not None 
+    productions, operations = derivation
+    return productions, operations, tokens
+
+
+def run_tzscript_ast_building_pipeline(script: str):
+    productions, operations, tokens = run_tzscript_lr_parser_pipeline(script)
+    ast = build_slr_ast(productions, operations, tokens)
+    assert ast is not None
+    return ast
 
 
 def inspect(item, grammar_name='G', mapper=None):

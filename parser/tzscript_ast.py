@@ -1,4 +1,6 @@
-from utils import is_valid_tezos_address
+
+from lexer.lex_token import Token
+
 
 
 class Node:
@@ -7,8 +9,9 @@ class Node:
 
 
 class ProgramNode(Node):
-    def __init__(self, idx, params, statements):
-        self.idx = idx
+    def __init__(self, idx: Token, params, statements):
+        self.id_line = idx.line_no
+        self.idx = idx.lex
         self.params = params
         self.statements = statements
 
@@ -25,32 +28,21 @@ class ExpressionNode(Node):
 
 
 class IfNode(Node):
-    def __init__(self, expr, statements) -> None:
+    def __init__(self, if_keyword: Token, then_keyword: Token, expr, then_statements,else_statements) -> None:
+        self.if_line = if_keyword.line_no
+        self.then_line = then_keyword.line_no
+        # self.else_line = else_keyword.line_no
         self.expr = expr
-        self.statements = statements
-
+        self.then_statements = then_statements
+        self.else_statements = else_statements
+        
     def accept(self, visitor):
         return visitor.visit_if_node(self)
 
 
-class ElseNode(Node):
-    def __init__(self, statements) -> None:
-        self.statements = statements
-
-    def accept(self, visitor):
-        return visitor.visit_else_node(self)
-
-
-class StorageNode(Node):
-    def __init__(self, statements) -> None:
-        self.statements = statements
-
-    def accept(self, visitor):
-        return visitor.visit_storage_node(self)
-
-
 class ReturnStatementNode(Node):
-    def __init__(self, expr) -> None:
+    def __init__(self, return_keyword: Token, expr) -> None:
+        self.return_line = return_keyword.line_no
         self.expr = expr
 
     def accept(self, visitor):
@@ -58,29 +50,32 @@ class ReturnStatementNode(Node):
 
 
 class VarDeclarationNode(ExpressionNode):
-    def __init__(self, idx, typex, expr):
-        self.id = idx
-        self.type = typex
+    def __init__(self, idx: Token, typex: Token, expr):
+        self.id_line = idx.line_no
+        self.id = idx.lex
+        self.type = typex.tzscript_type
         self.expr = expr
 
     def accept(self, visitor):
         return visitor.visit_var_declaration_node(self)
 
+class DeclarationStorageNode(ExpressionNode):
+    def __init__(self, idx: Token, typex: Token):
+        self.id_line = idx.line_no
+        self.id = idx.lex
+        self.type = typex.tzscript_type
 
-class AssignNode(ExpressionNode):
-    def __init__(self, idx, expr):
-        self.id = idx
-        self.expr = expr
 
     def accept(self, visitor):
-        return visitor.visit_assign_node(self)
+        return visitor.visit_declaration_storage_node(self)
 
 
 class FuncDeclarationNode(DeclarationNode):
-    def __init__(self, idx, params, return_type, body):
-        self.id = idx
+    def __init__(self, idx: Token, params, return_type: Token, body):
+        self.id_line = idx.line_no
+        self.id = idx.lex
         self.params = params
-        self.type = return_type
+        self.type = return_type.tzscript_type
         self.body = body
 
     def accept(self, visitor):
@@ -88,7 +83,8 @@ class FuncDeclarationNode(DeclarationNode):
 
 
 class WhileNode(Node):
-    def __init__(self, exp, statements):
+    def __init__(self, while_keyword: Token, exp, statements):
+        self.while_line = while_keyword.line_no
         self.expr = exp
         self.statements = statements
 
@@ -97,8 +93,9 @@ class WhileNode(Node):
 
 
 class EntryDeclarationNode(DeclarationNode):
-    def __init__(self, idx, params, body):
-        self.id = idx
+    def __init__(self, idx: Token, params, body):
+        self.id_line = idx.line_no
+        self.id = idx.lex
         self.params = params
         self.body = body
 
@@ -107,34 +104,45 @@ class EntryDeclarationNode(DeclarationNode):
 
 
 class AttrDeclarationNode(DeclarationNode):
-    def __init__(self, idx, typex):
-        self.id = idx
-        self.type = typex
+    def __init__(self, idx: Token, typex: Token):
+        self.id_line = idx.line_no
+        self.id = idx.lex
+        self.type = typex.tzscript_type
 
     def accept(self, visitor):
         return visitor.visit_attr_declaration_node(self)
 
 
 class AtomicNode(ExpressionNode):
-    def __init__(self, lex):
-        self.lex = lex
+    def __init__(self, token: Token):
+        self.line = token.line_no
+        self.lex = token.lex
 
     def accept(self, visitor):
         return visitor.visit_atomic_node(self)
 
 
 class BinaryNode(ExpressionNode):
-    def __init__(self, left, right):
+    def __init__(self, keyword: Token, left, right):
+        self.keyword_line = keyword.line_no
         self.left = left
         self.right = right
 
     def accept(self, visitor):
         return visitor.visit_binary_node(self)
 
+class ComparisonNode(BinaryNode):
+    def __init__(self, keyword: Token, left, right):
+        super().__init__(keyword, left, right)
+
+class ArithmeticNode(BinaryNode):
+    pass
+
 
 class CallNode(ExpressionNode):
-    def __init__(self, idx, args):
-        self.id = idx
+    def __init__(self, idx: Token, args):
+        self.id_line = idx.line_no
+        self.id = idx.lex
         self.args = args
 
     def accept(self, visitor):
@@ -142,95 +150,87 @@ class CallNode(ExpressionNode):
 
 
 class VarCallNode(DeclarationNode):
-    def __init__(self, idx, expr) -> None:
-        self.id = idx
+    def __init__(self, idx: Token, expr) -> None:
+        self.id_line = idx.line_no
+        self.id = idx.lex
         self.expr = expr
 
     def accept(self, visitor):
         return visitor.visit_var_call_node(self)
 
 
-class EqualNode(BinaryNode):
-    def __init__(self, left, right) -> None:
-        self.left = left
-        self.right = right
+class EqualNode(ComparisonNode):
+    def __init__(self, keyword: Token, left, right):
+        super().__init__(keyword, left, right)
 
     def accept(self, visitor):
         return visitor.visit_arith_node(self, "==")
 
 
-class InequalityNode(BinaryNode):
+class InequalityNode(ComparisonNode):
     # class IniquelatyNode(ExpressionNode):
-    def __init__(self, left, right) -> None:
-        self.left = left
-        self.right = right
+    def __init__(self, keyword: Token, left, right):
+        super().__init__(keyword, left, right)
 
     def accept(self, visitor):
         return visitor.visit_arith_node(self, "!=")
 
 
-class LessThanNode(BinaryNode):
-    def __init__(self, left, right) -> None:
-        self.left = left
-        self.right = right
+class LessThanNode(ComparisonNode):
+    def __init__(self, keyword: Token, left, right):
+        super().__init__(keyword, left, right)
 
     def accept(self, visitor):
         return visitor.visit_arith_node(self, "<")
 
 
-class LessThanEqualNode(BinaryNode):
-    def __init__(self, left, right) -> None:
-        self.left = left
-        self.right = right
+class LessThanEqualNode(ComparisonNode):
+    def __init__(self, keyword: Token, left, right):
+        super().__init__(keyword, left, right)
 
     def accept(self, visitor):
         return visitor.visit_arith_node(self, "<=")
 
 
-class GreaterThanNode(BinaryNode):
-    def __init__(self, left, right) -> None:
-        self.left = left
-        self.right = right
+class GreaterThanNode(ComparisonNode):
+    def __init__(self, keyword: Token, left, right):
+        super().__init__(keyword, left, right)
 
     def accept(self, visitor):
         return visitor.visit_arith_node(self, ">")
 
 
-class GreaterThanEqualNode(BinaryNode):
-    def __init__(self, left, right) -> None:
-        self.left = left
-        self.right = right
+class GreaterThanEqualNode(ComparisonNode):
+    def __init__(self, keyword: Token, left, right):
+        super().__init__(keyword, left, right)
 
     def accept(self, visitor):
         return visitor.visit_arith_node(self, ">=")
 
 
-class TrueNode(BinaryNode):
+class TrueNode(AtomicNode):
     def accept(self, visitor):
         return visitor.visit_true_node(self)
 
 
-class FalseNode(BinaryNode):
+class FalseNode(AtomicNode):
     def accept(self, visitor):
         return visitor.visit_false_node(self)
 
 
 class ConstantStringNode(AtomicNode):
-    def __init__(self, lex):
-        super().__init__(lex)
-        # print(str(lex), "tz1QV341nbgxbyzd8SYU7fJtNScaLVPMZkGC")
-        if not is_valid_tezos_address(str(lex)[1:-1]):
-            self.type = 'string'
-        else:
-            self.type = 'address'
+    def __init__(self, token: Token):
+        token.lex = token.lex[1:-1]
+        super().__init__(token)
+        self.type = token.tzscript_type
 
     def accept(self, visitor):
         return visitor.visit_address_node(self)
 
 
 class ConstantNumNode(AtomicNode):
-    def __init__(self, lex):
-        self.lex = lex
+    def __init__(self, token: Token):
+        super().__init__(token)
         self.type = 'num'
 
     def accept(self, visitor):
@@ -238,44 +238,40 @@ class ConstantNumNode(AtomicNode):
 
 
 class VariableNode(AtomicNode):
-    def __init__(self, lex):
-        self.lex = lex
+    def __init__(self, token: Token):
+        super().__init__(token)
 
     def accept(self, visitor):
         return visitor.visit_variable_node(self)
 
 
-class PlusNode(BinaryNode):
-    def __init__(self, left, right):
-        self.left = left
-        self.right = right
+class PlusNode(ArithmeticNode):
+    def __init__(self, keyword: Token, left, right):
+        super().__init__(keyword, left, right)
 
     def accept(self, visitor):
         return visitor.visit_arith_node(self, '+')
 
 
-class MinusNode(BinaryNode):
-    def __init__(self, left, right):
-        self.left = left
-        self.right = right
+class MinusNode(ArithmeticNode):
+    def __init__(self, keyword: Token, left, right):
+        super().__init__(keyword, left, right)
 
     def accept(self, visitor):
         return visitor.visit_arith_node(self, '-')
 
 
-class StarNode(BinaryNode):
-    def __init__(self, left, right):
-        self.left = left
-        self.right = right
+class StarNode(ArithmeticNode):
+    def __init__(self, keyword: Token, left, right):
+        super().__init__(keyword, left, right)
 
     def accept(self, visitor):
         return visitor.visit_arith_node(self, '*')
 
 
-class DivNode(BinaryNode):
-    def __init__(self, left, right):
-        self.left = left
-        self.right = right
+class DivNode(ArithmeticNode):
+    def __init__(self, keyword: Token, left, right):
+        super().__init__(keyword, left, right)
 
     def accept(self, visitor):
         return visitor.visit_arith_node(self, '//')
