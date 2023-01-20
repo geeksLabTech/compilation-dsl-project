@@ -38,3 +38,7 @@ El cli cuenta con un menú de ayuda:
 python cli.py --help
 ```
 
+- Ejecución de código en AST
+Procesa todo el archivo `.tzs` y ejecuta el código en el núcleo de python, se deberá  definir un `entry` sin parámetros que será el que llamará al resto de funciones en el contrato
+
+Esta condición es solo para cuando se ejecute el intérprete en python, el código michelson no necesita del `entry` anteriormente mencionado
