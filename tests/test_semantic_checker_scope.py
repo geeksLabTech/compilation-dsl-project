@@ -210,3 +210,44 @@ def test_calls_to_functions():
  'Function test_entry is not defined at line 12']
     assert errors == expected_errors
 
+
+def test_nested_if_while():
+    script = '''
+    contract get_fib_n(n:int){
+
+    let first: int;
+    
+    func fib(n: int) : int{
+        let x : int = last_fib_calculated;
+        if (n <= 1) {
+            then{
+                let v: int = 1;
+                if (2+3<4){
+                    then{let nested: int = v;}
+                    else{let else_nested: int = v;}
+                }
+                let z: int = nested;
+                let y: int = else_nested;
+            }
+            else{
+                while(2+3<4){
+                    let nested_while: int = nested;
+                    if (2>5){
+                        then{let nested_if: int = nested_while;}
+                        else{let else_nested_if: int = nested_while;}
+                    }
+                    let nested_if_2: int = nested_if;
+                }
+            }
+        }
+    }
+}
+'''
+    ast = run_tzscript_ast_building_pipeline(script)
+    errors = SemanticCheckerVisitor().visit(ast)
+    expected_errors = ['Variable last_fib_calculated at line 7 is not defined',
+ 'Variable nested at line 15 is not defined',
+ 'Variable else_nested at line 16 is not defined',
+ 'Variable nested at line 20 is not defined',
+ 'Variable nested_if at line 25 is not defined']
+    assert errors == expected_errors
